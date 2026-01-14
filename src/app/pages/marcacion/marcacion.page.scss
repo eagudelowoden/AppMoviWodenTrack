@@ -1,0 +1,316 @@
+ion-content {
+  // Mismo degradado naranja WodenTrack
+  --background: linear-gradient(135deg, #be6410 0%, #a37b56 100%);
+}
+
+.marcacion-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 20px;
+  color: white;
+
+  // --- TARJETA DE USUARIO ---
+  .user-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+      background: #14213D; // Azul Navy
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+    }
+
+    .info {
+      flex: 1;
+      h3 { margin: 0; font-size: 1.1rem; font-weight: 700; }
+      p { margin: 2px 0; font-size: 0.85rem; opacity: 0.9; }
+      .badge {
+        font-size: 0.7rem;
+        background: rgba(0,0,0,0.2);
+        padding: 2px 8px;
+        border-radius: 10px;
+        &.admin { background: #FFD700; color: #333; font-weight: bold; }
+      }
+    }
+
+    .logout-btn {
+      color: white;
+      --color: white;
+    }
+  }
+
+  // --- RELOJ ---
+  .clock-section {
+    text-align: center;
+    
+    .date { font-size: 1.1rem; opacity: 0.9; margin-bottom: 5px; }
+    
+    .time {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin: 0;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      font-variant-numeric: tabular-nums; // Evita que los números salten
+    }
+
+    .status-indicator {
+      margin-top: 20px;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+  }
+
+  // --- BOTÓN DE ACCIÓN ---
+  .action-section {
+    width: 100%;
+    
+    .action-btn {
+      height: 60px;
+      --border-radius: 16px;
+      font-weight: 800;
+      font-size: 1.2rem;
+      --box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      margin-bottom: 20px;
+      transition: transform 0.1s;
+
+      // Estilo cuando va a ENTRAR (Azul Navy)
+      &.btn-entrada {
+        --background: #14213D;
+        --color: white;
+      }
+
+      // Estilo cuando va a SALIR (Rojo suave o Naranja oscuro para alerta)
+      &.btn-salida {
+        --background: #a31621; // Rojo oscuro elegante
+        --color: white;
+      }
+    }
+    
+    .action-btn:active { transform: scale(0.98); }
+
+    .copyright {
+      text-align: center;
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+  }
+}
+
+// ... (Todo lo anterior se mantiene igual hasta .action-section)
+
+  .action-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px; // Espacio entre los dos botones
+
+    .action-btn {
+      height: 55px; // Bajamos un poco de 60px a 55px para que quepan bien
+      --border-radius: 16px;
+      font-weight: 800;
+      font-size: 1.1rem;
+      --box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      margin-bottom: 0; // Quitamos el margen inferior porque ahora usamos gap
+
+      &.btn-entrada {
+        --background: #14213D;
+        --color: white;
+      }
+
+      &.btn-salida {
+        --background: #a31621;
+        --color: white;
+      }
+
+      // Estilo para cuando el botón está deshabilitado
+      &.button-disabled {
+        opacity: 0.4;
+        --background: #666;
+      }
+    }
+
+    .day-msg {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #eee;
+      margin-top: 10px;
+    }
+    
+    .copyright {
+      text-align: center;
+      font-size: 0.75rem;
+      opacity: 0.7;
+      margin-top: 15px;
+    }
+  }
+  ion-content {
+  --background: linear-gradient(135deg, #98a6a9 0%, #98a6a9 100%);
+}
+
+.marcacion-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 20px;
+  color: white;
+
+  // ... (user-card y clock-section se mantienen igual a tu código previo)
+
+  .action-section {
+    width: 100%;
+    
+    .button-row {
+      display: flex;
+      gap: 10px; // Espacio entre botones
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .action-btn {
+      flex: 1; // Hace que ambos botones ocupen el mismo ancho (50/50)
+      height: 80px; 
+      --border-radius: 16px;
+      font-weight: 800;
+      --box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+      .btn-content {
+        display: flex;
+        flex-direction: column; // Icono arriba, texto abajo
+        align-items: center;
+        gap: 5px;
+        font-size: 0.8rem;
+
+        ion-icon {
+          font-size: 1.8rem;
+        }
+      }
+
+      &.btn-entrada {
+        --background: #14213D;
+        --color: white;
+      }
+
+      &.btn-salida {
+        --background: #a31621;
+        --color: white;
+      }
+
+      &[disabled] {
+        opacity: 0.3;
+      }
+    }
+
+    .day-msg {
+      text-align: center;
+      font-size: 0.85rem;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 5px;
+      border-radius: 8px;
+    }
+
+    .copyright {
+      text-align: center;
+      font-size: 0.7rem;
+      opacity: 0.6;
+      margin-top: 10px;
+    }
+  }
+}
+// ... (mantenemos el ion-content y user-card igual)
+
+.clock-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 25px;
+  padding: 20px;
+  text-align: center;
+  margin: 0 auto;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  color: #333;
+
+  .date { 
+    font-size: 0.9rem; 
+    color: #666; 
+    margin: 0; 
+    font-weight: 500;
+  }
+
+  .time {
+    font-size: 2.8rem; // Más pequeño como pediste
+    font-weight: 800;
+    margin: 5px 0;
+    color: #14213D;
+    letter-spacing: -1px;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    margin-top: 10px;
+    
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+  }
+}
+
+.footer-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding: 0 5px;
+
+  .copyright { margin: 0; font-size: 0.7rem; opacity: 0.8; }
+
+  .connectivity {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: rgba(255,255,255,0.2);
+    padding: 3px 10px;
+    border-radius: 12px;
+
+    .conn-dot {
+      width: 6px;
+      height: 6px;
+      background: #4CAF50; // Verde Online
+      border-radius: 50%;
+    }
+
+    &.is-offline {
+      background: rgba(255,0,0,0.2);
+      .conn-dot { background: #ff4d4d; } // Rojo Offline
+      color: #ff4d4d;
+    }
+  }
+}

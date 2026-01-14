@@ -11,6 +11,10 @@ const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full'
   },
+  {
+    path: 'marcacion',
+    loadChildren: () => import('./pages/marcacion/marcacion.module').then( m => m.MarcacionPageModule)
+  },
 ];
 
 @NgModule({

@@ -1,27 +1,115 @@
-#container {
-  text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+ion-content {
+  // --- FONDO NARANJA PROFESIONAL ---
+  // Un degradado de Naranja Intenso (#FF8008) a un Naranja más suave (#FFC837)
+  // Se ve moderno pero no "fosforescente".
+  --background: linear-gradient(135deg, #98a6a9 0%, #98a6a9 100%);
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 30px;
+
+  // --- CABECERA ---
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
+
+    .icon-circle {
+      width: 90px;
+      height: 90px;
+      background: rgba(255, 255, 255, 0.9); // Casi blanco sólido para resaltar el icono
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px auto;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+
+      ion-icon {
+        font-size: 45px;
+        // --- ICONO PRINCIPAL EN AZUL OSCURO ---
+        color: #14213D; 
+      }
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    p {
+      margin-top: 5px;
+      opacity: 0.95;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+  }
+
+  // --- FORMULARIO ---
+  .form-wrapper {
+    width: 100%;
+
+    // Estilo de los Inputs
+    .custom-input {
+      --background: #ffffff;
+      --border-radius: 12px;
+      --padding-start: 10px;
+      margin-bottom: 20px;
+      // Sombra azulada muy suave para integrar los colores
+      box-shadow: 0 10px 30px rgba(20, 33, 61, 0.15);
+
+      ion-icon {
+        // --- ICONOS DE INPUT (NO NARANJA CHILLÓN) ---
+        // Usamos el Azul Oscuro. Se ve muy elegante y legible.
+        color: #14213D; 
+        opacity: 0.8;
+      }
+
+      ion-input {
+        --padding-start: 8px;
+        font-weight: 600;
+        --color: #14213D; // Texto azul muy oscuro al escribir
+        --placeholder-color: #555;
+        --placeholder-opacity: 0.6;
+      }
+    }
+
+    // --- EL BOTÓN AZUL OSCURO ---
+    .main-button {
+      margin-top: 35px;
+      
+      // Azul Marino Profundo (Navy) - Inspira seguridad
+      --background: #14213D; 
+      --background-activated: #000022; // Más oscuro al presionar
+      
+      --color: #ffffff; // Texto blanco puro
+      --border-radius: 12px;
+      font-weight: 800;
+      height: 56px;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      box-shadow: 0 8px 20px rgba(20, 33, 61, 0.4); // Sombra azulada
+    }
+  }
 }
+.header {
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white; // "Track" seguirá siendo blanco
+    margin: 0;
 
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
+    .brand-orange {
+      color: #ff9800; // Este es el naranja Woden
+      // Si quieres un naranja más fuerte usa: #be6410
+    }
+  }
 }

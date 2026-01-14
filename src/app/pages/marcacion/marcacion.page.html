@@ -1,0 +1,57 @@
+<ion-content [fullscreen]="true">
+  <div class="marcacion-container">
+
+    <div class="user-card" *ngIf="userData">
+      <div class="avatar">{{ userData.name.charAt(0) }}</div>
+      <div class="info">
+        <h3>{{ userData.name }}</h3>
+        <p>{{ userData.job }}</p>
+        <span class="badge" [class.admin]="userData.role === 'admin'">
+          {{ userData.role | uppercase }}
+        </span>
+      </div>
+      <ion-button fill="clear" class="logout-btn" (click)="logout()">
+        <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div class="clock-card">
+      <p class="date">{{ fecha | titlecase }}</p>
+      <h1 class="time">{{ reloj }}</h1>
+      
+      <div class="status-indicator">
+        <span class="dot" [style.background]="dayCompleted ? '#2196F3' : (isInside ? '#4CAF50' : '#9e9e9e')"></span>
+        <strong [style.color]="dayCompleted ? '#2196F3' : (isInside ? '#4CAF50' : '#666')">
+          {{ dayCompleted ? 'SALIDA REGISTRADA' : (isInside ? 'ENTRADA REGISTRADA' : 'PENDIENTE') }}
+        </strong>
+      </div>
+    </div>
+
+    <div class="action-section">
+      <div class="button-row">
+        <ion-button class="action-btn btn-entrada" [disabled]="isInside || dayCompleted || !isOnline" (click)="realizarMarcacion()">
+          <div class="btn-content">
+            <ion-icon name="log-in-outline"></ion-icon>
+            <span>ENTRADA</span>
+          </div>
+        </ion-button>
+
+        <ion-button class="action-btn btn-salida" [disabled]="!isInside || dayCompleted || !isOnline" (click)="realizarMarcacion()">
+          <div class="btn-content">
+            <ion-icon name="log-out-outline"></ion-icon>
+            <span>SALIDA</span>
+          </div>
+        </ion-button>
+      </div>
+      
+      <div class="footer-info">
+        <p class="copyright">WodenTrack Pro • 2026</p>
+        <div class="connectivity" [class.is-offline]="!isOnline">
+          <div class="conn-dot"></div>
+          <span>{{ isOnline ? 'ONLINE' : 'OFFLINE' }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</ion-content>
