@@ -1,0 +1,7 @@
+{
+  "name": "WodenTrack",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
