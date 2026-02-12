@@ -8,8 +8,8 @@ import { firstValueFrom } from 'rxjs';
 export class ApiService {
   
   // Servidor de lógica y usuarios (NestJS)
-  //private apiUrl = 'http://18.217.246.39:8082/usuarios'; 
-  private apiUrl = 'http://localhost:8082/usuarios'; 
+  private apiUrl = 'http://18.217.246.39:8082/usuarios'; 
+  //private apiUrl = 'http://localhost:8082/usuarios'; 
   
   // Servidor de hora oficial
   private timeUrl = 'http://3.133.217.145:8081';

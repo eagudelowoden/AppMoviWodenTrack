@@ -20,8 +20,8 @@ export class MarcacionPage implements OnInit {
   isInside: boolean = false;
   dayCompleted: boolean = false; // Nueva variable para el bloqueo
   isOnline: boolean = navigator.onLine;
-  
-  private timeOffset: number = 0; 
+
+  private timeOffset: number = 0;
 
   constructor(
     private router: Router,
@@ -29,13 +29,13 @@ export class MarcacionPage implements OnInit {
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController
   ) {
-    addIcons({ 
-      'log-out-outline': logOutOutline, 
-      'time-outline': timeOutline, 
+    addIcons({
+      'log-out-outline': logOutOutline,
+      'time-outline': timeOutline,
       'checkmark-circle': checkmarkCircle,
-      'close-circle': closeCircle 
+      'close-circle': closeCircle
     });
-    
+
     const nav = this.router.getCurrentNavigation();
     if (nav?.extras.state) {
       this.userData = nav.extras.state['user'];
@@ -63,13 +63,27 @@ export class MarcacionPage implements OnInit {
   async sincronizarRelojOficial() {
     try {
       const data = await this.api.getOfficialTime();
-      const serverTime = new Date(data.local_time).getTime();
+      console.log('Datos recibidos del servidor:', data);
+
+      // USAMOS 'datetime' que es el que vimos en tu JSON
+      // Si no existe, intentamos con 'fecha_hora'
+      const rawTime = data.datetime || data.fecha_hora;
+
+      if (!rawTime) {
+        throw new Error('El servidor no envió una fecha válida');
+      }
+
+      const serverTime = new Date(rawTime).getTime();
       const deviceTime = new Date().getTime();
+
       this.timeOffset = serverTime - deviceTime;
+
       console.log('Sincronización exitosa. Offset:', this.timeOffset, 'ms');
+      this.actualizarReloj(); // Actualizamos de inmediato después de sincronizar
     } catch (error) {
-      console.error('Error sincronizando hora oficial.', error);
-      this.timeOffset = 0; 
+      console.error('Error sincronizando hora oficial:', error);
+      this.timeOffset = 0; // Fallback: usar hora del dispositivo
+      this.actualizarReloj();
     }
   }
 
@@ -80,20 +94,20 @@ export class MarcacionPage implements OnInit {
   }
 
   async realizarMarcacion() {
-    const loading = await this.loadingCtrl.create({ 
-      message: 'Validando marcación...', 
-      spinner: 'crescent' 
+    const loading = await this.loadingCtrl.create({
+      message: 'Validando marcación...',
+      spinner: 'crescent'
     });
     await loading.present();
 
     try {
       // 1. Hora oficial para el envío (Seguridad)
       const timeData = await this.api.getOfficialTime();
-      
+
       // 2. Llamada al servicio con los dos parámetros (ID y Hora)
       const response = await this.api.marcarAsistencia(
         this.userData.employee_id,
-        timeData.odoo_utc_time
+        timeData.datetime
       );
 
       await loading.dismiss();
@@ -127,7 +141,7 @@ export class MarcacionPage implements OnInit {
     const alert = await this.alertCtrl.create({
       header,
       message,
-      cssClass: `custom-alert-${color}`, 
+      cssClass: `custom-alert-${color}`,
       buttons: ['ENTENDIDO']
     });
     await alert.present();
