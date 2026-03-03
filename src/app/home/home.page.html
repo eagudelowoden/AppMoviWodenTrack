@@ -18,19 +18,16 @@
         </ion-input>
       </ion-item>
 
-<ion-item class="custom-input" lines="none">
-  <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
-  
-  <ion-input 
-    [type]="showPassword ? 'text' : 'password'" 
-    placeholder="Contraseña" 
-    [(ngModel)]="userForm.password">
-  </ion-input>
+      <ion-item class="custom-input" lines="none">
+        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
 
-  <ion-button slot="end" fill="clear" (click)="togglePassword()">
-    <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-  </ion-button>
-</ion-item>
+        <ion-input [type]="showPassword ? 'text' : 'password'" placeholder="Contraseña" [(ngModel)]="userForm.password">
+        </ion-input>
+
+        <ion-button slot="end" fill="clear" (click)="togglePassword()">
+          <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+        </ion-button>
+      </ion-item>
 
       <ion-button expand="block" class="main-button" (click)="ingresar()">
         INGRESAR
