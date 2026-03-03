@@ -3,7 +3,8 @@ import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { shieldCheckmark, personOutline, lockClosedOutline } from 'ionicons/icons';
+// Añadimos eyeOutline y eyeOffOutline a las importaciones
+import { shieldCheckmark, personOutline, lockClosedOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-home',
@@ -19,17 +20,28 @@ export class HomePage {
     password: ''
   };
 
+  // 1. Variable para controlar la visibilidad
+  showPassword = false;
+
   constructor(
     private router: Router,
     private api: ApiService,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController
   ) {
+    // 2. Agregamos los iconos del "ojo" al registro de iconos
     addIcons({ 
       'shield-checkmark': shieldCheckmark, 
       'person-outline': personOutline, 
-      'lock-closed-outline': lockClosedOutline 
+      'lock-closed-outline': lockClosedOutline,
+      'eye-outline': eyeOutline,
+      'eye-off-outline': eyeOffOutline
     });
+  }
+
+  // 3. Función para alternar el estado
+  togglePassword() {
+    this.showPassword = !this.showPassword;
   }
 
   async ingresar() {
