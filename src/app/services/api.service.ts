@@ -31,6 +31,8 @@ export class ApiService {
       fecha_hora: horaOficial // Este campo lo recibirá tu NestJS
     }));
   }
+
+  //PRUEBAS
   async getOfficialTime() {
   // Ahora llamamos a nuestro propio NestJS (él hace el puente)
   return firstValueFrom(this.http.get<any>(`${this.apiUrl}/hora-oficial`));
