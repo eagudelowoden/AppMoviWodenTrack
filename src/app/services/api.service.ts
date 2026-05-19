@@ -6,8 +6,8 @@ import { firstValueFrom } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  //private apiUrl = 'http://18.217.246.39:8082/usuarios';
-  private apiUrl = 'http://localhost:8082/usuarios';
+  private apiUrl = 'http://18.217.246.39:8082/usuarios';
+  //private apiUrl = 'http://localhost:8082/usuarios';
 
   private get baseUrl() {
     return this.apiUrl.replace(/\/usuarios\/?$/, '');
