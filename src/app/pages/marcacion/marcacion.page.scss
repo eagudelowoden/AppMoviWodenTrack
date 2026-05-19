@@ -2,27 +2,34 @@ ion-content.woden-content {
   --background: #080d25;
 }
 
-// ── Banner APK ────────────────────────────────────────────────────────────────
-.update-banner {
-  position: sticky; top: 0; z-index: 200;
-  background: #080d25;
-  border-bottom: 2px solid #ff8f00;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 18px; gap: 10px;
+// ── Chip sutil de actualización ───────────────────────────────────────────────
+.update-chip {
+  position: absolute;
+  top: 14px; right: 14px;
+  z-index: 10;
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  padding: 5px 10px 5px 12px;
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: background 0.15s;
 
-  .update-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
-    .update-icon { width: 30px; height: 30px; background: #ff8f00; border-radius: 9px;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      ion-icon { color: white; font-size: 15px; } }
-    .update-text { display: flex; flex-direction: column; min-width: 0;
-      .u-title { font-size: 11px; font-weight: 800; color: white; text-transform: uppercase; b { color: #ff8f00; } }
-      .u-note   { font-size: 9px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } } }
-  .update-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0;
-    .btn-update { background: #ff8f00; color: white; border: none; border-radius: 999px;
-      padding: 6px 14px; font-size: 10px; font-weight: 900; text-transform: uppercase; cursor: pointer; }
-    .btn-dismiss { background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.5);
-      display: flex; align-items: center; justify-content: center; width: 26px; height: 26px;
-      border-radius: 7px; cursor: pointer; ion-icon { font-size: 15px; } } }
+  &:active { background: rgba(255,255,255,0.18); }
+
+  ion-icon { font-size: 11px; color: rgba(255,255,255,0.85); }
+
+  span {
+    font-size: 9.5px; font-weight: 600; color: rgba(255,255,255,0.85);
+    text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
+  }
+
+  .chip-dismiss {
+    background: none; border: none; padding: 0; margin-left: 2px;
+    display: flex; align-items: center; cursor: pointer;
+    ion-icon { font-size: 12px; color: rgba(255,255,255,0.55); }
+  }
 }
 
 // ── Pantalla ──────────────────────────────────────────────────────────────────
@@ -168,10 +175,11 @@ ion-content.woden-content {
 // ── Botones principales (pill) ────────────────────────────────────────────────
 .action-btns {
   display: flex; flex-direction: row; gap: 11px;
+  margin-top: 8px;
 
   .pill-btn {
     flex: 1;
-    height: 76px;
+    height: 84px;
     border-radius: 18px;
     border: none;
     display: flex;
@@ -187,32 +195,56 @@ ion-content.woden-content {
     &[disabled] { opacity: 0.30; cursor: not-allowed; }
 
     .p-icon {
-      width: 32px; height: 32px; border-radius: 50%;
+      width: 34px; height: 34px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      ion-icon { font-size: 17px; }
+      ion-icon { font-size: 18px; }
     }
 
     .p-text {
       display: flex; flex-direction: column; align-items: center; gap: 1px;
-      .p-lbl  { font-size: 11px; font-weight: 900; line-height: 1.1; text-align: center; }
+      .p-lbl  { font-size: 12px; font-weight: 900; line-height: 1.1; text-align: center; }
       .p-time { font-size: 9px; font-weight: 600; font-variant-numeric: tabular-nums; opacity: 0.65; }
     }
 
-    // Ocultar flecha en modo compacto
     .p-arrow { display: none; }
 
-    // ENTRADA — Navy oscuro sólido
     &.pill-in {
       background: #080d25; color: white;
       .p-icon { background: rgba(16,185,129,0.18); ion-icon { color: #10b981; } }
     }
 
-    // SALIDA — Naranja/ámbar sólido, notorio
     &.pill-out {
       background: #ff8f00; color: white;
       .p-icon { background: rgba(255,255,255,0.2); ion-icon { color: white; } }
     }
   }
+}
+
+// ── Responsive — pantallas muy pequeñas ──────────────────────────────────────
+@media (max-height: 640px) {
+  .wt-top { padding: 36px 18px 48px; }
+  .wt-hero {
+    .greeting { font-size: 20px; }
+    .clock-row .clock-h { font-size: 38px; }
+    .clock-row .clock-ap { font-size: 15px; }
+  }
+  .wt-bottom { padding: 22px 16px 24px; gap: 12px; }
+  .action-btns { margin-top: 4px;
+    .pill-btn { height: 70px; gap: 5px;
+      .p-icon { width: 28px; height: 28px; ion-icon { font-size: 15px; } }
+      .p-text .p-lbl { font-size: 11px; }
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .wt-bottom { padding: 20px 14px 22px; gap: 11px; }
+  .action-btns { gap: 8px;
+    .pill-btn { height: 72px;
+      .p-text .p-lbl { font-size: 10px; }
+    }
+  }
+  .secondary-row .sec-btn { font-size: 10px; padding: 10px 6px; }
 }
 
 // ── Acciones secundarias ──────────────────────────────────────────────────────

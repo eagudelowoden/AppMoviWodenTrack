@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
-  //private apiUrl = 'http://18.217.246.39:8082/usuarios';
-  private apiUrl = 'http://localhost:8082/usuarios';
+  private apiUrl = environment.apiUrl;
 
   private get baseUrl() {
     return this.apiUrl.replace(/\/usuarios\/?$/, '');

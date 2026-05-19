@@ -10,25 +10,19 @@
     </ion-refresher-content>
   </ion-refresher>
 
-  <!-- ── Banner APK Update ──────────────────────────────────────────────────── -->
-  <div class="update-banner" *ngIf="apkInfo && showUpdateBanner">
-    <div class="update-left">
-      <div class="update-icon"><ion-icon name="cloud-download-outline"></ion-icon></div>
-      <div class="update-text">
-        <span class="u-title">Nueva versión <b>v{{ apkInfo.version }}</b></span>
-        <span class="u-note">{{ apkInfo.changelog?.[0] ?? 'Mejoras disponibles' }}</span>
-      </div>
-    </div>
-    <div class="update-actions">
-      <button class="btn-update" (click)="downloadUpdate()">Actualizar</button>
-      <button class="btn-dismiss" (click)="dismissUpdate()"><ion-icon name="close-outline"></ion-icon></button>
-    </div>
-  </div>
-
   <div class="wt-screen">
 
     <!-- ══ SECCIÓN SUPERIOR — Navy + malla ══════════════════════════════════ -->
     <div class="wt-top">
+
+      <!-- Chip sutil de actualización — esquina superior derecha -->
+      <div class="update-chip" *ngIf="apkInfo && showUpdateBanner" (click)="downloadUpdate()">
+        <ion-icon name="megaphone-outline"></ion-icon>
+        <span>v{{ apkInfo.version }} disponible</span>
+        <button class="chip-dismiss" (click)="$event.stopPropagation(); dismissUpdate()">
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+      </div>
 
       <!-- Encabezado -->
       <div class="wt-header">
