@@ -1,316 +1,389 @@
-ion-content {
-  // Mismo degradado naranja WodenTrack
-  --background: linear-gradient(135deg, #be6410 0%, #a37b56 100%);
+ion-content.dark-content {
+  --background: #060a14;
 }
 
-.marcacion-container {
+// ── Banner APK Update ────────────────────────────────────────────────────────
+.update-banner {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #111827;
+  border-bottom: 1px solid rgba(255, 143, 0, 0.25);
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: space-between;
-  height: 100%;
-  padding: 20px;
-  color: white;
+  padding: 10px 16px;
+  gap: 10px;
 
-  // --- TARJETA DE USUARIO ---
-  .user-card {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 15px;
+  .update-left {
     display: flex;
     align-items: center;
-    gap: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
 
-    .avatar {
-      width: 50px;
-      height: 50px;
-      background: #14213D; // Azul Navy
-      color: white;
-      border-radius: 50%;
+    .update-icon {
+      width: 32px;
+      height: 32px;
+      background: #ff8f00;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 1.2rem;
+      flex-shrink: 0;
+      ion-icon { color: white; font-size: 16px; }
     }
 
-    .info {
-      flex: 1;
-      h3 { margin: 0; font-size: 1.1rem; font-weight: 700; }
-      p { margin: 2px 0; font-size: 0.85rem; opacity: 0.9; }
-      .badge {
-        font-size: 0.7rem;
-        background: rgba(0,0,0,0.2);
-        padding: 2px 8px;
-        border-radius: 10px;
-        &.admin { background: #FFD700; color: #333; font-weight: bold; }
+    .update-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+
+      .update-title {
+        font-size: 11px;
+        font-weight: 900;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
-    }
+      .update-ver { color: #ff8f00; }
 
-    .logout-btn {
-      color: white;
-      --color: white;
+      .update-note {
+        font-size: 9px;
+        color: rgba(255, 255, 255, 0.45);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
   }
 
-  // --- RELOJ ---
-  .clock-section {
-    text-align: center;
-    
-    .date { font-size: 1.1rem; opacity: 0.9; margin-bottom: 5px; }
-    
-    .time {
-      font-size: 3.5rem;
-      font-weight: 800;
-      margin: 0;
-      text-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      font-variant-numeric: tabular-nums; // Evita que los números salten
-    }
-
-    .status-indicator {
-      margin-top: 20px;
-      background: rgba(255,255,255,0.9);
-      color: #333;
-      display: inline-block;
-      padding: 8px 20px;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-  }
-
-  // --- BOTÓN DE ACCIÓN ---
-  .action-section {
-    width: 100%;
-    
-    .action-btn {
-      height: 60px;
-      --border-radius: 16px;
-      font-weight: 800;
-      font-size: 1.2rem;
-      --box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      margin-bottom: 20px;
-      transition: transform 0.1s;
-
-      // Estilo cuando va a ENTRAR (Azul Navy)
-      &.btn-entrada {
-        --background: #14213D;
-        --color: white;
-      }
-
-      // Estilo cuando va a SALIR (Rojo suave o Naranja oscuro para alerta)
-      &.btn-salida {
-        --background: #a31621; // Rojo oscuro elegante
-        --color: white;
-      }
-    }
-    
-    .action-btn:active { transform: scale(0.98); }
-
-    .copyright {
-      text-align: center;
-      font-size: 0.75rem;
-      opacity: 0.7;
-    }
-  }
-}
-
-// ... (Todo lo anterior se mantiene igual hasta .action-section)
-
-  .action-section {
-    width: 100%;
+  .update-actions {
     display: flex;
-    flex-direction: column;
-    gap: 12px; // Espacio entre los dos botones
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
 
-    .action-btn {
-      height: 55px; // Bajamos un poco de 60px a 55px para que quepan bien
-      --border-radius: 16px;
-      font-weight: 800;
-      font-size: 1.1rem;
-      --box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      margin-bottom: 0; // Quitamos el margen inferior porque ahora usamos gap
-
-      &.btn-entrada {
-        --background: #14213D;
-        --color: white;
-      }
-
-      &.btn-salida {
-        --background: #a31621;
-        --color: white;
-      }
-
-      // Estilo para cuando el botón está deshabilitado
-      &.button-disabled {
-        opacity: 0.4;
-        --background: #666;
-      }
+    .btn-update {
+      background: #ff8f00;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
     }
 
-    .day-msg {
-      text-align: center;
-      font-size: 0.9rem;
-      color: #eee;
-      margin-top: 10px;
-    }
-    
-    .copyright {
-      text-align: center;
-      font-size: 0.75rem;
-      opacity: 0.7;
-      margin-top: 15px;
+    .btn-dismiss {
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      cursor: pointer;
+      ion-icon { font-size: 16px; }
     }
   }
-  ion-content {
-  --background: linear-gradient(135deg, #98a6a9 0%, #98a6a9 100%);
 }
 
-.marcacion-container {
+// ── Contenedor principal ─────────────────────────────────────────────────────
+.page-container {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
-  padding: 20px;
+  min-height: 100vh;
+  padding: 36px 24px 28px;
   color: white;
 
-  // ... (user-card y clock-section se mantienen igual a tu código previo)
-
-  .action-section {
-    width: 100%;
-    
-    .button-row {
-      display: flex;
-      gap: 10px; // Espacio entre botones
-      justify-content: space-between;
-      margin-bottom: 15px;
-    }
-
-    .action-btn {
-      flex: 1; // Hace que ambos botones ocupen el mismo ancho (50/50)
-      height: 80px; 
-      --border-radius: 16px;
-      font-weight: 800;
-      --box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-
-      .btn-content {
-        display: flex;
-        flex-direction: column; // Icono arriba, texto abajo
-        align-items: center;
-        gap: 5px;
-        font-size: 0.8rem;
-
-        ion-icon {
-          font-size: 1.8rem;
-        }
-      }
-
-      &.btn-entrada {
-        --background: #14213D;
-        --color: white;
-      }
-
-      &.btn-salida {
-        --background: #a31621;
-        --color: white;
-      }
-
-      &[disabled] {
-        opacity: 0.3;
-      }
-    }
-
-    .day-msg {
-      text-align: center;
-      font-size: 0.85rem;
-      background: rgba(255, 255, 255, 0.2);
-      padding: 5px;
-      border-radius: 8px;
-    }
-
-    .copyright {
-      text-align: center;
-      font-size: 0.7rem;
-      opacity: 0.6;
-      margin-top: 10px;
-    }
+  &.has-banner {
+    min-height: calc(100vh - 54px);
   }
 }
-// ... (mantenemos el ion-content y user-card igual)
 
-.clock-card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 25px;
-  padding: 20px;
-  text-align: center;
-  margin: 0 auto;
-  width: 90%;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  color: #333;
+// ── Header ───────────────────────────────────────────────────────────────────
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-  .date { 
-    font-size: 0.9rem; 
-    color: #666; 
-    margin: 0; 
-    font-weight: 500;
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    .avatar-circle {
+      width: 52px;
+      height: 52px;
+      background: #ff8f00;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 900;
+      color: white;
+      flex-shrink: 0;
+      box-shadow: 0 4px 20px rgba(255, 143, 0, 0.45);
+    }
+
+    .user-text {
+      display: flex;
+      flex-direction: column;
+
+      .user-label {
+        font-size: 9px;
+        font-weight: 900;
+        color: #ff8f00;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        opacity: 0.8;
+      }
+
+      .user-name {
+        font-size: 15px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: -0.01em;
+      }
+    }
   }
 
-  .time {
-    font-size: 2.8rem; // Más pequeño como pediste
-    font-weight: 800;
-    margin: 5px 0;
-    color: #14213D;
-    letter-spacing: -1px;
-  }
-
-  .status-indicator {
+  .icon-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 42px;
+    height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    margin-top: 10px;
-    
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
+    color: rgba(255, 255, 255, 0.55);
+    cursor: pointer;
+    ion-icon { font-size: 18px; }
+  }
+}
+
+// ── Reloj ─────────────────────────────────────────────────────────────────────
+.clock-area {
+  text-align: center;
+
+  .time-display {
+    font-size: 68px;
+    font-weight: 900;
+    letter-spacing: -3px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .ampm-display {
+    font-size: 24px;
+    font-weight: 900;
+    color: #ff8f00;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .day-done-badge {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 5px 18px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: #10b981;
+  }
+}
+
+// ── Malla del día ─────────────────────────────────────────────────────────────
+.malla-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+
+  .malla-icon-wrap {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 143, 0, 0.12);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    ion-icon { color: #ff8f00; font-size: 18px; }
+  }
+
+  .malla-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+
+    .malla-label {
+      font-size: 9px;
+      font-weight: 900;
+      color: #ff8f00;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .malla-nombre {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .turnos-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 5px;
+
+      .turno-chip {
+        font-size: 9px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.65);
+        padding: 3px 10px;
+        border-radius: 999px;
+      }
     }
   }
 }
 
-.footer-info {
+// ── Botones Entrada / Salida ──────────────────────────────────────────────────
+.buttons-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+
+  .mark-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 22px;
+    padding: 22px 12px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.2s ease;
+    color: white;
+    width: 100%;
+
+    &:active:not([disabled]) { transform: scale(0.95); }
+
+    &.disabled,
+    &[disabled] {
+      opacity: 0.2;
+      filter: grayscale(1);
+      cursor: not-allowed;
+    }
+
+    .btn-icon-wrap {
+      width: 50px;
+      height: 50px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.08);
+      ion-icon { font-size: 26px; }
+    }
+
+    .btn-label {
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .btn-time {
+      font-size: 8px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      opacity: 0.55;
+      letter-spacing: 0.05em;
+    }
+
+    // Entrada — verde esmeralda
+    &.btn-entrada:not([disabled]):not(.disabled) {
+      border-color: rgba(16, 185, 129, 0.3);
+      .btn-icon-wrap {
+        background: rgba(16, 185, 129, 0.12);
+        ion-icon { color: #10b981; }
+      }
+    }
+
+    // Salida — naranja
+    &.btn-salida:not([disabled]):not(.disabled) {
+      border-color: rgba(255, 143, 0, 0.3);
+      .btn-icon-wrap {
+        background: rgba(255, 143, 0, 0.12);
+        ion-icon { color: #ff8f00; }
+      }
+    }
+  }
+}
+
+// ── Pie de página ─────────────────────────────────────────────────────────────
+.bottom-bar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
-  padding: 0 5px;
+  justify-content: space-between;
 
-  .copyright { margin: 0; font-size: 0.7rem; opacity: 0.8; }
+  .brand-label {
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    opacity: 0.35;
+  }
 
-  .connectivity {
+  .conn-badge {
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    background: rgba(255,255,255,0.2);
-    padding: 3px 10px;
-    border-radius: 12px;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 4px 12px;
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.55);
 
     .conn-dot {
       width: 6px;
       height: 6px;
-      background: #4CAF50; // Verde Online
       border-radius: 50%;
+      background: #10b981;
     }
 
-    &.is-offline {
-      background: rgba(255,0,0,0.2);
-      .conn-dot { background: #ff4d4d; } // Rojo Offline
+    &.offline {
       color: #ff4d4d;
+      .conn-dot { background: #ff4d4d; }
     }
   }
 }
