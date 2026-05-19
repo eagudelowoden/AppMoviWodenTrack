@@ -1,389 +1,230 @@
-ion-content.dark-content {
-  --background: #060a14;
+ion-content.woden-content {
+  --background: #080d25;
 }
 
-// ── Banner APK Update ────────────────────────────────────────────────────────
+// ── Banner APK ────────────────────────────────────────────────────────────────
 .update-banner {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: #111827;
-  border-bottom: 1px solid rgba(255, 143, 0, 0.25);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  gap: 10px;
+  position: sticky; top: 0; z-index: 200;
+  background: #080d25;
+  border-bottom: 2px solid #ff8f00;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 18px; gap: 10px;
 
-  .update-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-    min-width: 0;
+  .update-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
+    .update-icon { width: 30px; height: 30px; background: #ff8f00; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      ion-icon { color: white; font-size: 15px; } }
+    .update-text { display: flex; flex-direction: column; min-width: 0;
+      .u-title { font-size: 11px; font-weight: 800; color: white; text-transform: uppercase; b { color: #ff8f00; } }
+      .u-note   { font-size: 9px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } } }
+  .update-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    .btn-update { background: #ff8f00; color: white; border: none; border-radius: 999px;
+      padding: 6px 14px; font-size: 10px; font-weight: 900; text-transform: uppercase; cursor: pointer; }
+    .btn-dismiss { background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.5);
+      display: flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+      border-radius: 7px; cursor: pointer; ion-icon { font-size: 15px; } } }
+}
 
-    .update-icon {
-      width: 32px;
-      height: 32px;
-      background: #ff8f00;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      ion-icon { color: white; font-size: 16px; }
-    }
+// ── Pantalla ──────────────────────────────────────────────────────────────────
+.wt-screen {
+  display: flex; flex-direction: column;
+  min-height: 100vh; min-height: 100dvh;
+}
 
-    .update-text {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
+// ── Sección superior — navy + malla ──────────────────────────────────────────
+.wt-top {
+  position: relative;
+  overflow: hidden;
+  padding: 48px 22px 64px;
+  flex-shrink: 0;
 
-      .update-title {
-        font-size: 11px;
-        font-weight: 900;
-        color: white;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-      .update-ver { color: #ff8f00; }
+  // Fondo: navy + patrón malla (líneas tipo red)
+  background-color: #080d25;
+  background-image:
+    linear-gradient(rgba(255,143,0,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,143,0,0.06) 1px, transparent 1px);
+  background-size: 30px 30px;
 
-      .update-note {
-        font-size: 9px;
-        color: rgba(255, 255, 255, 0.45);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    }
+  // Viñeta para suavizar la malla en los bordes
+  &::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, #080d25 100%);
+    pointer-events: none;
+  }
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.wt-header {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 28px;
+
+  .wt-brand {
+    font-size: 20px; font-weight: 900; letter-spacing: -0.3px;
+    .b-woden  { color: white; }
+    .b-track  { color: #ff8f00; }
   }
 
-  .update-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
+  .header-right {
+    display: flex; align-items: center; gap: 8px;
 
-    .btn-update {
-      background: #ff8f00;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 6px 14px;
-      font-size: 10px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      cursor: pointer;
+    .conn-pill {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,0.07); border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 8px; font-weight: 800; color: rgba(255,255,255,0.6);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      .conn-dot { width: 5px; height: 5px; border-radius: 50%; background: #10b981; flex-shrink: 0; }
+      &.offline { color: #ff4d4d; .conn-dot { background: #ff4d4d; } }
     }
 
-    .btn-dismiss {
-      background: transparent;
-      border: none;
-      color: rgba(255, 255, 255, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      cursor: pointer;
-      ion-icon { font-size: 16px; }
+    .icon-btn {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.55); cursor: pointer;
+      ion-icon { font-size: 17px; }
     }
   }
 }
 
-// ── Contenedor principal ─────────────────────────────────────────────────────
-.page-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 100vh;
-  padding: 36px 24px 28px;
-  color: white;
+// ── Hero ──────────────────────────────────────────────────────────────────────
+.wt-hero {
+  position: relative; z-index: 1;
 
-  &.has-banner {
-    min-height: calc(100vh - 54px);
+  .greeting {
+    font-size: 26px; font-weight: 900; color: white;
+    margin: 0 0 10px; letter-spacing: -0.4px; line-height: 1.1;
+  }
+
+  .clock-row {
+    display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px;
+    .clock-h  { font-size: 48px; font-weight: 900; color: white;
+                letter-spacing: -2px; font-variant-numeric: tabular-nums; line-height: 1; }
+    .clock-ap { font-size: 18px; font-weight: 900; color: #ff8f00;
+                letter-spacing: 0.12em; text-transform: uppercase; }
+  }
+
+  .wt-date {
+    font-size: 12px; color: rgba(255,255,255,0.45); font-weight: 500;
+    text-transform: capitalize; margin: 0 0 14px;
+  }
+
+  .badge-done {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(16,185,129,0.14); border: 1px solid rgba(16,185,129,0.28);
+    border-radius: 999px; padding: 5px 14px;
+    font-size: 10px; font-weight: 800; color: #10b981;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    ion-icon { font-size: 13px; }
   }
 }
 
-// ── Header ───────────────────────────────────────────────────────────────────
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+// ── Hoja blanca ───────────────────────────────────────────────────────────────
+.wt-bottom {
+  background: #ffffff;
+  border-radius: 28px 28px 0 0;
+  flex: 1; padding: 28px 20px 32px;
+  display: flex; flex-direction: column; gap: 16px;
+  margin-top: -24px; position: relative; z-index: 2;
 
-  .user-info {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-
-    .avatar-circle {
-      width: 52px;
-      height: 52px;
-      background: #ff8f00;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      font-weight: 900;
-      color: white;
-      flex-shrink: 0;
-      box-shadow: 0 4px 20px rgba(255, 143, 0, 0.45);
-    }
-
-    .user-text {
-      display: flex;
-      flex-direction: column;
-
-      .user-label {
-        font-size: 9px;
-        font-weight: 900;
-        color: #ff8f00;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        opacity: 0.8;
-      }
-
-      .user-name {
-        font-size: 15px;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: -0.01em;
-      }
-    }
-  }
-
-  .icon-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    width: 42px;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.55);
-    cursor: pointer;
-    ion-icon { font-size: 18px; }
-  }
-}
-
-// ── Reloj ─────────────────────────────────────────────────────────────────────
-.clock-area {
-  text-align: center;
-
-  .time-display {
-    font-size: 68px;
-    font-weight: 900;
-    letter-spacing: -3px;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-  }
-
-  .ampm-display {
-    font-size: 24px;
-    font-weight: 900;
-    color: #ff8f00;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-
-  .day-done-badge {
-    display: inline-block;
-    margin-top: 16px;
-    padding: 5px 18px;
-    border-radius: 999px;
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    font-size: 9px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    color: #10b981;
+  &::before {                        // pastilla decorativa tipo bottom sheet
+    content: ''; display: block;
+    width: 36px; height: 4px;
+    background: #dde3ec; border-radius: 999px;
+    position: absolute; top: 9px; left: 50%; transform: translateX(-50%);
   }
 }
 
 // ── Malla del día ─────────────────────────────────────────────────────────────
 .malla-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  display: flex; align-items: center; gap: 12px;
+  background: #f7f9fc; border: 1px solid #e4eaf4; border-radius: 16px;
+  padding: 12px 14px;
 
-  .malla-icon-wrap {
-    width: 36px;
-    height: 36px;
-    background: rgba(255, 143, 0, 0.12);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    ion-icon { color: #ff8f00; font-size: 18px; }
-  }
+  .m-icon { width: 36px; height: 36px; background: rgba(255,143,0,0.1); border-radius: 11px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    ion-icon { color: #ff8f00; font-size: 18px; } }
 
-  .malla-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    flex: 1;
-    min-width: 0;
+  .m-data { display: flex; flex-direction: column; flex: 1; min-width: 0;
+    .m-lbl { font-size: 8px; font-weight: 800; color: #ff8f00; text-transform: uppercase; letter-spacing: 0.14em; }
+    .m-nom { font-size: 11px; font-weight: 700; color: #1e293b; text-transform: uppercase;
+              overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; } }
 
-    .malla-label {
-      font-size: 9px;
-      font-weight: 900;
-      color: #ff8f00;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      opacity: 0.8;
+  .m-chips { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0;
+    .chip { font-size: 9px; font-weight: 700; font-variant-numeric: tabular-nums;
+            color: #5a6a85; background: #e4eaf4; padding: 2px 8px; border-radius: 999px; } }
+}
+
+// ── Separador ─────────────────────────────────────────────────────────────────
+.divider {
+  display: flex; align-items: center; gap: 10px;
+  .dl { flex: 1; height: 1px; background: #e8edf5; }
+  .dt { font-size: 8px; font-weight: 800; color: #94a3b8;
+        text-transform: uppercase; letter-spacing: 0.2em; white-space: nowrap; }
+}
+
+// ── Botones principales (pill) ────────────────────────────────────────────────
+.action-btns {
+  display: flex; flex-direction: column; gap: 11px;
+
+  .pill-btn {
+    width: 100%; height: 56px; border-radius: 999px; border: none;
+    display: flex; align-items: center; padding: 0 18px; gap: 12px;
+    cursor: pointer; transition: transform 0.15s ease, opacity 0.15s;
+
+    &:active:not([disabled]) { transform: scale(0.97); }
+    &[disabled] { opacity: 0.32; cursor: not-allowed; }
+
+    .p-icon { width: 34px; height: 34px; border-radius: 50%;
+               display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+               ion-icon { font-size: 18px; } }
+
+    .p-text { flex: 1; display: flex; flex-direction: column; align-items: flex-start;
+      .p-lbl  { font-size: 14px; font-weight: 800; line-height: 1.1; }
+      .p-time { font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums; opacity: 0.6; margin-top: 1px; } }
+
+    .p-arrow { font-size: 16px; opacity: 0.45; flex-shrink: 0; }
+
+    // ENTRADA — Navy oscuro sólido
+    &.pill-in {
+      background: #080d25; color: white;
+      .p-icon { background: rgba(16,185,129,0.18); ion-icon { color: #10b981; } }
+      .p-arrow { color: #ff8f00; opacity: 0.7; }
     }
 
-    .malla-nombre {
-      font-size: 11px;
-      font-weight: 900;
-      text-transform: uppercase;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .turnos-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 5px;
-
-      .turno-chip {
-        font-size: 9px;
-        font-weight: 700;
-        font-variant-numeric: tabular-nums;
-        background: rgba(255, 255, 255, 0.08);
-        color: rgba(255, 255, 255, 0.65);
-        padding: 3px 10px;
-        border-radius: 999px;
-      }
+    // SALIDA — Borde naranja, blanco
+    &.pill-out {
+      background: white; color: #ff8f00; border: 2px solid #ff8f00;
+      .p-icon { background: rgba(255,143,0,0.1); ion-icon { color: #ff8f00; } }
     }
   }
 }
 
-// ── Botones Entrada / Salida ──────────────────────────────────────────────────
-.buttons-area {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+// ── Acciones secundarias ──────────────────────────────────────────────────────
+.secondary-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
 
-  .mark-btn {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 22px;
-    padding: 22px 12px 18px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: transform 0.15s ease, opacity 0.2s ease;
-    color: white;
-    width: 100%;
+  .sec-btn {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    background: #f0f4fa; border: 1px solid #dde3ec; border-radius: 14px;
+    padding: 12px 8px; cursor: pointer;
+    font-size: 11px; font-weight: 700; color: #3d5273;
+    transition: background 0.15s;
+    ion-icon { font-size: 16px; color: #5a7ba6; }
+    &:active { background: #e4eaf4; }
 
-    &:active:not([disabled]) { transform: scale(0.95); }
-
-    &.disabled,
-    &[disabled] {
-      opacity: 0.2;
-      filter: grayscale(1);
-      cursor: not-allowed;
-    }
-
-    .btn-icon-wrap {
-      width: 50px;
-      height: 50px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.08);
-      ion-icon { font-size: 26px; }
-    }
-
-    .btn-label {
-      font-size: 9px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-    }
-
-    .btn-time {
-      font-size: 8px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      opacity: 0.55;
-      letter-spacing: 0.05em;
-    }
-
-    // Entrada — verde esmeralda
-    &.btn-entrada:not([disabled]):not(.disabled) {
-      border-color: rgba(16, 185, 129, 0.3);
-      .btn-icon-wrap {
-        background: rgba(16, 185, 129, 0.12);
-        ion-icon { color: #10b981; }
-      }
-    }
-
-    // Salida — naranja
-    &.btn-salida:not([disabled]):not(.disabled) {
-      border-color: rgba(255, 143, 0, 0.3);
-      .btn-icon-wrap {
-        background: rgba(255, 143, 0, 0.12);
-        ion-icon { color: #ff8f00; }
-      }
+    &.sec-danger {
+      color: #c0392b; border-color: #fecdd3; background: #fff5f5;
+      ion-icon { color: #e74c3c; }
+      &:active { background: #fee2e2; }
     }
   }
 }
 
-// ── Pie de página ─────────────────────────────────────────────────────────────
-.bottom-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  .brand-label {
-    font-size: 9px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    opacity: 0.35;
-  }
-
-  .conn-badge {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 8px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    background: rgba(255, 255, 255, 0.06);
-    padding: 4px 12px;
-    border-radius: 999px;
-    color: rgba(255, 255, 255, 0.55);
-
-    .conn-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #10b981;
-    }
-
-    &.offline {
-      color: #ff4d4d;
-      .conn-dot { background: #ff4d4d; }
-    }
-  }
+// ── Pie ───────────────────────────────────────────────────────────────────────
+.wt-footer {
+  text-align: center; font-size: 10px; font-weight: 600; color: #c0ccd8;
+  margin: 0; margin-top: auto; padding-top: 4px;
 }

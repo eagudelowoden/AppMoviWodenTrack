@@ -1,115 +1,205 @@
-ion-content {
-  // --- FONDO NARANJA PROFESIONAL ---
-  // Un degradado de Naranja Intenso (#FF8008) a un Naranja más suave (#FFC837)
-  // Se ve moderno pero no "fosforescente".
-  --background: linear-gradient(135deg, #98a6a9 0%, #98a6a9 100%);
+ion-content.login-content {
+  --background: #080d25;
 }
 
-.login-container {
+.login-screen {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+// ── Zona oscura navy con malla ────────────────────────────────────────────────
+.login-top {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  height: 100%;
-  padding: 30px;
+  justify-content: center;
+  padding: 72px 28px 72px;
+  flex: 0 0 42%;
 
-  // --- CABECERA ---
-  .header {
-    text-align: center;
-    margin-bottom: 40px;
-    color: white;
+  background-color: #080d25;
+  background-image:
+    linear-gradient(rgba(255, 143, 0, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 143, 0, 0.06) 1px, transparent 1px);
+  background-size: 30px 30px;
 
-    .icon-circle {
-      width: 90px;
-      height: 90px;
-      background: rgba(255, 255, 255, 0.9); // Casi blanco sólido para resaltar el icono
-      border-radius: 50%;
+  // Viñeta central para suavizar la malla
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 85% 80% at 50% 50%, transparent 30%, #080d25 100%);
+    pointer-events: none;
+  }
+
+  .brand {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+
+    .brand-icon {
+      width: 72px;
+      height: 72px;
+      background: #ff8f00;
+      border-radius: 22px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 15px auto;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      box-shadow: 0 8px 28px rgba(255, 143, 0, 0.45);
 
       ion-icon {
-        font-size: 45px;
-        // --- ICONO PRINCIPAL EN AZUL OSCURO ---
-        color: #14213D; 
+        font-size: 38px;
+        color: white;
       }
     }
 
-    h1 {
-      font-size: 2.4rem;
-      font-weight: 800;
-      margin: 0;
+    .brand-text {
+      font-size: 30px;
+      font-weight: 900;
       letter-spacing: -0.5px;
-      text-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
 
-    p {
-      margin-top: 5px;
-      opacity: 0.95;
-      font-size: 1rem;
-      font-weight: 500;
+      .b-woden { color: white; }
+      .b-track  { color: #ff8f00; }
     }
   }
 
-  // --- FORMULARIO ---
-  .form-wrapper {
-    width: 100%;
+  .login-sub {
+    position: relative;
+    z-index: 1;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin: 0;
+    text-align: center;
+  }
+}
 
-    // Estilo de los Inputs
-    .custom-input {
-      --background: #ffffff;
-      --border-radius: 12px;
-      --padding-start: 10px;
-      margin-bottom: 20px;
-      // Sombra azulada muy suave para integrar los colores
-      box-shadow: 0 10px 30px rgba(20, 33, 61, 0.15);
+// ── Hoja blanca ───────────────────────────────────────────────────────────────
+.login-bottom {
+  background: #ffffff;
+  border-radius: 28px 28px 0 0;
+  flex: 1;
+  padding: 32px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  z-index: 2;
+  margin-top: -24px;
 
-      ion-icon {
-        // --- ICONOS DE INPUT (NO NARANJA CHILLÓN) ---
-        // Usamos el Azul Oscuro. Se ve muy elegante y legible.
-        color: #14213D; 
-        opacity: 0.8;
-      }
+  // Pastilla decorativa
+  &::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: #dde3ec;
+    border-radius: 999px;
+    position: absolute;
+    top: 9px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 
-      ion-input {
-        --padding-start: 8px;
-        font-weight: 600;
-        --color: #14213D; // Texto azul muy oscuro al escribir
-        --placeholder-color: #555;
-        --placeholder-opacity: 0.6;
-      }
+  .form-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #0f1f3d;
+    margin: 8px 0 4px;
+    letter-spacing: -0.3px;
+  }
+}
+
+// ── Campos del formulario ─────────────────────────────────────────────────────
+.field-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #f4f7fb;
+  border: 1.5px solid #e0e8f4;
+  border-radius: 14px;
+  padding: 0 14px;
+  height: 54px;
+  transition: border-color 0.2s;
+
+  &:focus-within {
+    border-color: #080d25;
+    background: #ffffff;
+  }
+
+  .field-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 10px;
+    ion-icon {
+      font-size: 18px;
+      color: #5a7ba6;
     }
+  }
 
-    // --- EL BOTÓN AZUL OSCURO ---
-    .main-button {
-      margin-top: 35px;
-      
-      // Azul Marino Profundo (Navy) - Inspira seguridad
-      --background: #14213D; 
-      --background-activated: #000022; // Más oscuro al presionar
-      
-      --color: #ffffff; // Texto blanco puro
-      --border-radius: 12px;
-      font-weight: 800;
-      height: 56px;
-      font-size: 1.1rem;
-      letter-spacing: 1px;
-      box-shadow: 0 8px 20px rgba(20, 33, 61, 0.4); // Sombra azulada
+  .field-input {
+    flex: 1;
+    --background: transparent;
+    --color: #0f1f3d;
+    --placeholder-color: #94a3b8;
+    --padding-start: 0;
+    --padding-end: 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .eye-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    margin-right: -6px;
+    ion-icon {
+      font-size: 18px;
+      color: #94a3b8;
     }
   }
 }
-.header {
-  h1 {
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: white; // "Track" seguirá siendo blanco
-    margin: 0;
 
-    .brand-orange {
-      color: #ff9800; // Este es el naranja Woden
-      // Si quieres un naranja más fuerte usa: #be6410
-    }
-  }
+// ── Botón ingresar ────────────────────────────────────────────────────────────
+.btn-ingresar {
+  width: 100%;
+  height: 56px;
+  background: #080d25;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: transform 0.15s ease, opacity 0.15s;
+  box-shadow: 0 6px 20px rgba(8, 13, 37, 0.35);
+
+  &:active { transform: scale(0.97); }
+}
+
+// ── Versión ───────────────────────────────────────────────────────────────────
+.version-label {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #c0ccd8;
+  margin: auto 0 0;
+  padding-top: 8px;
 }

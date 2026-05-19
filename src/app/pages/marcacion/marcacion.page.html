@@ -1,107 +1,112 @@
-<ion-content [fullscreen]="true" class="dark-content">
+<ion-content [fullscreen]="true" class="woden-content">
 
-  <!-- ── Banner de actualización APK ──────────────────────────────────────── -->
+  <!-- ── Banner APK Update ──────────────────────────────────────────────────── -->
   <div class="update-banner" *ngIf="apkInfo && showUpdateBanner">
     <div class="update-left">
-      <div class="update-icon">
-        <ion-icon name="cloud-download-outline"></ion-icon>
-      </div>
+      <div class="update-icon"><ion-icon name="cloud-download-outline"></ion-icon></div>
       <div class="update-text">
-        <span class="update-title">Nueva versión <span class="update-ver">v{{ apkInfo.version }}</span></span>
-        <span class="update-note">{{ apkInfo.changelog?.[0] ?? 'Mejoras disponibles' }}</span>
+        <span class="u-title">Nueva versión <b>v{{ apkInfo.version }}</b></span>
+        <span class="u-note">{{ apkInfo.changelog?.[0] ?? 'Mejoras disponibles' }}</span>
       </div>
     </div>
     <div class="update-actions">
       <button class="btn-update" (click)="downloadUpdate()">Actualizar</button>
-      <button class="btn-dismiss" (click)="dismissUpdate()">
-        <ion-icon name="close-outline"></ion-icon>
-      </button>
+      <button class="btn-dismiss" (click)="dismissUpdate()"><ion-icon name="close-outline"></ion-icon></button>
     </div>
   </div>
 
-  <div class="page-container" [class.has-banner]="apkInfo && showUpdateBanner">
+  <div class="wt-screen">
 
-    <!-- ── Header ─────────────────────────────────────────────────────────── -->
-    <div class="top-bar">
-      <div class="user-info">
-        <div class="avatar-circle">{{ userData?.name?.charAt(0) }}</div>
-        <div class="user-text">
-          <span class="user-label">Registra marcación</span>
-          <span class="user-name">{{ userData?.name }}</span>
+    <!-- ══ SECCIÓN SUPERIOR — Navy + malla ══════════════════════════════════ -->
+    <div class="wt-top">
+
+      <!-- Encabezado -->
+      <div class="wt-header">
+        <div class="wt-brand"><span class="b-woden">Woden</span><span class="b-track">Track</span></div>
+        <div class="header-right">
+          <div class="conn-pill" [class.offline]="!isOnline">
+            <span class="conn-dot"></span>
+            <span>{{ isOnline ? 'Online' : 'Offline' }}</span>
+          </div>
+          <button class="icon-btn" (click)="logout()">
+            <ion-icon name="log-out-outline"></ion-icon>
+          </button>
         </div>
       </div>
-      <button class="icon-btn" (click)="logout()">
-        <ion-icon name="log-out-outline"></ion-icon>
-      </button>
-    </div>
 
-    <!-- ── Reloj ───────────────────────────────────────────────────────────── -->
-    <div class="clock-area">
-      <div class="time-display">{{ timeOnly }}</div>
-      <div class="ampm-display">{{ ampm }}</div>
-      <div class="day-done-badge" *ngIf="dayCompleted">
-        Jornada Finalizada hoy
-      </div>
-    </div>
-
-    <!-- ── Malla horaria del día ───────────────────────────────────────────── -->
-    <div class="malla-card" *ngIf="mallaHoy?.tiene_malla">
-      <div class="malla-icon-wrap">
-        <ion-icon name="calendar-outline"></ion-icon>
-      </div>
-      <div class="malla-info">
-        <span class="malla-label">Mi malla hoy</span>
-        <span class="malla-nombre">{{ mallaHoy.nombre }}</span>
-        <div class="turnos-row">
-          <span class="turno-chip" *ngFor="let t of mallaHoy.turnos">
-            {{ t.entrada }} – {{ t.salida }}
-          </span>
+      <!-- Saludo + Reloj -->
+      <div class="wt-hero">
+        <p class="greeting">¡Hola, {{ primerNombre }}!</p>
+        <div class="clock-row">
+          <span class="clock-h">{{ timeOnly }}</span>
+          <span class="clock-ap">{{ ampm }}</span>
+        </div>
+        <p class="wt-date">{{ fecha }}</p>
+        <div class="badge-done" *ngIf="dayCompleted">
+          <ion-icon name="checkmark-circle-outline"></ion-icon> Jornada Finalizada
         </div>
       </div>
-    </div>
-
-    <!-- ── Botones Entrada / Salida ────────────────────────────────────────── -->
-    <div class="buttons-area">
-
-      <!-- ENTRADA -->
-      <button class="mark-btn btn-entrada"
-        [class.disabled]="isInside || dayCompleted || !isOnline"
-        [disabled]="isInside || dayCompleted || !isOnline"
-        (click)="realizarMarcacion('in')">
-        <div class="btn-icon-wrap">
-          <ion-icon *ngIf="dayCompleted" name="checkmark-circle-outline"></ion-icon>
-          <ion-icon *ngIf="!dayCompleted" name="log-in-outline"></ion-icon>
-        </div>
-        <span class="btn-label">
-          {{ dayCompleted ? 'Completado' : (isInside ? 'Ya ingresaste' : 'Entrada') }}
-        </span>
-        <span class="btn-time" *ngIf="horaEntrada">{{ horaEntrada }}</span>
-      </button>
-
-      <!-- SALIDA -->
-      <button class="mark-btn btn-salida"
-        [class.disabled]="!isInside || dayCompleted || !isOnline"
-        [disabled]="!isInside || dayCompleted || !isOnline"
-        (click)="realizarMarcacion('out')">
-        <div class="btn-icon-wrap">
-          <ion-icon name="log-out-outline"></ion-icon>
-        </div>
-        <span class="btn-label">
-          {{ dayCompleted ? 'Finalizado' : 'Salida' }}
-        </span>
-        <span class="btn-time" *ngIf="horaSalida">{{ horaSalida }}</span>
-      </button>
 
     </div>
 
-    <!-- ── Pie ─────────────────────────────────────────────────────────────── -->
-    <div class="bottom-bar">
-      <span class="brand-label">WodenTrack Pro</span>
-      <div class="conn-badge" [class.offline]="!isOnline">
-        <span class="conn-dot"></span>
-        <span>{{ isOnline ? 'Online' : 'Offline' }}</span>
+    <!-- ══ SECCIÓN INFERIOR — Hoja blanca ════════════════════════════════════ -->
+    <div class="wt-bottom">
+
+      <!-- Malla del día -->
+      <div class="malla-card" *ngIf="mallaHoy?.tiene_malla">
+        <div class="m-icon"><ion-icon name="calendar-outline"></ion-icon></div>
+        <div class="m-data">
+          <span class="m-lbl">Mi horario hoy</span>
+          <span class="m-nom">{{ mallaHoy.nombre }}</span>
+        </div>
+        <div class="m-chips">
+          <span class="chip" *ngFor="let t of mallaHoy.turnos">{{ t.entrada }}–{{ t.salida }}</span>
+        </div>
       </div>
-    </div>
 
+      <!-- Separador -->
+      <div class="divider"><span class="dl"></span><span class="dt">Marcar asistencia</span><span class="dl"></span></div>
+
+      <!-- Botones principales -->
+      <div class="action-btns">
+        <button class="pill-btn pill-in"
+          [disabled]="isInside || dayCompleted || !isOnline"
+          (click)="realizarMarcacion('in')">
+          <div class="p-icon"><ion-icon name="log-in-outline"></ion-icon></div>
+          <div class="p-text">
+            <span class="p-lbl">{{ dayCompleted ? 'Completado' : (isInside ? 'Ya ingresaste' : 'Registrar Entrada') }}</span>
+            <span class="p-time" *ngIf="horaEntrada">{{ horaEntrada }}</span>
+          </div>
+          <ion-icon class="p-arrow" name="arrow-forward-outline" *ngIf="!isInside && !dayCompleted"></ion-icon>
+        </button>
+
+        <button class="pill-btn pill-out"
+          [disabled]="!isInside || dayCompleted || !isOnline"
+          (click)="realizarMarcacion('out')">
+          <div class="p-icon"><ion-icon name="log-out-outline"></ion-icon></div>
+          <div class="p-text">
+            <span class="p-lbl">{{ dayCompleted ? 'Jornada completada' : 'Registrar Salida' }}</span>
+            <span class="p-time" *ngIf="horaSalida">{{ horaSalida }}</span>
+          </div>
+          <ion-icon class="p-arrow" name="arrow-forward-outline" *ngIf="isInside && !dayCompleted"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Acciones secundarias -->
+      <div class="secondary-row">
+        <button class="sec-btn" (click)="verMarcacion()">
+          <ion-icon name="eye-outline"></ion-icon>
+          <span>Ver marcación</span>
+        </button>
+        <button class="sec-btn sec-danger" (click)="reportarFalla()">
+          <ion-icon name="bug-outline"></ion-icon>
+          <span>Reportar falla</span>
+        </button>
+      </div>
+
+      <p class="wt-footer">WodenTrack Pro · {{ currentYear }}</p>
+
+    </div>
   </div>
+
 </ion-content>

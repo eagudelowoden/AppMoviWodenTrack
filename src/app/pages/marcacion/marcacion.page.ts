@@ -1,15 +1,12 @@
 import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
-import { LoadingController, ToastController } from '@ionic/angular';
+import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
-  logOutOutline,
-  logInOutline,
-  calendarOutline,
-  cloudDownloadOutline,
-  closeOutline,
-  checkmarkCircleOutline,
+  logOutOutline, logInOutline, calendarOutline,
+  cloudDownloadOutline, closeOutline, checkmarkCircleOutline,
+  arrowForwardOutline, eyeOutline, bugOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -23,34 +20,42 @@ export class MarcacionPage implements OnInit, OnDestroy {
 
   userData: any = null;
 
+  // Nombre a mostrar en el saludo:
+  // "Agudelo pita Elder Daniel" → split(' ')[2] = "Elder"
+  // Cambia a [3] si prefieres mostrar "Daniel"
+  get primerNombre(): string {
+    const partes = (this.userData?.name ?? '').split(' ');
+    return partes[2] ?? partes[0] ?? '';
+  }
+
   // Reloj
-  timeOnly: string = '';
-  ampm: string = '';
-  fecha: string = '';
-  private timeOffset: number = 0;
+  timeOnly = '';
+  ampm = '';
+  fecha = '';
+  private timeOffset = 0;
   private clockInterval: any;
 
-  // Estado de asistencia
-  isInside: boolean = false;
-  dayCompleted: boolean = false;
-  isOnline: boolean = navigator.onLine;
+  // Asistencia
+  isInside      = false;
+  dayCompleted  = false;
+  isOnline      = navigator.onLine;
   horaEntrada: string | null = null;
-  horaSalida: string | null = null;
+  horaSalida:  string | null = null;
 
-  // Malla del día
+  // Extras
   mallaHoy: any = null;
-
-  // APK update
   apkInfo: any = null;
-  showUpdateBanner: boolean = false;
+  showUpdateBanner = false;
+  readonly currentYear = new Date().getFullYear();
 
-  // Guard contra doble marcación (ms desde el último intento)
-  private lastMarkTimestamp: number = 0;
+  // Guard doble marcación
+  private lastMarkTimestamp = 0;
   private readonly MARK_COOLDOWN_MS = 4000;
 
   constructor(
     private router: Router,
     private api: ApiService,
+    private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
   ) {
@@ -61,23 +66,23 @@ export class MarcacionPage implements OnInit, OnDestroy {
       'cloud-download-outline': cloudDownloadOutline,
       'close-outline': closeOutline,
       'checkmark-circle-outline': checkmarkCircleOutline,
+      'arrow-forward-outline': arrowForwardOutline,
+      'eye-outline': eyeOutline,
+      'bug-outline': bugOutline,
     });
 
     const nav = this.router.getCurrentNavigation();
     if (nav?.extras.state) {
-      this.userData = nav.extras.state['user'];
-      this.isInside      = this.userData?.is_inside      || false;
-      this.dayCompleted  = this.userData?.day_completed  || false;
-      this.horaEntrada   = this.userData?.hora_entrada   || null;
-      this.horaSalida    = this.userData?.hora_salida    || null;
+      this.userData     = nav.extras.state['user'];
+      this.isInside     = this.userData?.is_inside     ?? false;
+      this.dayCompleted = this.userData?.day_completed  ?? false;
+      this.horaEntrada  = this.userData?.hora_entrada   ?? null;
+      this.horaSalida   = this.userData?.hora_salida    ?? null;
     }
   }
 
   async ngOnInit() {
-    if (!this.userData) {
-      this.router.navigate(['/home'], { replaceUrl: true });
-      return;
-    }
+    if (!this.userData) { this.router.navigate(['/home'], { replaceUrl: true }); return; }
 
     window.addEventListener('online',  () => this.isOnline = true);
     window.addEventListener('offline', () => this.isOnline = false);
@@ -85,117 +90,73 @@ export class MarcacionPage implements OnInit, OnDestroy {
     await this.sincronizarRelojOficial();
     this.clockInterval = setInterval(() => this.actualizarReloj(), 1000);
 
-    // Carga malla y verifica APK en paralelo sin bloquear la UI
-    await Promise.allSettled([
-      this.cargarMalla(),
-      this.verificarActualizacion(),
-    ]);
+    await Promise.allSettled([this.cargarMalla(), this.verificarActualizacion()]);
   }
 
-  ngOnDestroy() {
-    clearInterval(this.clockInterval);
-  }
+  ngOnDestroy() { clearInterval(this.clockInterval); }
 
-  // ── Reloj oficial ────────────────────────────────────────────────────────────
+  // ── Reloj ─────────────────────────────────────────────────────────────────
   async sincronizarRelojOficial() {
     try {
       const data = await this.api.getOfficialTime();
-      const rawTime = data.datetime || data.fecha_hora;
-      if (!rawTime) throw new Error('Sin fecha del servidor');
-      this.timeOffset = new Date(rawTime).getTime() - new Date().getTime();
-    } catch {
-      this.timeOffset = 0;
-    }
+      const raw = data.datetime || data.fecha_hora;
+      if (raw) this.timeOffset = new Date(raw).getTime() - Date.now();
+    } catch { this.timeOffset = 0; }
     this.actualizarReloj();
   }
 
   actualizarReloj() {
-    const now = new Date(new Date().getTime() + this.timeOffset);
-    const full = now.toLocaleTimeString('en-US', {
-      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
-    });
-    const parts = full.split(' ');
-    this.timeOnly = parts[0];
-    this.ampm     = parts[1] ?? '';
-    this.fecha    = now.toLocaleDateString('es-CO', {
-      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-    });
+    const now = new Date(Date.now() + this.timeOffset);
+    const full = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    const p = full.split(' ');
+    this.timeOnly = p[0];
+    this.ampm     = p[1] ?? '';
+    this.fecha    = now.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
   }
 
-  // ── Malla ────────────────────────────────────────────────────────────────────
+  // ── Malla ─────────────────────────────────────────────────────────────────
   async cargarMalla() {
-    try {
-      const data = await this.api.getMallaHoy(this.userData.employee_id);
-      this.mallaHoy = data;
-    } catch {
-      // fallo silencioso — no es crítico
-    }
+    try { this.mallaHoy = await this.api.getMallaHoy(this.userData.employee_id); } catch {}
   }
 
-  // ── APK Update ───────────────────────────────────────────────────────────────
+  // ── APK Update ────────────────────────────────────────────────────────────
   async verificarActualizacion() {
     try {
       const info = await this.api.getApkInfo();
       if (!info.exists) return;
-
-      const dismissedAt = localStorage.getItem('apk_update_dismissed_at');
-      const serverMs    = new Date(info.lastUpdate).getTime();
-
-      if (!dismissedAt || Number(dismissedAt) < serverMs) {
-        this.apkInfo          = info;
-        this.showUpdateBanner = true;
-      }
-    } catch {
-      // fallo silencioso
-    }
+      const dismissed = localStorage.getItem('apk_update_dismissed_at');
+      const serverMs  = new Date(info.lastUpdate).getTime();
+      if (!dismissed || Number(dismissed) < serverMs) { this.apkInfo = info; this.showUpdateBanner = true; }
+    } catch {}
   }
 
-  downloadUpdate() {
-    if (this.apkInfo?.downloadUrl) {
-      window.open(this.apkInfo.downloadUrl, '_blank');
-    }
-  }
+  downloadUpdate() { if (this.apkInfo?.downloadUrl) window.open(this.apkInfo.downloadUrl, '_blank'); }
+  dismissUpdate()  { localStorage.setItem('apk_update_dismissed_at', Date.now().toString()); this.showUpdateBanner = false; }
 
-  dismissUpdate() {
-    localStorage.setItem('apk_update_dismissed_at', Date.now().toString());
-    this.showUpdateBanner = false;
-  }
-
-  // ── Marcación ────────────────────────────────────────────────────────────────
+  // ── Marcación ─────────────────────────────────────────────────────────────
   async realizarMarcacion(action: 'in' | 'out') {
-    // Guard de doble marcación — bloquea si el usuario pulsó hace menos de MARK_COOLDOWN_MS
     const now = Date.now();
     if (now - this.lastMarkTimestamp < this.MARK_COOLDOWN_MS) {
-      this.mostrarToast('Espera un momento antes de marcar de nuevo', 'warning');
-      return;
+      this.mostrarToast('Espera un momento antes de marcar de nuevo', 'warning'); return;
     }
     this.lastMarkTimestamp = now;
 
-    const loading = await this.loadingCtrl.create({
-      message: 'Validando marcación...',
-      spinner: 'crescent',
-    });
+    const loading = await this.loadingCtrl.create({ message: 'Validando...', spinner: 'crescent' });
     await loading.present();
 
     try {
-      const response = await this.api.marcarAsistencia(this.userData.employee_id, action);
+      const res = await this.api.marcarAsistencia(this.userData.employee_id, action);
       await loading.dismiss();
 
-      if (response.status === 'success') {
-        this.isInside     = response.is_inside;
-        this.dayCompleted = response.day_completed;
-        this.horaEntrada  = response.check_in_at  ?? this.horaEntrada;
-        this.horaSalida   = response.check_out_at ?? this.horaSalida;
-
-        const msg = action === 'in' ? '✓ Entrada registrada' : '✓ Salida registrada';
-        this.mostrarToast(msg, 'success');
+      if (res.status === 'success') {
+        this.isInside     = res.is_inside;
+        this.dayCompleted = res.day_completed;
+        this.horaEntrada  = res.check_in_at  ?? this.horaEntrada;
+        this.horaSalida   = res.check_out_at ?? this.horaSalida;
+        this.mostrarToast(action === 'in' ? '✓ Entrada registrada' : '✓ Salida registrada', 'success');
       } else {
-        // El backend rechazó la acción (doble entrada / doble salida)
-        // Sincronizamos el estado real para corregir la UI
-        if (response.is_inside !== undefined) {
-          this.isInside = response.is_inside;
-        }
-        this.mostrarToast(response.message || 'Error en la marcación', 'danger');
+        if (res.is_inside !== undefined) this.isInside = res.is_inside;
+        this.mostrarToast(res.message || 'Error en la marcación', 'danger');
       }
     } catch {
       await loading.dismiss();
@@ -203,18 +164,72 @@ export class MarcacionPage implements OnInit, OnDestroy {
     }
   }
 
-  async mostrarToast(message: string, color: string) {
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3000,
-      color,
-      position: 'top',
+  // ── Ver marcación actual ──────────────────────────────────────────────────
+  async verMarcacion() {
+    const estado = this.dayCompleted
+      ? '✅ Jornada completada'
+      : this.isInside
+        ? '🟢 Dentro — entrada registrada'
+        : '⚪ Sin entrada registrada hoy';
+
+    const alert = await this.alertCtrl.create({
+      header: 'Mi marcación de hoy',
+      cssClass: 'custom-alert-info',
+      message: `
+        <div style="text-align:left;font-size:13px;line-height:1.9">
+          <b>Estado:</b> ${estado}<br>
+          <b>Entrada:</b> ${this.horaEntrada ?? '—'}<br>
+          <b>Salida:</b>  ${this.horaSalida  ?? '—'}
+        </div>
+      `,
+      buttons: ['Cerrar'],
     });
-    await toast.present();
+    await alert.present();
   }
 
-  logout() {
-    this.userData = null;
-    this.router.navigate(['/home'], { replaceUrl: true });
+  // ── Reportar falla ────────────────────────────────────────────────────────
+  async reportarFalla() {
+    const alert = await this.alertCtrl.create({
+      header: 'Reportar falla',
+      subHeader: 'Describe brevemente el problema que encontraste',
+      cssClass: 'custom-alert-danger',
+      inputs: [{
+        name: 'descripcion',
+        type: 'textarea',
+        placeholder: 'Ej: El botón de salida no responde...',
+        attributes: { rows: 3 },
+      }],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Enviar reporte',
+          cssClass: 'btn-danger',
+          handler: async (data) => {
+            const desc = data.descripcion?.trim();
+            if (!desc) { this.mostrarToast('Escribe una descripción antes de enviar', 'warning'); return false; }
+            try {
+              await this.api.reportarFalla({
+                empleado_id: this.userData.employee_id,
+                nombre: this.userData.name,
+                descripcion: desc,
+              });
+              this.mostrarToast('✓ Reporte enviado. Gracias por reportar.', 'success');
+              return true;
+            } catch {
+              this.mostrarToast('No se pudo enviar el reporte', 'danger');
+              return true;
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
+
+  async mostrarToast(message: string, color: string) {
+    const t = await this.toastCtrl.create({ message, duration: 3000, color, position: 'top' });
+    await t.present();
+  }
+
+  logout() { this.userData = null; this.router.navigate(['/home'], { replaceUrl: true }); }
 }

@@ -1,40 +1,60 @@
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="login-content">
+  <div class="login-screen">
 
-  <div class="login-container">
-
-    <div class="header">
-      <div class="icon-circle">
-        <ion-icon name="shield-checkmark"></ion-icon>
+    <!-- ══ ZONA OSCURA — Navy + malla ═══════════════════════════════════════ -->
+    <div class="login-top">
+      <!-- Marca -->
+      <div class="brand">
+        <div class="brand-icon">
+          <ion-icon name="shield-checkmark"></ion-icon>
+        </div>
+        <div class="brand-text">
+          <span class="b-woden">Woden</span><span class="b-track">Track</span>
+        </div>
       </div>
-      <h1><span class="brand-orange">Woden</span>Track</h1>
-      <p>Acceso al Sistema</p>
+
+      <!-- Subtítulo -->
+      <p class="login-sub">Sistema de Control de Asistencia</p>
     </div>
 
-    <div class="form-wrapper">
+    <!-- ══ HOJA BLANCA — Formulario ═════════════════════════════════════════ -->
+    <div class="login-bottom">
+      <h2 class="form-title">Iniciar sesión</h2>
 
-      <ion-item class="custom-input" lines="none">
-        <ion-icon name="person-outline" slot="start"></ion-icon>
-        <ion-input placeholder="Usuario" type="text" [(ngModel)]="userForm.usuario">
+      <!-- Usuario -->
+      <div class="field-wrap">
+        <div class="field-icon"><ion-icon name="person-outline"></ion-icon></div>
+        <ion-input
+          class="field-input"
+          type="text"
+          placeholder="Usuario"
+          [(ngModel)]="userForm.usuario"
+          autocomplete="username">
         </ion-input>
-      </ion-item>
+      </div>
 
-      <ion-item class="custom-input" lines="none">
-        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
-
-        <ion-input [type]="showPassword ? 'text' : 'password'" placeholder="Contraseña" [(ngModel)]="userForm.password">
+      <!-- Contraseña -->
+      <div class="field-wrap">
+        <div class="field-icon"><ion-icon name="lock-closed-outline"></ion-icon></div>
+        <ion-input
+          class="field-input"
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="Contraseña"
+          [(ngModel)]="userForm.password"
+          autocomplete="current-password">
         </ion-input>
-
-        <ion-button slot="end" fill="clear" (click)="togglePassword()">
+        <button class="eye-btn" (click)="togglePassword()">
           <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-        </ion-button>
-      </ion-item>
+        </button>
+      </div>
 
-      <ion-button expand="block" class="main-button" (click)="ingresar()">
-        INGRESAR
-      </ion-button>
+      <!-- Botón ingresar -->
+      <button class="btn-ingresar" (click)="ingresar()">
+        Ingresar
+      </button>
 
+      <p class="version-label">WodenTrack Pro · v1.0</p>
     </div>
 
   </div>
-
 </ion-content>
