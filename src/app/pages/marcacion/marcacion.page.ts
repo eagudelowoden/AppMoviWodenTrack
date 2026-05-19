@@ -209,18 +209,19 @@ export class MarcacionPage implements OnInit, OnDestroy {
   // ── APK Update ─────────────────────────────────────────────────────────────
   async verificarActualizacion() {
     try {
-      const info     = await this.api.getApkInfo();
+      const info = await this.api.getApkInfo();
       if (!info.exists) return;
-      const dismissed = localStorage.getItem('apk_update_dismissed_at');
-      const serverMs  = new Date(info.lastUpdate).getTime();
-      if (!dismissed || Number(dismissed) < serverMs) {
-        this.apkInfo = info; this.showUpdateBanner = true;
+      // Compara por versión: si la versión guardada es distinta a la del servidor → mostrar banner
+      const dismissedVersion = localStorage.getItem('apk_dismissed_version');
+      if (dismissedVersion !== info.version) {
+        this.apkInfo = info;
+        this.showUpdateBanner = true;
       }
     } catch {}
   }
 
   downloadUpdate() { if (this.apkInfo?.downloadUrl) window.open(this.apkInfo.downloadUrl, '_blank'); }
-  dismissUpdate()  { localStorage.setItem('apk_update_dismissed_at', Date.now().toString()); this.showUpdateBanner = false; }
+  dismissUpdate()  { localStorage.setItem('apk_dismissed_version', this.apkInfo?.version ?? ''); this.showUpdateBanner = false; }
 
   // ── Marcación — triple guard ───────────────────────────────────────────────
   async realizarMarcacion(action: 'in' | 'out') {
