@@ -4,7 +4,7 @@ import { ApiService } from '../services/api.service';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 // Añadimos eyeOutline y eyeOffOutline a las importaciones
-import { shieldCheckmark, personOutline, lockClosedOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons';
+import { shieldCheckmark, personOutline, lockClosedOutline, eyeOutline, eyeOffOutline, cloudDownloadOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-home',
@@ -16,8 +16,10 @@ import { shieldCheckmark, personOutline, lockClosedOutline, eyeOutline, eyeOffOu
 export class HomePage implements OnInit {
 
   userForm = { usuario: '', password: '' };
-  showPassword = false;
-  appVersion = '...';
+  showPassword  = false;
+  appVersion    = '...';
+  hasNewVersion = false;
+  newVersion    = '';
 
   constructor(
     private router: Router,
@@ -26,17 +28,31 @@ export class HomePage implements OnInit {
     private loadingCtrl: LoadingController
   ) {
     // 2. Agregamos los iconos del "ojo" al registro de iconos
-    addIcons({ 
-      'shield-checkmark': shieldCheckmark, 
-      'person-outline': personOutline, 
-      'lock-closed-outline': lockClosedOutline,
-      'eye-outline': eyeOutline,
-      'eye-off-outline': eyeOffOutline
+    addIcons({
+      'shield-checkmark':      shieldCheckmark,
+      'person-outline':        personOutline,
+      'lock-closed-outline':   lockClosedOutline,
+      'eye-outline':           eyeOutline,
+      'eye-off-outline':       eyeOffOutline,
+      'cloud-download-outline': cloudDownloadOutline,
     });
   }
 
   async ngOnInit() {
     this.appVersion = await this.api.getVersion();
+    await this.checkNewVersion();
+  }
+
+  private async checkNewVersion() {
+    try {
+      const info = await this.api.getApkInfo();
+      if (!info?.version) return;
+      const dismissed = localStorage.getItem('apk_dismissed_version');
+      if (dismissed !== String(info.version)) {
+        this.hasNewVersion = true;
+        this.newVersion    = info.version;
+      }
+    } catch {}
   }
 
   togglePassword() {

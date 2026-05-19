@@ -39,9 +39,7 @@ export class ApiService {
 
   async getApkInfo() {
     return firstValueFrom(
-      this.http.get<any>(`${this.baseUrl}/apk/info`, {
-        headers: { 'Cache-Control': 'no-store' },
-      })
+      this.http.get<any>(`${this.baseUrl}/apk/info`)
     );
   }
 

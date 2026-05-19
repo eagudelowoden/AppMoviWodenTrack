@@ -210,18 +210,39 @@ export class MarcacionPage implements OnInit, OnDestroy {
   async verificarActualizacion() {
     try {
       const info = await this.api.getApkInfo();
-      if (!info.exists) return;
-      // Compara por versión: si la versión guardada es distinta a la del servidor → mostrar banner
       const dismissedVersion = localStorage.getItem('apk_dismissed_version');
-      if (dismissedVersion !== info.version) {
+
+      console.log('[APK] info recibida:', info);
+      console.log('[APK] versión guardada en localStorage:', dismissedVersion);
+      console.log('[APK] versión del servidor:', info?.version);
+
+      if (!info?.version) { console.warn('[APK] Sin versión válida, saliendo'); return; }
+
+      if (dismissedVersion !== String(info.version)) {
+        console.log('[APK] Versión nueva detectada → mostrando banner');
         this.apkInfo = info;
         this.showUpdateBanner = true;
+      } else {
+        console.log('[APK] Misma versión → banner oculto');
       }
-    } catch {}
+    } catch (e) {
+      console.warn('[APK] Error en la petición:', e);
+    }
   }
 
-  downloadUpdate() { if (this.apkInfo?.downloadUrl) window.open(this.apkInfo.downloadUrl, '_blank'); }
-  dismissUpdate()  { localStorage.setItem('apk_dismissed_version', this.apkInfo?.version ?? ''); this.showUpdateBanner = false; }
+  // Solo descarga si el archivo existe en el servidor
+  downloadUpdate() {
+    if (this.apkInfo?.exists && this.apkInfo?.downloadUrl) {
+      window.open(this.apkInfo.downloadUrl, '_blank');
+    } else {
+      this.mostrarToast('El archivo APK aún no está disponible para descarga', 'warning');
+    }
+  }
+
+  dismissUpdate() {
+    localStorage.setItem('apk_dismissed_version', this.apkInfo?.version ?? '');
+    this.showUpdateBanner = false;
+  }
 
   // ── Marcación — triple guard ───────────────────────────────────────────────
   async realizarMarcacion(action: 'in' | 'out') {
