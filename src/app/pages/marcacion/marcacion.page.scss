@@ -167,37 +167,50 @@ ion-content.woden-content {
 
 // ── Botones principales (pill) ────────────────────────────────────────────────
 .action-btns {
-  display: flex; flex-direction: column; gap: 11px;
+  display: flex; flex-direction: row; gap: 11px;
 
   .pill-btn {
-    width: 100%; height: 56px; border-radius: 999px; border: none;
-    display: flex; align-items: center; padding: 0 18px; gap: 12px;
-    cursor: pointer; transition: transform 0.15s ease, opacity 0.15s;
+    flex: 1;
+    height: 76px;
+    border-radius: 18px;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 8px;
+    gap: 7px;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s;
 
-    &:active:not([disabled]) { transform: scale(0.97); }
-    &[disabled] { opacity: 0.32; cursor: not-allowed; }
+    &:active:not([disabled]) { transform: scale(0.96); }
+    &[disabled] { opacity: 0.30; cursor: not-allowed; }
 
-    .p-icon { width: 34px; height: 34px; border-radius: 50%;
-               display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-               ion-icon { font-size: 18px; } }
+    .p-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      ion-icon { font-size: 17px; }
+    }
 
-    .p-text { flex: 1; display: flex; flex-direction: column; align-items: flex-start;
-      .p-lbl  { font-size: 14px; font-weight: 800; line-height: 1.1; }
-      .p-time { font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums; opacity: 0.6; margin-top: 1px; } }
+    .p-text {
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      .p-lbl  { font-size: 11px; font-weight: 900; line-height: 1.1; text-align: center; }
+      .p-time { font-size: 9px; font-weight: 600; font-variant-numeric: tabular-nums; opacity: 0.65; }
+    }
 
-    .p-arrow { font-size: 16px; opacity: 0.45; flex-shrink: 0; }
+    // Ocultar flecha en modo compacto
+    .p-arrow { display: none; }
 
     // ENTRADA — Navy oscuro sólido
     &.pill-in {
       background: #080d25; color: white;
       .p-icon { background: rgba(16,185,129,0.18); ion-icon { color: #10b981; } }
-      .p-arrow { color: #ff8f00; opacity: 0.7; }
     }
 
-    // SALIDA — Borde naranja, blanco
+    // SALIDA — Naranja/ámbar sólido, notorio
     &.pill-out {
-      background: white; color: #ff8f00; border: 2px solid #ff8f00;
-      .p-icon { background: rgba(255,143,0,0.1); ion-icon { color: #ff8f00; } }
+      background: #ff8f00; color: white;
+      .p-icon { background: rgba(255,255,255,0.2); ion-icon { color: white; } }
     }
   }
 }

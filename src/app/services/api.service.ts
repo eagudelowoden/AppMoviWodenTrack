@@ -58,4 +58,21 @@ export class ApiService {
       this.http.post<any>(`${this.apiUrl}/reportar-falla`, data)
     );
   }
+
+  async getAttendanceStatus(employeeId: number) {
+    return firstValueFrom(
+      this.http.get<any>(`${this.apiUrl}/attendance-status/${employeeId}`)
+    );
+  }
+
+  async getVersion(): Promise<string> {
+    try {
+      const res = await firstValueFrom(
+        this.http.get<{ version: string }>(`${this.baseUrl}/version`)
+      );
+      return res.version || '—';
+    } catch {
+      return '—';
+    }
+  }
 }

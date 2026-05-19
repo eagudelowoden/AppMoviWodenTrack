@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
 import { AlertController, LoadingController } from '@ionic/angular';
@@ -13,15 +13,11 @@ import { shieldCheckmark, personOutline, lockClosedOutline, eyeOutline, eyeOffOu
   standalone: false, 
   encapsulation: ViewEncapsulation.None 
 })
-export class HomePage {
+export class HomePage implements OnInit {
 
-  userForm = {
-    usuario: '',
-    password: ''
-  };
-
-  // 1. Variable para controlar la visibilidad
+  userForm = { usuario: '', password: '' };
   showPassword = false;
+  appVersion = '...';
 
   constructor(
     private router: Router,
@@ -39,7 +35,10 @@ export class HomePage {
     });
   }
 
-  // 3. Función para alternar el estado
+  async ngOnInit() {
+    this.appVersion = await this.api.getVersion();
+  }
+
   togglePassword() {
     this.showPassword = !this.showPassword;
   }

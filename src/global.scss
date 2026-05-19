@@ -35,3 +35,18 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+// ── Alert: marcación ──────────────────────────────────────────────────────────
+// Hace que los \n del mensaje se rendericen como saltos de línea reales
+.alert-marcacion {
+  .alert-message {
+    white-space: pre-line !important;
+    font-size: 14px !important;
+    line-height: 1.8 !important;
+    color: #1e293b !important;
+  }
+  .alert-head h2 {
+    font-size: 16px !important;
+    font-weight: 800 !important;
+  }
+}

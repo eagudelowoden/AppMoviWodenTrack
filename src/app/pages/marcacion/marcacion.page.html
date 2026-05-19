@@ -1,5 +1,15 @@
 <ion-content [fullscreen]="true" class="woden-content">
 
+  <!-- Pull-to-refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-outline"
+      pullingText="Desliza para actualizar"
+      refreshingSpinner="crescent"
+      refreshingText="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
   <!-- ── Banner APK Update ──────────────────────────────────────────────────── -->
   <div class="update-banner" *ngIf="apkInfo && showUpdateBanner">
     <div class="update-left">
@@ -64,34 +74,6 @@
         </div>
       </div>
 
-      <!-- Separador -->
-      <div class="divider"><span class="dl"></span><span class="dt">Marcar asistencia</span><span class="dl"></span></div>
-
-      <!-- Botones principales -->
-      <div class="action-btns">
-        <button class="pill-btn pill-in"
-          [disabled]="isInside || dayCompleted || !isOnline"
-          (click)="realizarMarcacion('in')">
-          <div class="p-icon"><ion-icon name="log-in-outline"></ion-icon></div>
-          <div class="p-text">
-            <span class="p-lbl">{{ dayCompleted ? 'Completado' : (isInside ? 'Ya ingresaste' : 'Registrar Entrada') }}</span>
-            <span class="p-time" *ngIf="horaEntrada">{{ horaEntrada }}</span>
-          </div>
-          <ion-icon class="p-arrow" name="arrow-forward-outline" *ngIf="!isInside && !dayCompleted"></ion-icon>
-        </button>
-
-        <button class="pill-btn pill-out"
-          [disabled]="!isInside || dayCompleted || !isOnline"
-          (click)="realizarMarcacion('out')">
-          <div class="p-icon"><ion-icon name="log-out-outline"></ion-icon></div>
-          <div class="p-text">
-            <span class="p-lbl">{{ dayCompleted ? 'Jornada completada' : 'Registrar Salida' }}</span>
-            <span class="p-time" *ngIf="horaSalida">{{ horaSalida }}</span>
-          </div>
-          <ion-icon class="p-arrow" name="arrow-forward-outline" *ngIf="isInside && !dayCompleted"></ion-icon>
-        </button>
-      </div>
-
       <!-- Acciones secundarias -->
       <div class="secondary-row">
         <button class="sec-btn" (click)="verMarcacion()">
@@ -101,6 +83,32 @@
         <button class="sec-btn sec-danger" (click)="reportarFalla()">
           <ion-icon name="bug-outline"></ion-icon>
           <span>Reportar falla</span>
+        </button>
+      </div>
+
+      <!-- Separador -->
+      <div class="divider"><span class="dl"></span><span class="dt">Marcar asistencia</span><span class="dl"></span></div>
+
+      <!-- Botones principales -->
+      <div class="action-btns">
+        <button class="pill-btn pill-in"
+          [disabled]="isInside || dayCompleted || !isOnline || isMarking"
+          (click)="realizarMarcacion('in')">
+          <div class="p-icon"><ion-icon name="log-in-outline"></ion-icon></div>
+          <div class="p-text">
+            <span class="p-lbl">{{ isInside ? 'Ingresaste' : (dayCompleted ? 'Completo' : 'Entrada') }}</span>
+            <span class="p-time" *ngIf="horaEntrada">{{ horaEntrada }}</span>
+          </div>
+        </button>
+
+        <button class="pill-btn pill-out"
+          [disabled]="!isInside || dayCompleted || !isOnline || isMarking"
+          (click)="realizarMarcacion('out')">
+          <div class="p-icon"><ion-icon name="log-out-outline"></ion-icon></div>
+          <div class="p-text">
+            <span class="p-lbl">{{ dayCompleted ? 'Finalizado' : 'Salida' }}</span>
+            <span class="p-time" *ngIf="horaSalida">{{ horaSalida }}</span>
+          </div>
         </button>
       </div>
 

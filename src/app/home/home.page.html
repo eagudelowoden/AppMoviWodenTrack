@@ -1,6 +1,5 @@
 <ion-content [fullscreen]="true" class="login-content">
   <div class="login-screen">
-
     <!-- ══ ZONA OSCURA — Navy + malla ═══════════════════════════════════════ -->
     <div class="login-top">
       <!-- Marca -->
@@ -14,7 +13,7 @@
       </div>
 
       <!-- Subtítulo -->
-      <p class="login-sub">Sistema de Control de Asistencia</p>
+      <p class="login-sub">Sistema de Asistencias</p>
     </div>
 
     <!-- ══ HOJA BLANCA — Formulario ═════════════════════════════════════════ -->
@@ -23,38 +22,43 @@
 
       <!-- Usuario -->
       <div class="field-wrap">
-        <div class="field-icon"><ion-icon name="person-outline"></ion-icon></div>
+        <div class="field-icon">
+          <ion-icon name="person-outline"></ion-icon>
+        </div>
         <ion-input
           class="field-input"
           type="text"
           placeholder="Usuario"
           [(ngModel)]="userForm.usuario"
-          autocomplete="username">
+          autocomplete="username"
+        >
         </ion-input>
       </div>
 
       <!-- Contraseña -->
       <div class="field-wrap">
-        <div class="field-icon"><ion-icon name="lock-closed-outline"></ion-icon></div>
+        <div class="field-icon">
+          <ion-icon name="lock-closed-outline"></ion-icon>
+        </div>
         <ion-input
           class="field-input"
           [type]="showPassword ? 'text' : 'password'"
           placeholder="Contraseña"
           [(ngModel)]="userForm.password"
-          autocomplete="current-password">
+          autocomplete="current-password"
+        >
         </ion-input>
         <button class="eye-btn" (click)="togglePassword()">
-          <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+          <ion-icon
+            [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+          ></ion-icon>
         </button>
       </div>
 
       <!-- Botón ingresar -->
-      <button class="btn-ingresar" (click)="ingresar()">
-        Ingresar
-      </button>
+      <button class="btn-ingresar" (click)="ingresar()">Ingresar</button>
 
-      <p class="version-label">WodenTrack Pro · v1.0</p>
+      <p class="version-label">WodenTrack Pro · v{{ appVersion }}</p>
     </div>
-
   </div>
 </ion-content>
