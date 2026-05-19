@@ -2,6 +2,12 @@
   <div class="login-screen">
     <!-- ══ ZONA OSCURA — Navy + malla ═══════════════════════════════════════ -->
     <div class="login-top">
+
+      <!-- Chip de nueva versión — esquina superior derecha -->
+      <div class="update-chip" *ngIf="hasNewVersion">
+        <ion-icon name="cloud-download-outline"></ion-icon>
+        <span>v{{ newVersion }} disponible</span>
+      </div>
       <!-- Marca -->
       <div class="brand">
         <div class="brand-icon">
