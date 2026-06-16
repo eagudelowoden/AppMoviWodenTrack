@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
+import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import {
   logOutOutline, logInOutline, calendarOutline,
   cloudDownloadOutline, closeOutline, checkmarkCircleOutline,
@@ -231,11 +233,19 @@ export class MarcacionPage implements OnInit, OnDestroy {
   }
 
   // Solo descarga si el archivo existe en el servidor
-  downloadUpdate() {
-    if (this.apkInfo?.exists && this.apkInfo?.downloadUrl) {
-      window.open(this.apkInfo.downloadUrl, '_blank');
-    } else {
+  async downloadUpdate() {
+    if (!this.apkInfo?.exists || !this.apkInfo?.downloadUrl) {
       this.mostrarToast('El archivo APK aún no está disponible para descarga', 'warning');
+      return;
+    }
+
+    if (Capacitor.isNativePlatform()) {
+      // En la app nativa, window.open() no dispara la descarga del APK.
+      // Abrir en el navegador del sistema sí permite que Android maneje
+      // la descarga y muestre la notificación nativa de "instalar".
+      await Browser.open({ url: this.apkInfo.downloadUrl });
+    } else {
+      window.open(this.apkInfo.downloadUrl, '_blank');
     }
   }
 

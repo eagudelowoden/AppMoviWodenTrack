@@ -34,7 +34,28 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+/* App usa tema claro fijo — no seguir el dark mode del sistema (rompía los ion-alert) */
+
+// ── Alert: estilo claro forzado ────────────────────────────────────────────────
+// Ionic aplica dark mode según el sistema; sin esto los alerts quedan con fondo
+// negro y texto oscuro encima (ilegible).
+ion-alert {
+  --background: #ffffff;
+  --backdrop-opacity: 0.5;
+
+  .alert-wrapper { background: #ffffff !important; }
+  .alert-head h2 { color: #0f172a !important; font-size: 16px !important; font-weight: 800 !important; }
+  .alert-sub-title { color: #5a6a85 !important; }
+  .alert-message { color: #1e293b !important; }
+  .alert-input-group textarea,
+  .alert-input-group input {
+    background: #f0f4fa !important;
+    color: #0f172a !important;
+    border: 1px solid #dde3ec !important;
+    border-radius: 8px !important;
+  }
+  .alert-button { color: #3d5273 !important; }
+}
 
 // ── Alert: marcación ──────────────────────────────────────────────────────────
 // Hace que los \n del mensaje se rendericen como saltos de línea reales
@@ -49,4 +70,27 @@
     font-size: 16px !important;
     font-weight: 800 !important;
   }
+}
+
+// ── Alert: reportar falla ───────────────────────────────────────────────────────
+.custom-alert-danger {
+  .alert-head h2 { color: #080d25 !important; }
+  .alert-sub-title { color: #5a6a85 !important; }
+
+  .alert-input-group {
+    padding: 4px 18px 8px !important;
+  }
+
+  textarea.alert-input,
+  .alert-input-group textarea {
+    padding: 12px 14px !important;
+    min-height: 90px !important;
+    background: #fff8ef !important;
+    border: 1px solid #ffd9a3 !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+  }
+
+  .btn-danger { color: #ff8f00 !important; font-weight: 800 !important; }
 }

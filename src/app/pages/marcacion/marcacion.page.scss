@@ -2,33 +2,30 @@ ion-content.woden-content {
   --background: #080d25;
 }
 
-// ── Chip sutil de actualización ───────────────────────────────────────────────
-.update-chip {
-  position: absolute;
-  top: 14px; right: 14px;
-  z-index: 10;
-  display: flex; align-items: center; gap: 5px;
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 999px;
-  padding: 5px 10px 5px 12px;
-  backdrop-filter: blur(8px);
+// ── Aviso de actualización — debajo de los botones de marcación ──────────────
+.update-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff4e0; border: 1px solid #ffd9a3; border-radius: 14px;
+  padding: 10px 12px;
   cursor: pointer;
   transition: background 0.15s;
 
-  &:active { background: rgba(255,255,255,0.18); }
+  &:active { background: #ffe9c2; }
 
-  ion-icon { font-size: 11px; color: rgba(255,255,255,0.85); }
-
-  span {
-    font-size: 9.5px; font-weight: 600; color: rgba(255,255,255,0.85);
-    text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
+  > ion-icon {
+    font-size: 18px; color: #ff8f00; flex-shrink: 0;
   }
 
-  .chip-dismiss {
-    background: none; border: none; padding: 0; margin-left: 2px;
+  .ub-text {
+    display: flex; flex-direction: column; flex: 1; min-width: 0;
+    .ub-title { font-size: 12px; font-weight: 800; color: #080d25; }
+    .ub-sub   { font-size: 10px; font-weight: 600; color: #8a6a3a; margin-top: 1px; }
+  }
+
+  .ub-dismiss {
+    background: none; border: none; padding: 4px; flex-shrink: 0;
     display: flex; align-items: center; cursor: pointer;
-    ion-icon { font-size: 12px; color: rgba(255,255,255,0.55); }
+    ion-icon { font-size: 15px; color: #b08a4f; }
   }
 }
 
