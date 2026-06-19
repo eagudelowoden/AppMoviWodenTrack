@@ -73,6 +73,9 @@ export class HomePage implements OnInit {
 
     try {
       const data = await this.api.login(this.userForm.usuario, this.userForm.password);
+      if (data?.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
       await loading.dismiss();
 
       this.router.navigate(['/marcacion'], { 
