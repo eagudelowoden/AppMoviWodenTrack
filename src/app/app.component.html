@@ -1,3 +1,6 @@
 <ion-app>
+  <div class="offline-banner" *ngIf="!online">
+    Sin conexión con el servidor. Reintentando...
+  </div>
   <ion-router-outlet></ion-router-outlet>
 </ion-app>

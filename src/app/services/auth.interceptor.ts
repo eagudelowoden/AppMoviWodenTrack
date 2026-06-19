@@ -4,21 +4,31 @@ import {
   HttpHandler,
   HttpEvent,
   HttpInterceptor,
+  HttpErrorResponse,
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
+import { ConnectivityService } from './connectivity.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
+  constructor(private connectivity: ConnectivityService) {}
+
   intercept(
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
     const token = localStorage.getItem('auth_token');
-    if (!token) return next.handle(req);
+    const authReq = token
+      ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+      : req;
 
-    const authReq = req.clone({
-      setHeaders: { Authorization: `Bearer ${token}` },
-    });
-    return next.handle(authReq);
+    return next.handle(authReq).pipe(
+      tap({
+        error: (err: HttpErrorResponse) => {
+          // status 0 = no hubo respuesta del servidor (caído, reiniciando, sin red)
+          if (err.status === 0) this.connectivity.reportOffline();
+        },
+      })
+    );
   }
 }

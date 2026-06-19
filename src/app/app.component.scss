@@ -1,0 +1,13 @@
+.offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 99999;
+  background: #c0392b;
+  color: #fff;
+  text-align: center;
+  font-size: 13px;
+  padding: 6px 8px;
+  padding-top: calc(6px + env(safe-area-inset-top));
+}
