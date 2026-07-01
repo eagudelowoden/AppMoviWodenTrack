@@ -1,5 +1,5 @@
-// PRODUCCIÓN — usado con: ionic build --prod
+// PRODUCCIÓN — actualizado con el dominio correcto
 export const environment = {
   production: true,
-  apiUrl: 'http://18.217.246.39:8082/usuarios',
+  apiUrl: 'https://track.woden.com.co:8443/usuarios',
 };
