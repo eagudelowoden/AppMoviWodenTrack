@@ -63,9 +63,10 @@ export class ApiService {
     );
   }
 
-  async getSerialesRecuperados(fecha: string, documento?: string) {
-    const body: { fecha: string; documento?: string } = { fecha };
+  async getSerialesRecuperados(fecha: string, documento?: string, agente?: string) {
+    const body: { fecha: string; documento?: string; agente?: string } = { fecha };
     if (documento) body.documento = documento;
+    if (agente) body.agente = agente;
     return firstValueFrom(
       this.http.post<any>(`${this.apiUrl}/wfsm/seriales-recuperados`, body)
     );

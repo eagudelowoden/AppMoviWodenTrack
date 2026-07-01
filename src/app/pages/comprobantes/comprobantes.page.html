@@ -23,8 +23,13 @@
           <input type="date" [(ngModel)]="filtros.fecha" />
         </div>
         <div class="field">
-          <label>Cédula <span class="opt">(opcional)</span></label>
+          <label>Cédula cliente <span class="opt">(opcional)</span></label>
           <input type="text" [(ngModel)]="filtros.documento" placeholder="Ej. 1035851539"
+            (keyup.enter)="consultar()" />
+        </div>
+        <div class="field">
+          <label>Agente <span class="opt">(opcional)</span></label>
+          <input type="text" [(ngModel)]="filtros.agente" placeholder="Nombre del agente"
             (keyup.enter)="consultar()" />
         </div>
         <button class="btn-consultar" (click)="consultar()" [disabled]="loading">

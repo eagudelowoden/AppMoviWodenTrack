@@ -13,7 +13,7 @@ const SESSION_KEY = 'wt_session';
 const COOLDOWN_MS = 3000;
 
 const CAMPOS_VISIBLES = [
-  { key: 'documento_identidad', label: 'Cédula' },
+  { key: 'cedula_cliente', label: 'Cédula cliente' },
   { key: 'agente_campo', label: 'Agente' },
   { key: 'nombre_usuario', label: 'Cliente' },
   { key: 'ciudad', label: 'Ciudad' },
@@ -38,7 +38,7 @@ export class ComprobantesPage implements OnInit {
 
   readonly camposVisibles = CAMPOS_VISIBLES;
 
-  filtros = { fecha: this.hoy(), documento: '' };
+  filtros = { fecha: this.hoy(), documento: '', agente: '' };
   loading = false;
   error = '';
   registros: any[] | null = null;
@@ -98,6 +98,7 @@ export class ComprobantesPage implements OnInit {
       const data = await this.api.getSerialesRecuperados(
         this.filtros.fecha,
         this.filtros.documento.trim() || undefined,
+        this.filtros.agente.trim() || undefined,
       );
       this.registros = data?.registros ?? [];
     } catch (err: any) {
