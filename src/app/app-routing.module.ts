@@ -15,6 +15,10 @@ const routes: Routes = [
     path: 'marcacion',
     loadChildren: () => import('./pages/marcacion/marcacion.module').then( m => m.MarcacionPageModule)
   },
+  {
+    path: 'comprobantes',
+    loadChildren: () => import('./pages/comprobantes/comprobantes.module').then( m => m.ComprobantesPageModule)
+  },
 ];
 
 @NgModule({

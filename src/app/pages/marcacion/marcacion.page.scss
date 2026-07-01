@@ -247,21 +247,22 @@ ion-content.woden-content {
 // ── Acciones secundarias ──────────────────────────────────────────────────────
 .secondary-row {
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
 
-  .sec-btn {
-    display: flex; align-items: center; justify-content: center; gap: 7px;
-    background: #f0f4fa; border: 1px solid #dde3ec; border-radius: 14px;
-    padding: 12px 8px; cursor: pointer;
-    font-size: 11px; font-weight: 700; color: #3d5273;
-    transition: background 0.15s;
-    ion-icon { font-size: 16px; color: #5a7ba6; }
-    &:active { background: #e4eaf4; }
+.sec-btn {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  background: #f0f4fa; border: 1px solid #dde3ec; border-radius: 14px;
+  padding: 12px 8px; cursor: pointer;
+  font-size: 11px; font-weight: 700; color: #3d5273;
+  transition: background 0.15s;
+  width: 100%;
+  ion-icon { font-size: 16px; color: #5a7ba6; }
+  &:active { background: #e4eaf4; }
 
-    &.sec-danger {
-      color: #c0392b; border-color: #fecdd3; background: #fff5f5;
-      ion-icon { color: #e74c3c; }
-      &:active { background: #fee2e2; }
-    }
+  &.sec-danger {
+    color: #c0392b; border-color: #fecdd3; background: #fff5f5;
+    ion-icon { color: #e74c3c; }
+    &:active { background: #fee2e2; }
   }
 }
 

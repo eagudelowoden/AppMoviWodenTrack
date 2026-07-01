@@ -68,6 +68,12 @@
         </button>
       </div>
 
+      <!-- Comprobantes (WFSM) — solo visible con permiso -->
+      <button class="sec-btn sec-full" *ngIf="canVerComprobantes" (click)="irAComprobantes()">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <span>Comprobantes</span>
+      </button>
+
       <!-- Separador -->
       <div class="divider"><span class="dl"></span><span class="dt">Marcar asistencia</span><span class="dl"></span>
       </div>

@@ -1,0 +1,101 @@
+<ion-content [fullscreen]="true" class="woden-content">
+  <div class="wt-screen">
+
+    <!-- ══ SECCIÓN SUPERIOR — Navy ═══════════════════════════════════════════ -->
+    <div class="wt-top">
+      <div class="wt-header">
+        <button class="icon-btn" (click)="volver()">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+        </button>
+        <div class="wt-brand"><span class="b-woden">Comprobantes</span></div>
+        <div class="icon-btn-spacer"></div>
+      </div>
+      <p class="wt-sub">WFSM · Consulta de seriales recuperados</p>
+    </div>
+
+    <!-- ══ SECCIÓN INFERIOR — Hoja blanca ════════════════════════════════════ -->
+    <div class="wt-bottom">
+
+      <!-- Filtros -->
+      <div class="filtros-card">
+        <div class="field">
+          <label>Fecha</label>
+          <input type="date" [(ngModel)]="filtros.fecha" />
+        </div>
+        <div class="field">
+          <label>Cédula <span class="opt">(opcional)</span></label>
+          <input type="text" [(ngModel)]="filtros.documento" placeholder="Ej. 1035851539"
+            (keyup.enter)="consultar()" />
+        </div>
+        <button class="btn-consultar" (click)="consultar()" [disabled]="loading">
+          <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+          <ng-container *ngIf="!loading">
+            <ion-icon name="search-outline"></ion-icon>
+            Consultar
+          </ng-container>
+        </button>
+      </div>
+
+      <!-- Error -->
+      <div class="alert-error" *ngIf="error">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <span>{{ error }}</span>
+      </div>
+
+      <!-- Resultados -->
+      <ng-container *ngIf="registros !== null && !loading">
+
+        <div class="resumen-row">
+          <div class="resumen-total">
+            <span class="num">{{ totalFiltrado }}</span>
+            <span class="lbl">registro{{ totalFiltrado !== 1 ? 's' : '' }}</span>
+          </div>
+          <div class="busqueda">
+            <ion-icon name="search-outline"></ion-icon>
+            <input type="text" [(ngModel)]="busquedaLocal" placeholder="Buscar en resultados..." />
+          </div>
+        </div>
+
+        <div class="empty-card" *ngIf="totalFiltrado === 0">
+          <ion-icon name="document-text-outline"></ion-icon>
+          <p>No se encontraron seriales recuperados.</p>
+        </div>
+
+        <div class="lista" *ngIf="totalFiltrado > 0">
+          <div class="registro-card" *ngFor="let item of visibles">
+            <div class="registro-head">
+              <div class="head-left">
+                <span class="badge" [ngClass]="estatusClass(item.estatus)">
+                  <span class="dot"></span>{{ item.estatus || 'N/D' }}
+                </span>
+                <code class="serial">{{ item.serial || item.serial_confirmado || '—' }}</code>
+              </div>
+              <button class="link-comprobante" *ngIf="linkComprobante(item)" (click)="abrirComprobante(item)">
+                <ion-icon name="document-text-outline"></ion-icon>
+                Comprobante
+              </button>
+            </div>
+            <div class="registro-grid">
+              <div class="campo" *ngFor="let campo of camposVisibles">
+                <span class="campo-lbl">{{ campo.label }}</span>
+                <span class="campo-val">{{ item[campo.key] || '—' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-mas" *ngIf="visibles.length < totalFiltrado" (click)="verMas()">
+            <ion-icon name="chevron-down-circle-outline"></ion-icon>
+            Mostrar más · {{ totalFiltrado - visibles.length }} restantes
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- Estado inicial -->
+      <div class="empty-card" *ngIf="registros === null && !loading && !error">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <p>Selecciona una fecha y presiona <strong>Consultar</strong>.</p>
+      </div>
+
+    </div>
+  </div>
+</ion-content>

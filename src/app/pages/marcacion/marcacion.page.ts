@@ -8,7 +8,7 @@ import { Browser } from '@capacitor/browser';
 import {
   logOutOutline, logInOutline, calendarOutline,
   cloudDownloadOutline, closeOutline, checkmarkCircleOutline,
-  arrowForwardOutline, eyeOutline, bugOutline,
+  arrowForwardOutline, eyeOutline, bugOutline, documentTextOutline,
 } from 'ionicons/icons';
 
 const SESSION_KEY   = 'wt_session';
@@ -29,6 +29,14 @@ export class MarcacionPage implements OnInit, OnDestroy {
   get primerNombre(): string {
     const p = (this.userData?.name ?? '').split(' ');
     return p[2] ?? p[0] ?? '';
+  }
+
+  get canVerComprobantes(): boolean {
+    return !!(this.userData?.isSuperAdmin || this.userData?.permisos?.['admin.marcacion_seriales']);
+  }
+
+  irAComprobantes() {
+    this.router.navigate(['/comprobantes']);
   }
 
   // ── Reloj ──────────────────────────────────────────────────────────────────
@@ -75,6 +83,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
       'arrow-forward-outline':    arrowForwardOutline,
       'eye-outline':              eyeOutline,
       'bug-outline':              bugOutline,
+      'document-text-outline':    documentTextOutline,
     });
 
     // 1️⃣  Estado desde navegación (login normal)
