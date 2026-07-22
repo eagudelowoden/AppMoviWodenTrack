@@ -63,6 +63,27 @@ export class ApiService {
     );
   }
 
+  // ── Marcación Ecuador con GPS (mismo backend que la web) ─────────────────────
+  async getEstadoMarcacionGps(idOdoo: number) {
+    return firstValueFrom(
+      this.http.get<any>(`${this.apiUrl}/marcacion-ecuador/estado/${idOdoo}`)
+    );
+  }
+
+  async marcarConGps(payload: {
+    id_odoo: number;
+    cedula?: string;
+    nombre: string;
+    tipo: 'entrada' | 'salida';
+    latitud?: number | null;
+    longitud?: number | null;
+    company?: string;
+  }) {
+    return firstValueFrom(
+      this.http.post<any>(`${this.apiUrl}/marcacion-ecuador/marcar`, payload)
+    );
+  }
+
   async getSerialesRecuperados(fecha: string, documento?: string, agente?: string) {
     const body: { fecha: string; documento?: string; agente?: string } = { fecha };
     if (documento) body.documento = documento;

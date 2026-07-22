@@ -5,10 +5,12 @@ import { AlertController, LoadingController, ToastController } from '@ionic/angu
 import { addIcons } from 'ionicons';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
+import { Geolocation, Position } from '@capacitor/geolocation';
 import {
   logOutOutline, logInOutline, calendarOutline,
   cloudDownloadOutline, closeOutline, checkmarkCircleOutline,
   arrowForwardOutline, eyeOutline, bugOutline, documentTextOutline,
+  locationOutline,
 } from 'ionicons/icons';
 
 const SESSION_KEY   = 'wt_session';
@@ -33,6 +35,21 @@ export class MarcacionPage implements OnInit, OnDestroy {
 
   get canVerComprobantes(): boolean {
     return !!(this.userData?.isSuperAdmin || this.userData?.permisos?.['admin.marcacion_seriales']);
+  }
+
+  /**
+   * Marcación con GPS — misma condición EXACTA que la web:
+   * debe ser de Ecuador (por company o país) Y tener permiso (o ser superadmin).
+   */
+  get canMarcacionGps(): boolean {
+    const company = (this.userData?.company ?? '').toLowerCase();
+    const pais    = (this.userData?.pais ?? '').toLowerCase();
+    const esEcuador = company.includes('ecuador') || pais === 'ecuador';
+
+    const tienePermiso =
+      !!this.userData?.isSuperAdmin || this.userData?.permisos?.['ecuador.marcacion'] === true;
+
+    return esEcuador && tienePermiso;
   }
 
   irAComprobantes() {
@@ -62,7 +79,14 @@ export class MarcacionPage implements OnInit, OnDestroy {
 
   // ── Guards doble marcación ─────────────────────────────────────────────────
   isMarking = false;                         // bloquea clicks simultáneos
+  isMarkingGps = false;                      // bloquea la marcación GPS
   private lastMarkTimestamp = 0;
+
+  // ── Estado marcación GPS (Ecuador) ─────────────────────────────────────────
+  gpsTipoPendiente: 'entrada' | 'salida' = 'entrada'; // qué toca marcar ahora
+  gpsUltima: any = null;                     // última marcación GPS de hoy
+  gpsRegistrosHoy: any[] = [];               // marcaciones GPS de hoy
+  gpsUbicacion: { latitud: number; longitud: number } | null = null; // última capturada
   private readonly MARK_COOLDOWN_MS = 4000;  // 4 s entre marcaciones
 
   constructor(
@@ -84,6 +108,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
       'eye-outline':              eyeOutline,
       'bug-outline':              bugOutline,
       'document-text-outline':    documentTextOutline,
+      'location-outline':         locationOutline,
     });
 
     // 1️⃣  Estado desde navegación (login normal)
@@ -148,6 +173,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
       this.sincronizarEstado(),
       this.cargarMalla(),
       this.verificarActualizacion(),
+      this.canMarcacionGps ? this.cargarEstadoGps() : Promise.resolve(),
     ]);
   }
 
@@ -185,7 +211,11 @@ export class MarcacionPage implements OnInit, OnDestroy {
 
   // ── Pull-to-refresh ────────────────────────────────────────────────────────
   async handleRefresh(event: any) {
-    await Promise.allSettled([this.sincronizarEstado(), this.cargarMalla()]);
+    await Promise.allSettled([
+      this.sincronizarEstado(),
+      this.cargarMalla(),
+      this.canMarcacionGps ? this.cargarEstadoGps() : Promise.resolve(),
+    ]);
     event.target.complete();
   }
 
@@ -307,6 +337,180 @@ export class MarcacionPage implements OnInit, OnDestroy {
     } finally {
       this.isMarking = false;
     }
+  }
+
+  // ── Marcación con GPS (Ecuador) ────────────────────────────────────────────
+  /** Carga el estado del día: qué toca marcar (entrada/salida) y la última. */
+  async cargarEstadoGps() {
+    try {
+      const estado = await this.api.getEstadoMarcacionGps(this.userData.id_odoo);
+      this.gpsTipoPendiente = estado?.tipo_pendiente === 'salida' ? 'salida' : 'entrada';
+      this.gpsUltima        = estado?.ultima ?? null;
+      this.gpsRegistrosHoy  = estado?.registros_hoy ?? [];
+    } catch {}
+  }
+
+  /** Marca según el tipo pendiente (un solo botón que alterna, como la web). */
+  async marcarConGps() {
+    if (this.isMarkingGps || this.isMarking) return;
+
+    // Cooldown compartido con la marcación normal
+    const now = Date.now();
+    if (now - this.lastMarkTimestamp < this.MARK_COOLDOWN_MS) {
+      this.mostrarToast('Espera un momento antes de volver a marcar', 'warning'); return;
+    }
+    if (!this.isOnline) { this.mostrarToast('Necesitas conexión para marcar', 'warning'); return; }
+
+    const tipo = this.gpsTipoPendiente;
+    this.isMarkingGps = true;
+
+    // 1. Permiso de ubicación
+    const permiso = await this.asegurarPermisoUbicacion();
+    if (!permiso) {
+      this.mostrarToast('Debes permitir el acceso a la ubicación para marcar con GPS', 'danger');
+      this.isMarkingGps = false;
+      return;
+    }
+
+    const loading = await this.loadingCtrl.create({ message: 'Obteniendo ubicación GPS...', spinner: 'crescent' });
+    await loading.present();
+
+    try {
+      // 2. Mejor ubicación posible
+      const ubic = await this.obtenerMejorUbicacion();
+      await loading.dismiss();
+
+      if (!ubic) {
+        this.mostrarToast('No se pudo obtener la ubicación GPS. Intenta al aire libre.', 'danger');
+        this.isMarkingGps = false;
+        return;
+      }
+      this.gpsUbicacion = { latitud: ubic.latitud, longitud: ubic.longitud };
+
+      // 3. Confirmación del usuario
+      const confirmado = await this.confirmarMarcacionGps(tipo, ubic);
+      if (!confirmado) { this.isMarkingGps = false; return; }
+
+      // 4. Registrar en el backend (mismo endpoint que la web)
+      const loading2 = await this.loadingCtrl.create({ message: 'Registrando marcación...', spinner: 'crescent' });
+      await loading2.present();
+      try {
+        await this.api.marcarConGps({
+          id_odoo:  this.userData.id_odoo,
+          cedula:   this.userData.cedula || this.userData.identificacion || '',
+          nombre:   this.userData.name,
+          tipo,
+          latitud:  ubic.latitud,
+          longitud: ubic.longitud,
+          company:  this.userData.company || 'Ecuador',
+        });
+        this.lastMarkTimestamp = Date.now();
+        await loading2.dismiss();
+        this.mostrarToast(`✓ ${tipo === 'entrada' ? 'Entrada' : 'Salida'} registrada con GPS`, 'success');
+        // Refrescar estado → el botón cambia a la acción contraria
+        await this.cargarEstadoGps();
+      } catch {
+        await loading2.dismiss();
+        this.mostrarToast('No se pudo registrar la marcación', 'danger');
+      }
+    } catch {
+      await loading.dismiss().catch(() => {});
+      this.mostrarToast('Error obteniendo la ubicación', 'danger');
+    } finally {
+      this.isMarkingGps = false;
+    }
+  }
+
+  /** Pide (o valida) el permiso de ubicación nativo. */
+  private async asegurarPermisoUbicacion(): Promise<boolean> {
+    try {
+      let estado = await Geolocation.checkPermissions();
+      if (estado.location !== 'granted' && estado.coarseLocation !== 'granted') {
+        estado = await Geolocation.requestPermissions({ permissions: ['location'] });
+      }
+      return estado.location === 'granted' || estado.coarseLocation === 'granted';
+    } catch {
+      // En navegador web checkPermissions puede no existir; el getCurrentPosition
+      // disparará el prompt del navegador por su cuenta.
+      return true;
+    }
+  }
+
+  /**
+   * Toma varias lecturas del GPS durante unos segundos y se queda con la MÁS
+   * precisa (menor 'accuracy'), en vez de la primera/cacheada. Corta apenas
+   * llega a ≤20 m o al vencer el tope de tiempo.
+   */
+  private async obtenerMejorUbicacion(): Promise<{ latitud: number; longitud: number; precision: number } | null> {
+    const PRECISION_OBJETIVO = 20;  // m: si se alcanza, cortamos ya
+    const TIEMPO_MAXIMO = 15000;    // ms: tope de espera
+
+    return new Promise<{ latitud: number; longitud: number; precision: number } | null>((resolve) => {
+      let mejor: Position | null = null;
+      let watchId: string | null = null;
+      let timer: any = null;
+      let finalizado = false;
+
+      const finalizar = async () => {
+        if (finalizado) return;
+        finalizado = true;
+        if (timer) clearTimeout(timer);
+        if (watchId) { try { await Geolocation.clearWatch({ id: watchId }); } catch {} }
+        resolve(
+          mejor
+            ? {
+                latitud:   mejor.coords.latitude,
+                longitud:  mejor.coords.longitude,
+                precision: mejor.coords.accuracy,
+              }
+            : null,
+        );
+      };
+
+      Geolocation.watchPosition(
+        { enableHighAccuracy: true, timeout: TIEMPO_MAXIMO, maximumAge: 0 },
+        (pos, err) => {
+          if (err || !pos) return;
+          if (!mejor || pos.coords.accuracy < mejor.coords.accuracy) mejor = pos;
+          if (mejor.coords.accuracy <= PRECISION_OBJETIVO) finalizar();
+        },
+      )
+        .then((id) => {
+          watchId = id;
+          // Si el watch ya terminó antes de asignar el id, límpialo de una.
+          if (finalizado) { Geolocation.clearWatch({ id }).catch(() => {}); }
+        })
+        .catch(async () => {
+          // Fallback: un único intento con getCurrentPosition
+          try {
+            mejor = await Geolocation.getCurrentPosition({
+              enableHighAccuracy: true, timeout: TIEMPO_MAXIMO, maximumAge: 0,
+            });
+          } catch {}
+          finalizar();
+        });
+
+      timer = setTimeout(() => finalizar(), TIEMPO_MAXIMO);
+    });
+  }
+
+  /** Alerta de confirmación antes de registrar (muestra coordenadas, no precisión). */
+  private confirmarMarcacionGps(
+    tipo: 'entrada' | 'salida',
+    ubic: { latitud: number; longitud: number },
+  ): Promise<boolean> {
+    return new Promise(async (resolve) => {
+      const alert = await this.alertCtrl.create({
+        header:   `Marcar ${tipo}`,
+        cssClass: 'alert-marcacion',
+        message:  `Ubicación capturada:\n${ubic.latitud.toFixed(5)}, ${ubic.longitud.toFixed(5)}\n\n¿Confirmas la marcación de ${tipo}?`,
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', handler: () => resolve(false) },
+          { text: 'Confirmar', handler: () => resolve(true) },
+        ],
+      });
+      await alert.present();
+    });
   }
 
   // ── Ver marcación ──────────────────────────────────────────────────────────

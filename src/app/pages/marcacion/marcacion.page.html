@@ -99,6 +99,49 @@
         </button>
       </div>
 
+      <!-- Marcación con GPS — solo visible con permiso ecuador.marcacion (DB) -->
+      <div class="gps-card" *ngIf="canMarcacionGps">
+
+        <!-- Header -->
+        <div class="gps-head">
+          <div class="gps-ico"><ion-icon name="location-outline"></ion-icon></div>
+          <div class="gps-title">
+            <span class="gps-t1">Asistencia con GPS</span>
+            <span class="gps-t2">Con ubicación GPS</span>
+          </div>
+          <span class="gps-badge" *ngIf="gpsRegistrosHoy.length">{{ gpsRegistrosHoy.length }} hoy</span>
+        </div>
+
+        <!-- Última marcación -->
+        <div class="gps-ultima" *ngIf="gpsUltima">
+          <ion-icon [name]="gpsUltima.tipo === 'entrada' ? 'log-in-outline' : 'log-out-outline'"
+            [class.is-in]="gpsUltima.tipo === 'entrada'" [class.is-out]="gpsUltima.tipo === 'salida'"></ion-icon>
+          <span>Última:
+            <strong [class.is-in]="gpsUltima.tipo === 'entrada'" [class.is-out]="gpsUltima.tipo === 'salida'">
+              {{ gpsUltima.tipo === 'entrada' ? 'Entrada' : 'Salida' }}</strong>
+            a las {{ gpsUltima.hora }}
+          </span>
+        </div>
+
+        <!-- Botón único (alterna entrada/salida) -->
+        <button class="gps-btn"
+          [class.is-in]="gpsTipoPendiente === 'entrada'"
+          [class.is-out]="gpsTipoPendiente === 'salida'"
+          [disabled]="!isOnline || isMarking || isMarkingGps"
+          (click)="marcarConGps()">
+          <ion-icon name="location-outline"></ion-icon>
+          {{ isMarkingGps
+              ? 'Obteniendo ubicación...'
+              : 'Registrar ' + (gpsTipoPendiente === 'entrada' ? 'Entrada' : 'Salida') }}
+        </button>
+
+        <!-- Coordenadas capturadas -->
+        <div class="gps-coords" *ngIf="gpsUbicacion">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          GPS: {{ gpsUbicacion.latitud.toFixed(5) }}, {{ gpsUbicacion.longitud.toFixed(5) }}
+        </div>
+      </div>
+
       <!-- Aviso de actualización — debajo de los botones de marcación -->
       <!-- <div class="update-banner" *ngIf="apkInfo && showUpdateBanner" (click)="downloadUpdate()">
         <ion-icon name="megaphone-outline"></ion-icon>

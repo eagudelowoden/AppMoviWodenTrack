@@ -217,6 +217,69 @@ ion-content.woden-content {
   }
 }
 
+// ── Tarjeta Marcación con GPS (un solo botón que alterna) ─────────────────────
+.gps-card {
+  margin-top: 14px;
+  border: 1px solid #e6e9f0;
+  border-radius: 18px;
+  background: #ffffff;
+  overflow: hidden;
+
+  .gps-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1f2f6;
+
+    .gps-ico {
+      width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(16,185,129,0.12);
+      ion-icon { font-size: 15px; color: #10b981; }
+    }
+    .gps-title {
+      flex: 1; display: flex; flex-direction: column; gap: 1px;
+      .gps-t1 { font-size: 12px; font-weight: 800; color: #1f2733; text-transform: uppercase; letter-spacing: 0.4px; }
+      .gps-t2 { font-size: 9px; font-weight: 700; color: #10b981; text-transform: uppercase; letter-spacing: 1px; }
+    }
+    .gps-badge {
+      font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums;
+      padding: 2px 8px; border-radius: 999px; background: #f1f2f6; color: #6b7280;
+    }
+  }
+
+  .gps-ultima {
+    display: flex; align-items: center; gap: 7px;
+    margin: 12px 14px 0;
+    padding: 7px 10px; border-radius: 10px; background: #f7f8fa;
+    font-size: 11px; color: #6b7280;
+    ion-icon { font-size: 12px; &.is-in { color: #10b981; } &.is-out { color: #f43f5e; } }
+    strong { &.is-in { color: #10b981; } &.is-out { color: #f43f5e; } }
+  }
+
+  .gps-btn {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    width: calc(100% - 28px);
+    margin: 12px 14px;
+    height: 48px; border: none; border-radius: 13px;
+    font-size: 13px; font-weight: 800; color: white;
+    cursor: pointer; transition: transform 0.15s ease, opacity 0.15s;
+
+    &:active:not([disabled]) { transform: scale(0.98); }
+    &[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+    ion-icon { font-size: 15px; }
+    &.is-in  { background: #10b981; }
+    &.is-out { background: #f43f5e; }
+  }
+
+  .gps-coords {
+    display: flex; align-items: center; gap: 5px;
+    margin: -4px 14px 12px;
+    font-size: 10px; color: #9aa1ac; font-variant-numeric: tabular-nums;
+    ion-icon { font-size: 11px; color: #10b981; }
+  }
+}
+
 // ── Responsive — pantallas muy pequeñas ──────────────────────────────────────
 @media (max-height: 640px) {
   .wt-top { padding: 36px 18px 48px; }
