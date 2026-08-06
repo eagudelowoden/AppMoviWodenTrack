@@ -3,8 +3,6 @@ import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { ConnectivityService } from './services/connectivity.service';
 import { AuthService } from './services/auth.service';
-import { addIcons } from 'ionicons';
-import { hourglassOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-root',
@@ -27,9 +25,7 @@ export class AppComponent implements OnInit {
     private router: Router,
     private alertCtrl: AlertController,
     private auth: AuthService,
-  ) {
-    addIcons({ 'hourglass-outline': hourglassOutline });
-  }
+  ) {}
 
   ngOnInit() {
     setTimeout(() => (this.showWelcome = false), this.WELCOME_MS);

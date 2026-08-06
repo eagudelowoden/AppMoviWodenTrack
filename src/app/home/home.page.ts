@@ -5,7 +5,7 @@ import { AuthService } from '../services/auth.service';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 // Añadimos eyeOutline y eyeOffOutline a las importaciones
-import { shieldCheckmark, personOutline, lockClosedOutline, eyeOutline, eyeOffOutline, cloudDownloadOutline } from 'ionicons/icons';
+import { personOutline, lockClosedOutline, eyeOutline, eyeOffOutline, cloudDownloadOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-home',
@@ -31,7 +31,6 @@ export class HomePage implements OnInit {
   ) {
     // 2. Agregamos los iconos del "ojo" al registro de iconos
     addIcons({
-      'shield-checkmark':      shieldCheckmark,
       'person-outline':        personOutline,
       'lock-closed-outline':   lockClosedOutline,
       'eye-outline':           eyeOutline,

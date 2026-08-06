@@ -13,6 +13,8 @@
 }
 
 // ── Bienvenida al abrir la app ────────────────────────────────────────────────
+// Plana: sin caja/relieve detrás de la letra, solo el tipo flotando sobre el
+// fondo — mismo criterio que el splash nativo (letra W lisa, sin "inflado").
 .welcome-screen {
   position: fixed;
   inset: 0;
@@ -21,12 +23,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  background: #122a52;
-  background-image:
-    linear-gradient(rgba(255,143,0,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,143,0,0.06) 1px, transparent 1px);
-  background-size: 30px 30px;
+  gap: 6px;
+  background: #ffffff;
   opacity: 1;
   transition: opacity 0.35s ease;
 
@@ -35,29 +33,25 @@
     pointer-events: none;
   }
 
-  .welcome-icon {
-    width: 68px; height: 68px; border-radius: 20px;
-    background: #ff8f00;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 28px rgba(255, 143, 0, 0.45);
-    margin-bottom: 6px;
-
-    ion-icon { font-size: 34px; color: #ffffff; }
+  .welcome-letter {
+    font-size: 64px; font-weight: 900; color: #122a52;
+    line-height: 1; letter-spacing: -1px;
+    margin-bottom: 4px;
   }
 
   .welcome-title {
-    font-size: 20px; font-weight: 900; color: #ffffff;
+    font-size: 20px; font-weight: 900; color: #122a52;
     margin: 0; letter-spacing: -0.3px;
   }
 
   .welcome-sub {
-    font-size: 12px; font-weight: 700; color: #ff8f00;
+    font-size: 12px; font-weight: 700; color: #8a97ad;
     margin: 0 0 18px; text-transform: uppercase; letter-spacing: 0.14em;
   }
 
   ion-spinner {
-    --color: #ffffff;
+    --color: #122a52;
     width: 26px; height: 26px;
-    opacity: 0.85;
+    opacity: 0.7;
   }
 }

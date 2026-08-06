@@ -6,10 +6,15 @@
       android:background (eso es lo que causaba el fondo negro pese a que
       drawable/splash.png ya estaba bien) — necesita sus propios atributos
       windowSplashScreen*.
+
+      windowSplashScreenIconBackgroundColor queda IGUAL al background para
+      que no se note ninguna "caja" detrás del ícono — solo la letra W plana
+      flotando sobre el fondo, sin el círculo/relieve que Android le pone por
+      defecto al ícono adaptativo.
     -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#FFFFFF</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/w_icon</item>
         <item name="windowSplashScreenIconBackgroundColor">#FFFFFF</item>
         <item name="android:background">@drawable/splash</item>
     </style>
