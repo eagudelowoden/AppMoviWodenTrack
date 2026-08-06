@@ -93,7 +93,13 @@ export class HomePage implements OnInit {
 
   // Solo descarga si el archivo existe en el servidor (mismo criterio que Marcación)
   async downloadUpdate() {
-    if (!this.apkInfo?.exists || !this.apkInfo?.downloadUrl) return;
+    if (!this.apkInfo?.exists || !this.apkInfo?.downloadUrl) {
+      this.mostrarAlerta(
+        'Archivo no disponible',
+        'El equipo todavía no subió el instalador de esta versión al servidor. Intenta más tarde.',
+      );
+      return;
+    }
 
     if (Capacitor.isNativePlatform()) {
       await Browser.open({ url: this.apkInfo.downloadUrl });
