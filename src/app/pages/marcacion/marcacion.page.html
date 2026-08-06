@@ -14,7 +14,9 @@
 
       <!-- Encabezado -->
       <div class="wt-header">
-        <div class="wt-brand"><span class="b-woden"></span><span class="b-track"></span></div>
+        <button class="icon-btn" (click)="irAPerfil()" title="Mi perfil">
+          <ion-icon name="person-outline"></ion-icon>
+        </button>
         <div class="header-right">
           <div class="conn-pill" [class.offline]="!isOnline">
             <span class="conn-dot"></span>
@@ -26,9 +28,8 @@
         </div>
       </div>
 
-      <!-- Saludo + Reloj -->
+      <!-- Reloj -->
       <div class="wt-hero">
-        <p class="greeting">¡Hola, {{ primerNombre }}!</p>
         <div class="clock-row">
           <span class="clock-h">{{ timeOnly }}</span>
           <span class="clock-ap">{{ ampm }}</span>

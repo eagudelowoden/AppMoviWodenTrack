@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
-import { AuthService } from '../services/auth.service';
+import { AuthService, LastUser } from '../services/auth.service';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 // Añadimos eyeOutline y eyeOffOutline a las importaciones
@@ -11,8 +11,8 @@ import { personOutline, lockClosedOutline, eyeOutline, eyeOffOutline, cloudDownl
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
-  standalone: false, 
-  encapsulation: ViewEncapsulation.None 
+  standalone: false,
+  encapsulation: ViewEncapsulation.None
 })
 export class HomePage implements OnInit {
 
@@ -21,6 +21,19 @@ export class HomePage implements OnInit {
   appVersion    = '...';
   hasNewVersion = false;
   newVersion    = '';
+
+  // Usuario recordado del último login en este dispositivo — si existe,
+  // saludamos por su nombre en vez del logo por defecto.
+  lastUser: LastUser | null = null;
+
+  /** Tercer token del nombre completo: "Agudelo Pita Elder Daniel" → "Elder". */
+  get primerNombre(): string {
+    const p = (this.lastUser?.name ?? '').trim().split(/\s+/).filter(Boolean);
+    if (!p.length) return '';
+    const idx = p.length >= 3 ? 2 : p.length - 1;
+    const nombre = p[idx] ?? '';
+    return nombre.charAt(0).toUpperCase() + nombre.slice(1).toLowerCase();
+  }
 
   constructor(
     private router: Router,
@@ -42,6 +55,18 @@ export class HomePage implements OnInit {
   async ngOnInit() {
     this.appVersion = await this.api.getVersion();
     await this.checkNewVersion();
+  }
+
+  /**
+   * Ionic cachea las páginas: si el usuario navega fuera de /home (por
+   * ejemplo, entra y hace logout desde Marcación) y vuelve, esta instancia
+   * de HomePage se REUTILIZA en vez de recrearse — Angular nunca vuelve a
+   * llamar ngOnInit(). Por eso el usuario recordado se recarga acá
+   * (lifecycle propio de Ionic, se dispara CADA VEZ que la página vuelve a
+   * quedar activa, con o sin remontaje).
+   */
+  async ionViewWillEnter() {
+    this.lastUser = await this.auth.getLastUser();
   }
 
   private async checkNewVersion() {

@@ -107,6 +107,16 @@ ion-content.login-content {
       white-space: nowrap;
     }
   }
+
+  // Saludo personalizado (usuario recordado) — reemplaza el logo por defecto
+  .login-greeting {
+    font-size: 26px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 10px 0 0;
+    letter-spacing: -0.4px;
+    font-family: 'Poppins', sans-serif;
+  }
 }
 
 // ── Hoja blanca ───────────────────────────────────────────────────────────────

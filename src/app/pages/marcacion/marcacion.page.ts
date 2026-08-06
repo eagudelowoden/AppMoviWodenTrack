@@ -12,7 +12,7 @@ import {
   cloudDownloadOutline, closeOutline, checkmarkCircleOutline,
   arrowForwardOutline, eyeOutline, bugOutline, documentTextOutline,
   locationOutline, chevronDownOutline, chevronUpOutline, megaphoneOutline,
-  appsOutline,
+  appsOutline, personOutline,
 } from 'ionicons/icons';
 
 const INACTIVITY_MS = 10 * 60 * 1000; // 10 minutos sin actividad
@@ -33,8 +33,11 @@ export class MarcacionPage implements OnInit, OnDestroy {
 
   /** Muestra el tercer token del nombre: "Agudelo pita Elder Daniel" → "Elder" */
   get primerNombre(): string {
-    const p = (this.userData?.name ?? '').split(' ');
-    return p[2] ?? p[0] ?? '';
+    const p = (this.userData?.name ?? '').trim().split(/\s+/).filter(Boolean);
+    if (!p.length) return '';
+    const idx = p.length >= 3 ? 2 : p.length - 1;
+    const nombre = p[idx] ?? '';
+    return nombre.charAt(0).toUpperCase() + nombre.slice(1).toLowerCase();
   }
 
   get canVerComprobantes(): boolean {
@@ -74,6 +77,10 @@ export class MarcacionPage implements OnInit, OnDestroy {
   irANovedades() {
     this.masOpcionesAbierto = false;
     this.router.navigate(['/novedades']);
+  }
+
+  irAPerfil() {
+    this.router.navigate(['/perfil']);
   }
 
   // ── Panel "Más opciones" desplegable ──────────────────────────────────────
@@ -143,6 +150,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
       'chevron-up-outline':       chevronUpOutline,
       'megaphone-outline':        megaphoneOutline,
       'apps-outline':             appsOutline,
+      'person-outline':           personOutline,
     });
 
     // La sesión ya la dejó lista AuthService (guardada en home.page al hacer

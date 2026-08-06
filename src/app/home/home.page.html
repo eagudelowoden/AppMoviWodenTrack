@@ -8,16 +8,23 @@
         <ion-icon name="megaphone-outline"></ion-icon>
         <span>v{{ newVersion }} disponible</span>
       </div>
-      <!-- Marca -->
-      <div class="brand">
-        <span class="brand-letter">W</span>
-        <div class="brand-text">
-          <span class="b-woden">Woden</span><span class="b-track">Track</span>
-        </div>
-      </div>
 
-      <!-- Subtítulo -->
-      <p class="login-sub">Sistema de Asistencias</p>
+      <!-- Sin usuario recordado: marca por defecto -->
+      <ng-container *ngIf="!lastUser">
+        <div class="brand">
+          <span class="brand-letter">W</span>
+          <div class="brand-text">
+            <span class="b-woden">Woden</span><span class="b-track">Track</span>
+          </div>
+        </div>
+        <p class="login-sub">Sistema de Asistencias</p>
+      </ng-container>
+
+      <!-- Con usuario recordado: saludo fijo, sin reloj ni ícono -->
+      <div class="brand" *ngIf="lastUser">
+        <span class="brand-letter">W</span>
+        <p class="login-greeting">¡Hola, {{ primerNombre }}!</p>
+      </div>
     </div>
 
     <!-- ══ HOJA BLANCA — Formulario ═════════════════════════════════════════ -->

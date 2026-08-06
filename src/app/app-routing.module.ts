@@ -27,6 +27,11 @@ const routes: Routes = [
     canActivate: [authGuard, permisoGuard('admin.novedades')],
     loadChildren: () => import('./pages/novedades/novedades.module').then( m => m.NovedadesPageModule)
   },
+  {
+    path: 'perfil',
+    canActivate: [authGuard],
+    loadChildren: () => import('./pages/perfil/perfil.module').then( m => m.PerfilPageModule)
+  },
 ];
 
 @NgModule({

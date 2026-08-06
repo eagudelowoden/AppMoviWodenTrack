@@ -2,6 +2,15 @@ import { Injectable } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 
 const SESSION_KEY = 'wt_session';
+const LAST_USER_KEY = 'wt_last_user';
+
+/** Recordatorio liviano de quién usó esta app por última vez — a propósito
+ * NO se borra en clearSession(): sirve para personalizar el login ("¡Hola,
+ * Elder!") aunque el usuario ya haya cerrado sesión, sin guardar el token. */
+export interface LastUser {
+  name: string;
+  job?: string;
+}
 
 /**
  * Sesión completa que devuelve /login — la vamos ampliando en caliente
@@ -89,6 +98,22 @@ export class AuthService {
   async saveSession(data: UserSession): Promise<void> {
     this.cached = data;
     await Preferences.set({ key: SESSION_KEY, value: JSON.stringify(data) });
+    await this.rememberLastUser({ name: data.name, job: data.job });
+  }
+
+  /** Guarda solo nombre + cargo, para saludar en el login la próxima vez. */
+  async rememberLastUser(user: LastUser): Promise<void> {
+    await Preferences.set({ key: LAST_USER_KEY, value: JSON.stringify(user) });
+  }
+
+  /** Lee el último usuario recordado (o null si nunca inició sesión aquí). */
+  async getLastUser(): Promise<LastUser | null> {
+    try {
+      const { value } = await Preferences.get({ key: LAST_USER_KEY });
+      return value ? JSON.parse(value) : null;
+    } catch {
+      return null;
+    }
   }
 
   /** Actualiza SOLO algunos campos (ej: tras marcar entrada/salida) sin perder el resto. */

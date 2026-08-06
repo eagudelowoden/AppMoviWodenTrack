@@ -1,0 +1,60 @@
+<ion-content [fullscreen]="true" class="woden-content">
+  <div class="wt-screen">
+
+    <!-- ══ SECCIÓN SUPERIOR — Navy ═══════════════════════════════════════════ -->
+    <div class="wt-top">
+      <div class="wt-header">
+        <button class="icon-btn" (click)="volver()">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+        </button>
+        <div class="wt-brand"><span class="b-woden">Mi perfil</span></div>
+        <div class="icon-btn-spacer"></div>
+      </div>
+
+      <!-- Avatar + nombre + cargo -->
+      <div class="perfil-hero">
+        <div class="avatar">{{ iniciales }}</div>
+        <h1 class="perfil-nombre">{{ session?.name || '—' }}</h1>
+      </div>
+    </div>
+
+    <!-- ══ SECCIÓN INFERIOR — Hoja blanca ════════════════════════════════════ -->
+    <div class="wt-bottom">
+      <div class="detalle-lista">
+
+        <div class="detalle-item">
+          <div class="d-ico"><ion-icon name="briefcase-outline"></ion-icon></div>
+          <div class="d-data">
+            <span class="d-lbl">Cargo</span>
+            <span class="d-val">{{ session?.job || 'Sin cargo registrado' }}</span>
+          </div>
+        </div>
+
+        <div class="detalle-item" *ngIf="session?.department">
+          <div class="d-ico"><ion-icon name="layers-outline"></ion-icon></div>
+          <div class="d-data">
+            <span class="d-lbl">Departamento</span>
+            <span class="d-val">{{ session?.department }}</span>
+          </div>
+        </div>
+
+        <div class="detalle-item" *ngIf="session?.company">
+          <div class="d-ico"><ion-icon name="business-outline"></ion-icon></div>
+          <div class="d-data">
+            <span class="d-lbl">Empresa</span>
+            <span class="d-val">{{ session?.company }}</span>
+          </div>
+        </div>
+
+        <div class="detalle-item" *ngIf="session?.cedula || session?.identificacion">
+          <div class="d-ico"><ion-icon name="id-card-outline"></ion-icon></div>
+          <div class="d-data">
+            <span class="d-lbl">Identificación</span>
+            <span class="d-val">{{ session?.cedula || session?.identificacion }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</ion-content>
