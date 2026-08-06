@@ -72,6 +72,23 @@ ion-alert {
   }
 }
 
+// ── Pull-to-refresh: texto/ícono en blanco ──────────────────────────────────────
+// El refresher aparece sobre el fondo navy oscuro (.wt-top), pero Ionic le pone
+// el color de texto por defecto (negro) — mismo problema que ion-alert arriba:
+// queda invisible sobre fondo oscuro sin importar el tema forzado de la app.
+ion-refresher-content {
+  --color: #ffffff;
+
+  .refresher-pulling-text,
+  .refresher-refreshing-text {
+    color: #ffffff !important;
+  }
+  .refresher-pulling-icon,
+  .refresher-refreshing-icon {
+    color: #ffffff !important;
+  }
+}
+
 // ── Alert: reportar falla ───────────────────────────────────────────────────────
 .custom-alert-danger {
   .alert-head h2 { color: #080d25 !important; }
