@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 
 ion-content.login-content {
-  --background: #1c4a8a;
+  --background: #15325f;
   font-family: 'Poppins', sans-serif;
 }
 
@@ -24,7 +24,7 @@ ion-content.login-content {
   padding: 72px 28px 72px;
   flex: 0 0 42%;
 
-  background-color: #1c4a8a;
+  background-color: #15325f;
   // Ondas superpuestas (reemplaza la malla de cuadros) — dos capas de arcos
   // repetidos, desfasadas, para dar sensación de profundidad.
   background-image:
@@ -38,7 +38,7 @@ ion-content.login-content {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse 85% 80% at 50% 50%, transparent 30%, #1c4a8a 100%);
+    background: radial-gradient(ellipse 85% 80% at 50% 50%, transparent 30%, #15325f 100%);
     pointer-events: none;
   }
 
@@ -162,7 +162,7 @@ ion-content.login-content {
   transition: border-color 0.2s;
 
   &:focus-within {
-    border-color: #1c4a8a;
+    border-color: #15325f;
     background: #ffffff;
   }
 
@@ -210,7 +210,7 @@ ion-content.login-content {
 .btn-ingresar {
   width: 100%;
   height: 56px;
-  background: #1c4a8a;
+  background: #15325f;
   color: white;
   border: none;
   border-radius: 999px;
