@@ -62,7 +62,7 @@ ion-content.woden-content {
 .wt-header {
   position: relative; z-index: 1;
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 14px;
 
   .wt-brand {
     font-size: 20px; font-weight: 900; letter-spacing: -0.3px;
@@ -98,16 +98,16 @@ ion-content.woden-content {
   position: relative; z-index: 1;
 
   .greeting {
-    font-size: 26px; font-weight: 900; color: white;
-    margin: 0 0 10px; letter-spacing: -0.4px; line-height: 1.1;
+    font-size: 19px; font-weight: 800; color: white;
+    margin: 0 0 8px; letter-spacing: -0.3px; line-height: 1.1;
   }
 
   .clock-row {
     display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px;
-    .clock-h  { font-size: 48px; font-weight: 900; color: white;
-                letter-spacing: -2px; font-variant-numeric: tabular-nums; line-height: 1; }
-    .clock-ap { font-size: 18px; font-weight: 900; color: #ff8f00;
-                letter-spacing: 0.12em; text-transform: uppercase; }
+    .clock-h  { font-size: 34px; font-weight: 900; color: white;
+                letter-spacing: -1.2px; font-variant-numeric: tabular-nums; line-height: 1; }
+    .clock-ap { font-size: 14px; font-weight: 900; color: #ff8f00;
+                letter-spacing: 0.1em; text-transform: uppercase; }
   }
 
   .wt-date {
@@ -284,7 +284,7 @@ ion-content.woden-content {
 @media (max-height: 640px) {
   .wt-top { padding: 36px 18px 48px; }
   .wt-hero {
-    .greeting { font-size: 20px; }
+    .greeting { font-size: 17px; }
     .clock-row .clock-h { font-size: 38px; }
     .clock-row .clock-ap { font-size: 15px; }
   }

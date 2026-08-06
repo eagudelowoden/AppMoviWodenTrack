@@ -12,6 +12,7 @@ import {
   cloudDownloadOutline, closeOutline, checkmarkCircleOutline,
   arrowForwardOutline, eyeOutline, bugOutline, documentTextOutline,
   locationOutline, chevronDownOutline, chevronUpOutline, megaphoneOutline,
+  appsOutline,
 } from 'ionicons/icons';
 
 const INACTIVITY_MS = 10 * 60 * 1000; // 10 minutos sin actividad
@@ -141,6 +142,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
       'chevron-down-outline':     chevronDownOutline,
       'chevron-up-outline':       chevronUpOutline,
       'megaphone-outline':        megaphoneOutline,
+      'apps-outline':             appsOutline,
     });
 
     // La sesión ya la dejó lista AuthService (guardada en home.page al hacer

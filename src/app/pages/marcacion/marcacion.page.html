@@ -14,7 +14,7 @@
 
       <!-- Encabezado -->
       <div class="wt-header">
-        <div class="wt-brand"><span class="b-woden">Woden</span><span class="b-track">Track</span></div>
+        <div class="wt-brand"><span class="b-woden"></span><span class="b-track"></span></div>
         <div class="header-right">
           <div class="conn-pill" [class.offline]="!isOnline">
             <span class="conn-dot"></span>
@@ -73,9 +73,10 @@
            espacio fijo cuando está cerrado. -->
       <div class="mas-opciones" *ngIf="tieneMasOpciones">
         <button class="mo-toggle" (click)="toggleMasOpciones()" [class.open]="masOpcionesAbierto">
-          <ion-icon name="megaphone-outline"></ion-icon>
+          <ion-icon name="apps-outline"></ion-icon>
           <span>Más opciones</span>
-          <ion-icon class="mo-chevron" [name]="masOpcionesAbierto ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+          <ion-icon class="mo-chevron"
+            [name]="masOpcionesAbierto ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
         </button>
 
         <div class="mo-panel" *ngIf="masOpcionesAbierto">
@@ -142,15 +143,13 @@
         </div>
 
         <!-- Botón único (alterna entrada/salida) -->
-        <button class="gps-btn"
-          [class.is-in]="gpsTipoPendiente === 'entrada'"
-          [class.is-out]="gpsTipoPendiente === 'salida'"
-          [disabled]="!isOnline || isMarking || isMarkingGps"
+        <button class="gps-btn" [class.is-in]="gpsTipoPendiente === 'entrada'"
+          [class.is-out]="gpsTipoPendiente === 'salida'" [disabled]="!isOnline || isMarking || isMarkingGps"
           (click)="marcarConGps()">
           <ion-icon name="location-outline"></ion-icon>
           {{ isMarkingGps
-              ? 'Obteniendo ubicación...'
-              : 'Registrar ' + (gpsTipoPendiente === 'entrada' ? 'Entrada' : 'Salida') }}
+          ? 'Obteniendo ubicación...'
+          : 'Registrar ' + (gpsTipoPendiente === 'entrada' ? 'Entrada' : 'Salida') }}
         </button>
 
         <!-- Coordenadas capturadas -->

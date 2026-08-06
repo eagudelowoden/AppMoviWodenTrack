@@ -13,7 +13,9 @@ ion-content.login-content {
   font-family: 'Poppins', sans-serif;
 }
 
-// ── Zona azul con ondas ────────────────────────────────────────────────────────
+// ── Zona azul — liso con resplandor detrás del logo ───────────────────────────
+// Sin patrón repetido: un solo glow radial centrado, como en pantallas de
+// login tipo Stripe/Linear/Vercel — más limpio, no compite con la marca.
 .login-top {
   position: relative;
   overflow: hidden;
@@ -24,21 +26,16 @@ ion-content.login-content {
   padding: 72px 28px 72px;
   flex: 0 0 42%;
 
-  background-color: #0d2d5e;
-  // Ondas superpuestas (reemplaza la malla de cuadros) — dos capas de arcos
-  // repetidos, desfasadas, para dar sensación de profundidad.
+  background-color: #15325f;
   background-image:
-    radial-gradient(ellipse 60px 60px at 30px 0px, rgba(255,255,255,0.07) 48%, transparent 50%),
-    radial-gradient(ellipse 60px 60px at 90px 40px, rgba(255,255,255,0.05) 48%, transparent 50%);
-  background-size: 120px 80px, 120px 80px;
-  background-position: 0 0, 30px 40px;
+    radial-gradient(circle 220px at 50% 38%, rgba(255,143,0,0.16) 0%, transparent 70%);
 
-  // Viñeta central para suavizar las ondas hacia los bordes
+  // Viñeta sutil hacia los bordes, para dar profundidad sin patrón
   &::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse 85% 80% at 50% 50%, transparent 30%, #15325f 100%);
+    background: radial-gradient(ellipse 90% 80% at 50% 50%, transparent 55%, rgba(0,0,0,0.18) 100%);
     pointer-events: none;
   }
 
@@ -206,24 +203,24 @@ ion-content.login-content {
   }
 }
 
-// ── Botón ingresar ────────────────────────────────────────────────────────────
+// ── Botón ingresar (estilo Vercel: plano, sin degradé ni sombra pesada) ──────
 .btn-ingresar {
   width: 100%;
-  height: 56px;
-  background: #15325f;
+  height: 50px;
+  background: #0d1117;
   color: white;
-  border: none;
-  border-radius: 999px;
+  border: 1px solid #0d1117;
+  border-radius: 8px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   font-family: 'Poppins', sans-serif;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.01em;
   cursor: pointer;
   margin-top: 6px;
-  transition: transform 0.15s ease, opacity 0.15s;
-  box-shadow: 0 6px 20px rgba(8, 13, 37, 0.35);
+  transition: background-color 0.15s ease, transform 0.06s ease;
 
-  &:active { transform: scale(0.97); }
+  &:hover { background: #24292f; border-color: #24292f; }
+  &:active { transform: scale(0.98); background: #000000; }
 }
 
 // ── Versión ───────────────────────────────────────────────────────────────────
