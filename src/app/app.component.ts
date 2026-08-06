@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { ConnectivityService } from './services/connectivity.service';
 import { AuthService } from './services/auth.service';
+import { SplashScreen } from '@capacitor/splash-screen';
 
 @Component({
   selector: 'app-root',
@@ -29,6 +30,11 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    // Recién acá, con la pantalla "Bienvenido" ya pintada (mismo fondo blanco
+    // + W que el splash nativo), se oculta el splash — sin hueco en blanco
+    // entre medio, se ve como una sola pantalla.
+    SplashScreen.hide().catch(() => {});
+
     setTimeout(() => (this.showWelcome = false), this.WELCOME_MS);
 
     this.connectivity.online$.subscribe((isOnline) => {

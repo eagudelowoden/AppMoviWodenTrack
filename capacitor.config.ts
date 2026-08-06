@@ -11,8 +11,15 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 1200,
-      launchAutoHide: true,
+      // autoHide en false + SplashScreen.hide() manual (ver app.component.ts):
+      // con autoHide:true el splash se ocultaba por su propio timer (1200ms)
+      // SIN importar si Angular ya había terminado de pintar — si el arranque
+      // tardaba un poco más, quedaba un hueco en blanco entre "se oculta el
+      // splash nativo" y "aparece la pantalla Bienvenido", que se sentía como
+      // dos pantallas distintas parpadeando. Ocultándolo a mano, justo cuando
+      // Angular ya pintó la pantalla Bienvenido (mismo fondo blanco + W), no
+      // hay hueco: se siente como una sola pantalla continua.
+      launchAutoHide: false,
       backgroundColor: '#ffffffff',
       androidSplashResourceName: 'splash',
       androidScaleType: 'CENTER_CROP',
