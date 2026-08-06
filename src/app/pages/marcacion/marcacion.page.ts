@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, NgZone, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { Capacitor } from '@capacitor/core';
@@ -10,10 +11,9 @@ import {
   logOutOutline, logInOutline, calendarOutline,
   cloudDownloadOutline, closeOutline, checkmarkCircleOutline,
   arrowForwardOutline, eyeOutline, bugOutline, documentTextOutline,
-  locationOutline,
+  locationOutline, chevronDownOutline, chevronUpOutline, megaphoneOutline,
 } from 'ionicons/icons';
 
-const SESSION_KEY   = 'wt_session';
 const INACTIVITY_MS = 10 * 60 * 1000; // 10 minutos sin actividad
 
 @Component({
@@ -25,7 +25,10 @@ const INACTIVITY_MS = 10 * 60 * 1000; // 10 minutos sin actividad
 })
 export class MarcacionPage implements OnInit, OnDestroy {
 
-  userData: any = null;
+  /** AuthService es la única fuente de verdad — ya no hay copia local en sessionStorage. */
+  get userData() {
+    return this.auth.session;
+  }
 
   /** Muestra el tercer token del nombre: "Agudelo pita Elder Daniel" → "Elder" */
   get primerNombre(): string {
@@ -34,7 +37,17 @@ export class MarcacionPage implements OnInit, OnDestroy {
   }
 
   get canVerComprobantes(): boolean {
-    return !!(this.userData?.isSuperAdmin || this.userData?.permisos?.['admin.marcacion_seriales']);
+    return this.auth.hasPermiso('admin.marcacion_seriales');
+  }
+
+  /** Mismo permiso que usa la web para mostrar "Novedades" en el nav de Admin. */
+  get canVerNovedades(): boolean {
+    return this.auth.hasPermiso('admin.novedades');
+  }
+
+  /** Si hay al menos una opción del panel "Más opciones", vale la pena mostrarlo. */
+  get tieneMasOpciones(): boolean {
+    return this.canVerNovedades || this.canVerComprobantes;
   }
 
   /**
@@ -53,7 +66,22 @@ export class MarcacionPage implements OnInit, OnDestroy {
   }
 
   irAComprobantes() {
+    this.masOpcionesAbierto = false;
     this.router.navigate(['/comprobantes']);
+  }
+
+  irANovedades() {
+    this.masOpcionesAbierto = false;
+    this.router.navigate(['/novedades']);
+  }
+
+  // ── Panel "Más opciones" desplegable ──────────────────────────────────────
+  // Reemplaza los botones sueltos (Comprobantes, etc.) por un panel que se
+  // expande — pensado para crecer: cada opción nueva es una fila más en
+  // `opcionesMenu`, sin tocar el layout.
+  masOpcionesAbierto = false;
+  toggleMasOpciones() {
+    this.masOpcionesAbierto = !this.masOpcionesAbierto;
   }
 
   // ── Reloj ──────────────────────────────────────────────────────────────────
@@ -92,6 +120,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
   constructor(
     private router:       Router,
     private api:          ApiService,
+    private auth:         AuthService,
     private alertCtrl:    AlertController,
     private loadingCtrl:  LoadingController,
     private toastCtrl:    ToastController,
@@ -109,45 +138,28 @@ export class MarcacionPage implements OnInit, OnDestroy {
       'bug-outline':              bugOutline,
       'document-text-outline':    documentTextOutline,
       'location-outline':         locationOutline,
+      'chevron-down-outline':     chevronDownOutline,
+      'chevron-up-outline':       chevronUpOutline,
+      'megaphone-outline':        megaphoneOutline,
     });
 
-    // 1️⃣  Estado desde navegación (login normal)
-    const nav = this.router.getCurrentNavigation();
-    if (nav?.extras.state) {
-      this.userData     = nav.extras.state['user'];
-      this.isInside     = this.userData?.is_inside    ?? false;
-      this.dayCompleted = this.userData?.day_completed ?? false;
-      this.horaEntrada  = this.userData?.hora_entrada  ?? null;
-      this.horaSalida   = this.userData?.hora_salida   ?? null;
-      this.saveSession();
-    } else {
-      // 2️⃣  Refresh de página → restaurar desde sessionStorage
-      this.restoreSession();
-    }
+    // La sesión ya la dejó lista AuthService (guardada en home.page al hacer
+    // login, o hidratada desde Preferences si la app se reabrió) — el guard
+    // de la ruta (authGuard) ya garantiza que existe antes de llegar aquí.
+    this.isInside     = this.userData?.is_inside     ?? false;
+    this.dayCompleted = this.userData?.day_completed ?? false;
+    this.horaEntrada  = this.userData?.hora_entrada  ?? null;
+    this.horaSalida   = this.userData?.hora_salida   ?? null;
   }
 
-  // ── Persistencia de sesión ─────────────────────────────────────────────────
+  /** Persiste el estado en vivo (is_inside, horas, etc.) dentro de la sesión. */
   private saveSession() {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-      userData:     this.userData,
-      isInside:     this.isInside,
-      dayCompleted: this.dayCompleted,
-      horaEntrada:  this.horaEntrada,
-      horaSalida:   this.horaSalida,
-    }));
-  }
-
-  private restoreSession() {
-    try {
-      const raw = sessionStorage.getItem(SESSION_KEY);
-      if (!raw) return;
-      const s           = JSON.parse(raw);
-      this.userData     = s.userData;
-      this.isInside     = s.isInside;
-      this.dayCompleted = s.dayCompleted;
-      this.horaEntrada  = s.horaEntrada;
-      this.horaSalida   = s.horaSalida;
-    } catch {}
+    this.auth.patchSession({
+      is_inside:     this.isInside,
+      day_completed: this.dayCompleted,
+      hora_entrada:  this.horaEntrada,
+      hora_salida:   this.horaSalida,
+    });
   }
 
   // ── Ciclo de vida ──────────────────────────────────────────────────────────
@@ -198,7 +210,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
   // ── Sincronizar estado desde backend ───────────────────────────────────────
   async sincronizarEstado() {
     try {
-      const res = await this.api.getAttendanceStatus(this.userData.employee_id);
+      const res = await this.api.getAttendanceStatus(this.userData!.employee_id);
       if (res) {
         this.isInside     = res.is_inside     ?? this.isInside;
         this.dayCompleted = res.day_completed  ?? this.dayCompleted;
@@ -244,7 +256,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
 
   // ── Malla ──────────────────────────────────────────────────────────────────
   async cargarMalla() {
-    try { this.mallaHoy = await this.api.getMallaHoy(this.userData.employee_id); } catch {}
+    try { this.mallaHoy = await this.api.getMallaHoy(this.userData!.employee_id); } catch {}
   }
 
   // ── APK Update ─────────────────────────────────────────────────────────────
@@ -317,7 +329,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
     await loading.present();
 
     try {
-      const res = await this.api.marcarAsistencia(this.userData.employee_id, action);
+      const res = await this.api.marcarAsistencia(this.userData!.employee_id, action);
       await loading.dismiss();
 
       if (res.status === 'success') {
@@ -343,7 +355,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
   /** Carga el estado del día: qué toca marcar (entrada/salida) y la última. */
   async cargarEstadoGps() {
     try {
-      const estado = await this.api.getEstadoMarcacionGps(this.userData.id_odoo);
+      const estado = await this.api.getEstadoMarcacionGps(this.userData!.id_odoo);
       this.gpsTipoPendiente = estado?.tipo_pendiente === 'salida' ? 'salida' : 'entrada';
       this.gpsUltima        = estado?.ultima ?? null;
       this.gpsRegistrosHoy  = estado?.registros_hoy ?? [];
@@ -396,13 +408,13 @@ export class MarcacionPage implements OnInit, OnDestroy {
       await loading2.present();
       try {
         await this.api.marcarConGps({
-          id_odoo:  this.userData.id_odoo,
-          cedula:   this.userData.cedula || this.userData.identificacion || '',
-          nombre:   this.userData.name,
+          id_odoo:  this.userData!.id_odoo,
+          cedula:   this.userData!.cedula || this.userData!.identificacion || '',
+          nombre:   this.userData!.name,
           tipo,
           latitud:  ubic.latitud,
           longitud: ubic.longitud,
-          company:  this.userData.company || 'Ecuador',
+          company:  this.userData!.company || 'Ecuador',
         });
         this.lastMarkTimestamp = Date.now();
         await loading2.dismiss();
@@ -552,8 +564,8 @@ export class MarcacionPage implements OnInit, OnDestroy {
             if (!desc) { this.mostrarToast('Escribe una descripción antes de enviar', 'warning'); return false; }
             try {
               await this.api.reportarFalla({
-                empleado_id: this.userData.employee_id,
-                nombre:      this.userData.name,
+                empleado_id: this.userData!.employee_id,
+                nombre:      this.userData!.name,
                 descripcion: desc,
               });
               this.mostrarToast('✓ Reporte enviado. Gracias.', 'success');
@@ -576,10 +588,9 @@ export class MarcacionPage implements OnInit, OnDestroy {
   }
 
   // ── Logout ─────────────────────────────────────────────────────────────────
-  logout() {
-    sessionStorage.removeItem(SESSION_KEY);
+  async logout() {
     clearTimeout(this.inactivityTimer);
-    this.userData = null;
+    await this.auth.clearSession();
     this.router.navigate(['/home'], { replaceUrl: true });
   }
 }

@@ -68,11 +68,29 @@
         </button>
       </div>
 
-      <!-- Comprobantes (WFSM) — solo visible con permiso -->
-      <button class="sec-btn sec-full" *ngIf="canVerComprobantes" (click)="irAComprobantes()">
-        <ion-icon name="document-text-outline"></ion-icon>
-        <span>Comprobantes</span>
-      </button>
+      <!-- Panel "Más opciones" desplegable — agrupa accesos secundarios que
+           van a seguir creciendo (Novedades, Comprobantes, ...), sin ocupar
+           espacio fijo cuando está cerrado. -->
+      <div class="mas-opciones" *ngIf="tieneMasOpciones">
+        <button class="mo-toggle" (click)="toggleMasOpciones()" [class.open]="masOpcionesAbierto">
+          <ion-icon name="megaphone-outline"></ion-icon>
+          <span>Más opciones</span>
+          <ion-icon class="mo-chevron" [name]="masOpcionesAbierto ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+        </button>
+
+        <div class="mo-panel" *ngIf="masOpcionesAbierto">
+          <button class="mo-item" *ngIf="canVerNovedades" (click)="irANovedades()">
+            <div class="mo-ico"><ion-icon name="calendar-outline"></ion-icon></div>
+            <span>Novedades</span>
+            <ion-icon class="mo-arrow" name="arrow-forward-outline"></ion-icon>
+          </button>
+          <button class="mo-item" *ngIf="canVerComprobantes" (click)="irAComprobantes()">
+            <div class="mo-ico"><ion-icon name="document-text-outline"></ion-icon></div>
+            <span>Comprobantes</span>
+            <ion-icon class="mo-arrow" name="arrow-forward-outline"></ion-icon>
+          </button>
+        </div>
+      </div>
 
       <!-- Separador -->
       <div class="divider"><span class="dl"></span><span class="dt">Marcar asistencia</span><span class="dl"></span>

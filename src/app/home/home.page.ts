@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
+import { AuthService } from '../services/auth.service';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 // Añadimos eyeOutline y eyeOffOutline a las importaciones
@@ -24,6 +25,7 @@ export class HomePage implements OnInit {
   constructor(
     private router: Router,
     private api: ApiService,
+    private auth: AuthService,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController
   ) {
@@ -74,12 +76,12 @@ export class HomePage implements OnInit {
     try {
       const data = await this.api.login(this.userForm.usuario, this.userForm.password);
       if (data?.token) {
-        localStorage.setItem('auth_token', data.token);
+        await this.auth.saveSession(data);
       }
       await loading.dismiss();
 
-      this.router.navigate(['/marcacion'], { 
-        state: { user: data } 
+      this.router.navigate(['/marcacion'], {
+        state: { user: data }
       });
 
     } catch (error: any) {

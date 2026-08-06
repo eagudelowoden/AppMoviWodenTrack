@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { addIcons } from 'ionicons';
@@ -9,7 +10,6 @@ import {
   chevronDownCircleOutline, alertCircleOutline,
 } from 'ionicons/icons';
 
-const SESSION_KEY = 'wt_session';
 const COOLDOWN_MS = 3000;
 
 const CAMPOS_VISIBLES = [
@@ -50,6 +50,7 @@ export class ComprobantesPage implements OnInit {
   constructor(
     private router: Router,
     private api: ApiService,
+    private auth: AuthService,
   ) {
     addIcons({
       'arrow-back-outline': arrowBackOutline,
@@ -61,14 +62,9 @@ export class ComprobantesPage implements OnInit {
   }
 
   ngOnInit() {
-    const raw = sessionStorage.getItem(SESSION_KEY);
-    if (!raw) {
-      this.router.navigate(['/home'], { replaceUrl: true });
-      return;
-    }
-    const userData = JSON.parse(raw)?.userData;
-    const puedeVer = userData?.isSuperAdmin || userData?.permisos?.['admin.marcacion_seriales'];
-    if (!puedeVer) {
+    // authGuard + permisoGuard('admin.marcacion_seriales') ya validan esto en
+    // la ruta — este chequeo queda como defensa extra, no como única barrera.
+    if (!this.auth.hasPermiso('admin.marcacion_seriales')) {
       this.router.navigate(['/marcacion'], { replaceUrl: true });
     }
   }

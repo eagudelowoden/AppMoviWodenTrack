@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { authGuard, permisoGuard } from './services/auth.guard';
 
 const routes: Routes = [
   {
@@ -13,11 +14,18 @@ const routes: Routes = [
   },
   {
     path: 'marcacion',
+    canActivate: [authGuard],
     loadChildren: () => import('./pages/marcacion/marcacion.module').then( m => m.MarcacionPageModule)
   },
   {
     path: 'comprobantes',
+    canActivate: [authGuard, permisoGuard('admin.marcacion_seriales')],
     loadChildren: () => import('./pages/comprobantes/comprobantes.module').then( m => m.ComprobantesPageModule)
+  },
+  {
+    path: 'novedades',
+    canActivate: [authGuard, permisoGuard('admin.novedades')],
+    loadChildren: () => import('./pages/novedades/novedades.module').then( m => m.NovedadesPageModule)
   },
 ];
 

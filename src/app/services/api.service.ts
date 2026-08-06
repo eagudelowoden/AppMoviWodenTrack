@@ -93,6 +93,45 @@ export class ApiService {
     );
   }
 
+  // ── Novedades (mismo backend/endpoints que la web) ────────────────────────
+  async getMisNovedades(idOdoo: number, filtros?: { fechaDesde?: string; fechaHasta?: string; buscar?: string }) {
+    let params = `idOdoo=${idOdoo}`;
+    if (filtros?.fechaDesde) params += `&fechaDesde=${filtros.fechaDesde}`;
+    if (filtros?.fechaHasta) params += `&fechaHasta=${filtros.fechaHasta}`;
+    if (filtros?.buscar) params += `&buscar=${encodeURIComponent(filtros.buscar)}`;
+    return firstValueFrom(
+      this.http.get<any[]>(`${this.apiUrl}/novedades/mis-novedades?${params}`)
+    );
+  }
+
+  async crearNovedad(payload: {
+    nombre: string;
+    cedula: string;
+    descripcion: string;
+    tipificacion: string;
+    fechaInicio: string;
+    fechaFin: string;
+    ultimoDiaTrabajado?: string | null;
+    creadoPor?: number | null;
+    archivos?: File[];
+  }) {
+    const fd = new FormData();
+    fd.append('nombre', payload.nombre);
+    fd.append('cedula', payload.cedula);
+    fd.append('descripcion', payload.descripcion);
+    fd.append('tipificacion', payload.tipificacion ?? '');
+    fd.append('fechaInicio', payload.fechaInicio);
+    fd.append('fechaFin', payload.fechaFin);
+    if (payload.ultimoDiaTrabajado) fd.append('ultimoDiaTrabajado', payload.ultimoDiaTrabajado);
+    fd.append('storageMode', 'local');
+    if (payload.creadoPor != null) fd.append('creadoPor', String(payload.creadoPor));
+    for (const file of payload.archivos ?? []) fd.append('archivos', file);
+
+    return firstValueFrom(
+      this.http.post<any>(`${this.apiUrl}/novedades`, fd)
+    );
+  }
+
   async getVersion(): Promise<string> {
     try {
       const res = await firstValueFrom(

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { ConnectivityService } from './services/connectivity.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,8 @@ export class AppComponent implements OnInit {
   constructor(
     public connectivity: ConnectivityService,
     private router: Router,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private auth: AuthService,
   ) {}
 
   ngOnInit() {
@@ -28,12 +30,12 @@ export class AppComponent implements OnInit {
   }
 
   private async handleDisconnect() {
-    const hayToken = !!localStorage.getItem('auth_token');
+    const hayToken = this.auth.isLoggedIn();
     const enLogin = this.router.url.startsWith('/home') || this.router.url === '/';
     if (this.sessionClosing || !hayToken || enLogin) return;
 
     this.sessionClosing = true;
-    localStorage.removeItem('auth_token');
+    await this.auth.clearSession();
 
     const alert = await this.alertCtrl.create({
       header: 'Conexión perdida',

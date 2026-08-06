@@ -329,6 +329,59 @@ ion-content.woden-content {
   }
 }
 
+// ── Panel "Más opciones" desplegable ───────────────────────────────────────────
+// Agrupa accesos secundarios (Novedades, Comprobantes, ...) en un acordeón en
+// vez de un botón fijo por cada uno — pensado para crecer sin desordenar la
+// pantalla principal.
+.mas-opciones {
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.mo-toggle {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; background: #f0f4fa; border: 1px solid #dde3ec; border-radius: 14px;
+  padding: 12px 14px; cursor: pointer;
+  font-size: 11.5px; font-weight: 700; color: #3d5273;
+  transition: background 0.15s, border-color 0.15s;
+
+  ion-icon { font-size: 16px; color: #ff8f00; flex-shrink: 0; }
+  span { flex: 1; text-align: left; }
+  .mo-chevron { color: #94a3b8; font-size: 14px; transition: transform 0.2s; }
+
+  &.open { background: #e4eaf4; border-color: #c7d2e0; }
+  &:active { background: #e4eaf4; }
+}
+
+.mo-panel {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 2px 2px 0;
+  animation: mo-expand 0.18s ease-out;
+}
+
+@keyframes mo-expand {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.mo-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; background: #ffffff; border: 1px solid #e4eaf4; border-radius: 12px;
+  padding: 10px 12px; cursor: pointer;
+  font-size: 12px; font-weight: 700; color: #1e293b;
+  transition: background 0.15s;
+
+  .mo-ico {
+    width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff4e5;
+    ion-icon { font-size: 15px; color: #ff8f00; }
+  }
+  span { flex: 1; text-align: left; }
+  .mo-arrow { font-size: 12px; color: #c7d2e0; }
+
+  &:active { background: #f7f9fc; }
+}
+
 // ── Pie ───────────────────────────────────────────────────────────────────────
 .wt-footer {
   text-align: center; font-size: 10px; font-weight: 600; color: #c0ccd8;

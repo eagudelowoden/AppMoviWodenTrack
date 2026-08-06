@@ -1,0 +1,141 @@
+<ion-content [fullscreen]="true" class="woden-content">
+
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)" *ngIf="tab === 'historial'">
+    <ion-refresher-content pullingIcon="chevron-down-outline" pullingText="Desliza para actualizar"
+      refreshingSpinner="crescent" refreshingText="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div class="wt-screen">
+
+    <!-- ══ SECCIÓN SUPERIOR — Navy ═══════════════════════════════════════════ -->
+    <div class="wt-top">
+      <div class="wt-header">
+        <button class="icon-btn" (click)="volver()">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+        </button>
+        <div class="wt-brand"><span class="b-woden">Novedades</span></div>
+        <div class="icon-btn-spacer"></div>
+      </div>
+      <p class="wt-sub">Solicita permisos, incapacidades y demás novedades</p>
+
+      <!-- Tabs -->
+      <div class="tabs-row">
+        <button class="tab-btn" [class.active]="tab === 'nueva'" (click)="cambiarTab('nueva')">
+          <ion-icon name="add-circle-outline"></ion-icon> Nueva
+        </button>
+        <button class="tab-btn" [class.active]="tab === 'historial'" (click)="cambiarTab('historial')">
+          <ion-icon name="time-outline"></ion-icon> Mis novedades
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ SECCIÓN INFERIOR — Hoja blanca ════════════════════════════════════ -->
+    <div class="wt-bottom">
+
+      <!-- ══ TAB: NUEVA ══════════════════════════════════════════════════════ -->
+      <form *ngIf="tab === 'nueva'" (ngSubmit)="enviar()" class="form-card">
+
+        <div class="field">
+          <label>Tipificación</label>
+          <select [(ngModel)]="form.tipificacion" name="tipificacion" required>
+            <option value="" disabled>Seleccione el tipo de novedad...</option>
+            <option *ngFor="let tip of tipificaciones" [value]="tip">{{ tip }}</option>
+          </select>
+        </div>
+
+        <ng-container *ngIf="form.tipificacion !== 'Renuncia'">
+          <div class="field-row">
+            <div class="field">
+              <label>Fecha inicio</label>
+              <input type="date" [(ngModel)]="form.fechaInicio" name="fechaInicio" required />
+            </div>
+            <div class="field">
+              <label>Fecha fin</label>
+              <input type="date" [(ngModel)]="form.fechaFin" name="fechaFin" required />
+            </div>
+          </div>
+        </ng-container>
+
+        <div class="field" *ngIf="form.tipificacion === 'Renuncia'">
+          <label class="lbl-warn">Último día trabajado</label>
+          <input type="date" [(ngModel)]="form.ultimoDiaTrabajado" name="ultimoDiaTrabajado" required class="input-warn" />
+        </div>
+
+        <div class="field">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="form.descripcion" name="descripcion" rows="3"
+            placeholder="Explica el motivo..." required></textarea>
+        </div>
+
+        <div class="field">
+          <label>Archivos de soporte <span class="opt">(opcional · PDF o imagen, máx 10)</span></label>
+          <label class="dropzone">
+            <ion-icon name="cloud-upload-outline"></ion-icon>
+            <span>{{ archivos.length ? (archivos.length + ' archivo(s) seleccionado(s)') : 'Toca para elegir archivos' }}</span>
+            <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" (change)="onFilesChange($event)" hidden />
+          </label>
+
+          <div class="archivos-lista" *ngIf="archivos.length">
+            <div class="archivo-chip" *ngFor="let f of archivos; let i = index">
+              <ion-icon name="document-attach-outline"></ion-icon>
+              <span>{{ f.name }}</span>
+              <button type="button" (click)="quitarArchivo(i)"><ion-icon name="close-outline"></ion-icon></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert-submit" [class.is-ok]="submitStatus === 'ok'" [class.is-err]="submitStatus === 'error'"
+          *ngIf="submitStatus">
+          <ion-icon [name]="submitStatus === 'ok' ? 'checkmark-circle-outline' : 'close-circle-outline'"></ion-icon>
+          <span>{{ submitMessage }}</span>
+        </div>
+
+        <button type="submit" class="btn-enviar" [disabled]="loading">
+          <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+          <ng-container *ngIf="!loading">
+            <ion-icon name="checkmark-circle-outline"></ion-icon> Enviar novedad
+          </ng-container>
+        </button>
+      </form>
+
+      <!-- ══ TAB: HISTORIAL ══════════════════════════════════════════════════ -->
+      <ng-container *ngIf="tab === 'historial'">
+
+        <div class="loading-row" *ngIf="loadingHistorial">
+          <ion-spinner name="crescent"></ion-spinner>
+          <span>Cargando...</span>
+        </div>
+
+        <div class="empty-card" *ngIf="!loadingHistorial && !misNovedades.length">
+          <ion-icon name="time-outline"></ion-icon>
+          <p>Aún no has registrado ninguna novedad.</p>
+        </div>
+
+        <div class="lista" *ngIf="!loadingHistorial && misNovedades.length">
+          <div class="novedad-card" *ngFor="let nov of misNovedades">
+            <div class="nov-head">
+              <span class="nov-tipo" *ngIf="nov.tipificacion">{{ nov.tipificacion }}</span>
+              <span class="badge" [ngClass]="estadoClass(nov.aprobadoJefe)">
+                <ion-icon [name]="estadoIcon(nov.aprobadoJefe)"></ion-icon>
+                Jefe: {{ estadoLabel(nov.aprobadoJefe) }}
+              </span>
+            </div>
+            <p class="nov-desc">{{ nov.descripcion }}</p>
+            <div class="nov-footer">
+              <span class="nov-fechas">
+                {{ formatFecha(nov.fechaInicio) }} — {{ formatFecha(nov.fechaFin) }}
+              </span>
+              <span class="badge" [ngClass]="estadoClass(nov.aprobadoRrhh)">
+                <ion-icon [name]="estadoIcon(nov.aprobadoRrhh)"></ion-icon>
+                Capital Humano: {{ estadoLabel(nov.aprobadoRrhh) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+
+</ion-content>
