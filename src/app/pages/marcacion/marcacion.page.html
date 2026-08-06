@@ -160,18 +160,6 @@
         </div>
       </div>
 
-      <!-- Aviso de actualización — debajo de los botones de marcación -->
-      <div class="update-banner" *ngIf="apkInfo && showUpdateBanner" (click)="downloadUpdate()">
-        <ion-icon name="megaphone-outline"></ion-icon>
-        <div class="ub-text">
-          <span class="ub-title">Nueva actualización disponible</span>
-          <span class="ub-sub">Versión {{ apkInfo.version }} · Toca para descargar</span>
-        </div>
-        <button class="ub-dismiss" (click)="$event.stopPropagation(); dismissUpdate()">
-          <ion-icon name="close-outline"></ion-icon>
-        </button>
-      </div>
-
       <p class="wt-footer">WodenTrack Pro · {{ currentYear }}</p>
 
     </div>

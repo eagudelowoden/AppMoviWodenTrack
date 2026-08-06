@@ -3,12 +3,6 @@
     <!-- ══ ZONA OSCURA — Navy + malla ═══════════════════════════════════════ -->
     <div class="login-top">
 
-      <!-- Chip de nueva versión — esquina superior derecha -->
-      <div class="update-chip" *ngIf="hasNewVersion">
-        <ion-icon name="megaphone-outline"></ion-icon>
-        <span>v{{ newVersion }} disponible</span>
-      </div>
-
       <!-- Sin usuario recordado: marca por defecto -->
       <ng-container *ngIf="!lastUser">
         <div class="brand">
@@ -68,6 +62,18 @@
 
       <!-- Botón ingresar -->
       <button class="btn-ingresar" (click)="ingresar()">Ingresar</button>
+
+      <!-- Aviso de actualización — misma barra que en Marcación -->
+      <div class="update-banner" *ngIf="apkInfo && showUpdateBanner" (click)="downloadUpdate()">
+        <ion-icon name="megaphone-outline"></ion-icon>
+        <div class="ub-text">
+          <span class="ub-title">Nueva actualización disponible</span>
+          <span class="ub-sub">Versión {{ apkInfo.version }} · Toca para descargar</span>
+        </div>
+        <button class="ub-dismiss" (click)="$event.stopPropagation(); dismissUpdate()">
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+      </div>
 
       <p class="version-label">WodenTrack Pro · v{{ appVersion }}</p>
     </div>

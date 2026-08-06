@@ -4,8 +4,6 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { Capacitor } from '@capacitor/core';
-import { Browser } from '@capacitor/browser';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import {
   logOutOutline, logInOutline, calendarOutline,
@@ -109,8 +107,6 @@ export class MarcacionPage implements OnInit, OnDestroy {
 
   // ── Extras ─────────────────────────────────────────────────────────────────
   mallaHoy: any  = null;
-  apkInfo:  any  = null;
-  showUpdateBanner = false;
   readonly currentYear = new Date().getFullYear();
 
   // ── Guards doble marcación ─────────────────────────────────────────────────
@@ -190,11 +186,11 @@ export class MarcacionPage implements OnInit, OnDestroy {
     await this.sincronizarRelojOficial();
     this.clockInterval = setInterval(() => this.actualizarReloj(), 1000);
 
-    // Sincronizar estado real + malla + APK en paralelo
+    // Sincronizar estado real + malla en paralelo (el aviso de actualización
+    // ahora vive solo en /home — ver home.page.ts)
     await Promise.allSettled([
       this.sincronizarEstado(),
       this.cargarMalla(),
-      this.verificarActualizacion(),
       this.canMarcacionGps ? this.cargarEstadoGps() : Promise.resolve(),
     ]);
 
@@ -275,43 +271,6 @@ export class MarcacionPage implements OnInit, OnDestroy {
   // ── Malla ──────────────────────────────────────────────────────────────────
   async cargarMalla() {
     try { this.mallaHoy = await this.api.getMallaHoy(this.userData!.employee_id); } catch {}
-  }
-
-  // ── APK Update ─────────────────────────────────────────────────────────────
-  async verificarActualizacion() {
-    try {
-      const info = await this.api.getApkInfo();
-      const dismissedVersion = localStorage.getItem('apk_dismissed_version');
-
-      if (!info?.version) return;
-
-      if (dismissedVersion !== String(info.version)) {
-        this.apkInfo = info;
-        this.showUpdateBanner = true;
-      }
-    } catch {}
-  }
-
-  // Solo descarga si el archivo existe en el servidor
-  async downloadUpdate() {
-    if (!this.apkInfo?.exists || !this.apkInfo?.downloadUrl) {
-      this.mostrarToast('El archivo APK aún no está disponible para descarga', 'warning');
-      return;
-    }
-
-    if (Capacitor.isNativePlatform()) {
-      // En la app nativa, window.open() no dispara la descarga del APK.
-      // Abrir en el navegador del sistema sí permite que Android maneje
-      // la descarga y muestre la notificación nativa de "instalar".
-      await Browser.open({ url: this.apkInfo.downloadUrl });
-    } else {
-      window.open(this.apkInfo.downloadUrl, '_blank');
-    }
-  }
-
-  dismissUpdate() {
-    localStorage.setItem('apk_dismissed_version', this.apkInfo?.version ?? '');
-    this.showUpdateBanner = false;
   }
 
   // ── Marcación — triple guard ───────────────────────────────────────────────

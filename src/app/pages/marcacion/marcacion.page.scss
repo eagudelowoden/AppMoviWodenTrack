@@ -2,33 +2,6 @@ ion-content.woden-content {
   --background: #122a52;
 }
 
-// ── Aviso de actualización — debajo de los botones de marcación ──────────────
-.update-banner {
-  display: flex; align-items: center; gap: 10px;
-  background: #fff4e0; border: 1px solid #ffd9a3; border-radius: 14px;
-  padding: 10px 12px;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:active { background: #ffe9c2; }
-
-  > ion-icon {
-    font-size: 18px; color: #ff8f00; flex-shrink: 0;
-  }
-
-  .ub-text {
-    display: flex; flex-direction: column; flex: 1; min-width: 0;
-    .ub-title { font-size: 12px; font-weight: 800; color: #122a52; }
-    .ub-sub   { font-size: 10px; font-weight: 600; color: #8a6a3a; margin-top: 1px; }
-  }
-
-  .ub-dismiss {
-    background: none; border: none; padding: 4px; flex-shrink: 0;
-    display: flex; align-items: center; cursor: pointer;
-    ion-icon { font-size: 15px; color: #b08a4f; }
-  }
-}
-
 // ── Pantalla ──────────────────────────────────────────────────────────────────
 .wt-screen {
   display: flex; flex-direction: column;

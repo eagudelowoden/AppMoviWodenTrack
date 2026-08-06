@@ -3,9 +3,14 @@ import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
 import { AuthService, LastUser } from '../services/auth.service';
 import { AlertController, LoadingController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import { addIcons } from 'ionicons';
 // Añadimos eyeOutline y eyeOffOutline a las importaciones
-import { personOutline, lockClosedOutline, eyeOutline, eyeOffOutline, cloudDownloadOutline } from 'ionicons/icons';
+import {
+  personOutline, lockClosedOutline, eyeOutline, eyeOffOutline,
+  cloudDownloadOutline, megaphoneOutline, closeOutline,
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-home',
@@ -19,8 +24,11 @@ export class HomePage implements OnInit {
   userForm = { usuario: '', password: '' };
   showPassword  = false;
   appVersion    = '...';
-  hasNewVersion = false;
-  newVersion    = '';
+
+  // Aviso de actualización — mismo criterio que en Marcación (barra abajo,
+  // no el chip suelto que había antes acá).
+  apkInfo: any = null;
+  showUpdateBanner = false;
 
   // Usuario recordado del último login en este dispositivo — si existe,
   // saludamos por su nombre en vez del logo por defecto.
@@ -49,24 +57,26 @@ export class HomePage implements OnInit {
       'eye-outline':           eyeOutline,
       'eye-off-outline':       eyeOffOutline,
       'cloud-download-outline': cloudDownloadOutline,
+      'megaphone-outline':     megaphoneOutline,
+      'close-outline':         closeOutline,
     });
   }
 
   async ngOnInit() {
     this.appVersion = await this.api.getVersion();
-    await this.checkNewVersion();
   }
 
   /**
    * Ionic cachea las páginas: si el usuario navega fuera de /home (por
    * ejemplo, entra y hace logout desde Marcación) y vuelve, esta instancia
    * de HomePage se REUTILIZA en vez de recrearse — Angular nunca vuelve a
-   * llamar ngOnInit(). Por eso el usuario recordado se recarga acá
-   * (lifecycle propio de Ionic, se dispara CADA VEZ que la página vuelve a
-   * quedar activa, con o sin remontaje).
+   * llamar ngOnInit(). Por eso el usuario recordado y el aviso de versión se
+   * recargan acá (lifecycle propio de Ionic, se dispara CADA VEZ que la
+   * página vuelve a quedar activa, con o sin remontaje).
    */
   async ionViewWillEnter() {
     this.lastUser = await this.auth.getLastUser();
+    await this.checkNewVersion();
   }
 
   private async checkNewVersion() {
@@ -75,10 +85,26 @@ export class HomePage implements OnInit {
       if (!info?.version) return;
       const dismissed = localStorage.getItem('apk_dismissed_version');
       if (dismissed !== String(info.version)) {
-        this.hasNewVersion = true;
-        this.newVersion    = info.version;
+        this.apkInfo = info;
+        this.showUpdateBanner = true;
       }
     } catch {}
+  }
+
+  // Solo descarga si el archivo existe en el servidor (mismo criterio que Marcación)
+  async downloadUpdate() {
+    if (!this.apkInfo?.exists || !this.apkInfo?.downloadUrl) return;
+
+    if (Capacitor.isNativePlatform()) {
+      await Browser.open({ url: this.apkInfo.downloadUrl });
+    } else {
+      window.open(this.apkInfo.downloadUrl, '_blank');
+    }
+  }
+
+  dismissUpdate() {
+    localStorage.setItem('apk_dismissed_version', this.apkInfo?.version ?? '');
+    this.showUpdateBanner = false;
   }
 
   togglePassword() {
