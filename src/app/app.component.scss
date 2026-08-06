@@ -13,8 +13,9 @@
 }
 
 // ── Bienvenida al abrir la app ────────────────────────────────────────────────
-// Plana: sin caja/relieve detrás de la letra, solo el tipo flotando sobre el
-// fondo — mismo criterio que el splash nativo (letra W lisa, sin "inflado").
+// Mismo fondo blanco y misma letra W que el splash nativo (sin caja/relieve)
+// — el texto/spinner aparecen sobre ESE mismo fondo, para que se sienta como
+// una sola pantalla continua en vez de un salto entre dos distintas.
 .welcome-screen {
   position: fixed;
   inset: 0;

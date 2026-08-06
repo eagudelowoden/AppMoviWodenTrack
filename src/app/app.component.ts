@@ -14,9 +14,10 @@ export class AppComponent implements OnInit {
   online = true;
   private sessionClosing = false;
 
-  // Pantalla de bienvenida al abrir la app — continúa la transición después
-  // del splash nativo (que ya se ve fondo blanco + reloj) con algo de marca
-  // ("Bienvenido") mientras Angular termina de montar la primera pantalla.
+  // Pantalla de bienvenida al abrir la app — el splash nativo (fondo blanco +
+  // W) ya deja el mismo fondo blanco puesto, así que esta pantalla solo le
+  // agrega el texto/spinner encima SIN cambiar de color de fondo: se siente
+  // como una sola pantalla continua, no como un salto entre dos distintas.
   showWelcome = true;
   private readonly WELCOME_MS = 1300;
 
