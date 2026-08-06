@@ -283,22 +283,13 @@ export class MarcacionPage implements OnInit, OnDestroy {
       const info = await this.api.getApkInfo();
       const dismissedVersion = localStorage.getItem('apk_dismissed_version');
 
-      console.log('[APK] info recibida:', info);
-      console.log('[APK] versión guardada en localStorage:', dismissedVersion);
-      console.log('[APK] versión del servidor:', info?.version);
-
-      if (!info?.version) { console.warn('[APK] Sin versión válida, saliendo'); return; }
+      if (!info?.version) return;
 
       if (dismissedVersion !== String(info.version)) {
-        console.log('[APK] Versión nueva detectada → mostrando banner');
         this.apkInfo = info;
         this.showUpdateBanner = true;
-      } else {
-        console.log('[APK] Misma versión → banner oculto');
       }
-    } catch (e) {
-      console.warn('[APK] Error en la petición:', e);
-    }
+    } catch {}
   }
 
   // Solo descarga si el archivo existe en el servidor
