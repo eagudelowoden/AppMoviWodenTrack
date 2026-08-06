@@ -1,5 +1,5 @@
 ion-content.woden-content {
-  --background: #080d25;
+  --background: #122a52;
 }
 
 // ── Aviso de actualización — debajo de los botones de marcación ──────────────
@@ -18,7 +18,7 @@ ion-content.woden-content {
 
   .ub-text {
     display: flex; flex-direction: column; flex: 1; min-width: 0;
-    .ub-title { font-size: 12px; font-weight: 800; color: #080d25; }
+    .ub-title { font-size: 12px; font-weight: 800; color: #122a52; }
     .ub-sub   { font-size: 10px; font-weight: 600; color: #8a6a3a; margin-top: 1px; }
   }
 
@@ -43,7 +43,7 @@ ion-content.woden-content {
   flex-shrink: 0;
 
   // Fondo: navy + patrón malla (líneas tipo red)
-  background-color: #080d25;
+  background-color: #122a52;
   background-image:
     linear-gradient(rgba(255,143,0,0.06) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,143,0,0.06) 1px, transparent 1px);
@@ -53,7 +53,7 @@ ion-content.woden-content {
   &::after {
     content: '';
     position: absolute; inset: 0;
-    background: radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, #080d25 100%);
+    background: radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, #122a52 100%);
     pointer-events: none;
   }
 }
@@ -206,7 +206,7 @@ ion-content.woden-content {
     .p-arrow { display: none; }
 
     &.pill-in {
-      background: #080d25; color: white;
+      background: #122a52; color: white;
       .p-icon { background: rgba(16,185,129,0.18); ion-icon { color: #10b981; } }
     }
 

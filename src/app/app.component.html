@@ -2,5 +2,16 @@
   <div class="offline-banner" *ngIf="!online">
     Nuestros servicios no están disponibles. Espera un momento mientras terminamos…
   </div>
+
+  <!-- Bienvenida al abrir la app -->
+  <div class="welcome-screen" [class.is-hiding]="!showWelcome" *ngIf="showWelcome">
+    <div class="welcome-icon">
+      <ion-icon name="hourglass-outline"></ion-icon>
+    </div>
+    <p class="welcome-title">Bienvenido</p>
+    <p class="welcome-sub">WodenTrack</p>
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
   <ion-router-outlet></ion-router-outlet>
 </ion-app>

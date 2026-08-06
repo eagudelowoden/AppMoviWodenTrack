@@ -1,5 +1,5 @@
 ion-content.woden-content {
-  --background: #080d25;
+  --background: #122a52;
 }
 
 .wt-screen {
@@ -11,7 +11,7 @@ ion-content.woden-content {
 .wt-top {
   position: relative; overflow: hidden;
   padding: 48px 22px 40px; flex-shrink: 0;
-  background-color: #080d25;
+  background-color: #122a52;
   background-image:
     linear-gradient(rgba(255,143,0,0.06) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,143,0,0.06) 1px, transparent 1px);
@@ -20,7 +20,7 @@ ion-content.woden-content {
   &::after {
     content: '';
     position: absolute; inset: 0;
-    background: radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, #080d25 100%);
+    background: radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, #122a52 100%);
     pointer-events: none;
   }
 }
@@ -84,7 +84,7 @@ ion-content.woden-content {
 
   .btn-consultar {
     height: 42px; border-radius: 12px; border: none;
-    background: #080d25; color: white;
+    background: #122a52; color: white;
     display: flex; align-items: center; justify-content: center; gap: 7px;
     font-size: 13px; font-weight: 800; cursor: pointer;
     ion-icon { font-size: 15px; }

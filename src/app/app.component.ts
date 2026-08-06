@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { ConnectivityService } from './services/connectivity.service';
 import { AuthService } from './services/auth.service';
+import { addIcons } from 'ionicons';
+import { hourglassOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-root',
@@ -14,14 +16,24 @@ export class AppComponent implements OnInit {
   online = true;
   private sessionClosing = false;
 
+  // Pantalla de bienvenida al abrir la app — continúa la transición después
+  // del splash nativo (que ya se ve fondo blanco + reloj) con algo de marca
+  // ("Bienvenido") mientras Angular termina de montar la primera pantalla.
+  showWelcome = true;
+  private readonly WELCOME_MS = 1300;
+
   constructor(
     public connectivity: ConnectivityService,
     private router: Router,
     private alertCtrl: AlertController,
     private auth: AuthService,
-  ) {}
+  ) {
+    addIcons({ 'hourglass-outline': hourglassOutline });
+  }
 
   ngOnInit() {
+    setTimeout(() => (this.showWelcome = false), this.WELCOME_MS);
+
     this.connectivity.online$.subscribe((isOnline) => {
       this.online = isOnline;
       if (!isOnline) this.handleDisconnect();

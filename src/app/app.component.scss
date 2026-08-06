@@ -11,3 +11,53 @@
   padding: 6px 8px;
   padding-top: calc(6px + env(safe-area-inset-top));
 }
+
+// ── Bienvenida al abrir la app ────────────────────────────────────────────────
+.welcome-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #122a52;
+  background-image:
+    linear-gradient(rgba(255,143,0,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,143,0,0.06) 1px, transparent 1px);
+  background-size: 30px 30px;
+  opacity: 1;
+  transition: opacity 0.35s ease;
+
+  &.is-hiding {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .welcome-icon {
+    width: 68px; height: 68px; border-radius: 20px;
+    background: #ff8f00;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 28px rgba(255, 143, 0, 0.45);
+    margin-bottom: 6px;
+
+    ion-icon { font-size: 34px; color: #ffffff; }
+  }
+
+  .welcome-title {
+    font-size: 20px; font-weight: 900; color: #ffffff;
+    margin: 0; letter-spacing: -0.3px;
+  }
+
+  .welcome-sub {
+    font-size: 12px; font-weight: 700; color: #ff8f00;
+    margin: 0 0 18px; text-transform: uppercase; letter-spacing: 0.14em;
+  }
+
+  ion-spinner {
+    --color: #ffffff;
+    width: 26px; height: 26px;
+    opacity: 0.85;
+  }
+}
