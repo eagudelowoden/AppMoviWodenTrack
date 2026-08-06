@@ -7,8 +7,20 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'http',
     // Esta es la propiedad correcta para las versiones actuales:
-    cleartext: true 
-  }
+    cleartext: true
+  },
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 1200,
+      launchAutoHide: true,
+      backgroundColor: '#ffffffff',
+      androidSplashResourceName: 'splash',
+      androidScaleType: 'CENTER_CROP',
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
+  },
 };
 
 export default config;
