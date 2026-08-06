@@ -187,6 +187,14 @@ export class MarcacionPage implements OnInit, OnDestroy {
       this.verificarActualizacion(),
       this.canMarcacionGps ? this.cargarEstadoGps() : Promise.resolve(),
     ]);
+
+    // Si el usuario marca con GPS, pide el permiso de ubicación de una vez al
+    // entrar — así cuando presione "Registrar" ya está concedido y no hay que
+    // esperar el prompt nativo en ese momento. Si lo niega, no pasa nada aquí:
+    // el error real (y el toast) aparece recién cuando intente marcar.
+    if (this.canMarcacionGps) {
+      this.asegurarPermisoUbicacion().catch(() => {});
+    }
   }
 
   ngOnDestroy() {
