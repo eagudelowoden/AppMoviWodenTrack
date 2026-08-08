@@ -10,6 +10,14 @@ const OUT = path.join(__dirname, '..', 'assets');
 const NAVY = '#122a52';
 const WHITE = { r: 255, g: 255, b: 255, alpha: 1 };
 
+// El ícono de home screen usa un azul MÁS VIVO que el navy de la app
+// (#122a52 se pierde contra wallpapers oscuros, y un fondo blanco se
+// perdería contra wallpapers claros — los íconos que se ven bien en
+// cualquier fondo usan un color de marca saturado de tono medio, ni negro
+// ni blanco). El splash sigue en navy/blanco porque ahí no aplica el
+// problema (pantalla completa, no compite con ningún wallpaper).
+const ICON_BLUE = '#2451B8';
+
 /**
  * Dibuja una "W" y la RECORTA (trim) antes de centrarla — así el centrado es
  * exacto sin depender de las métricas verticales de la fuente (con
@@ -30,23 +38,23 @@ async function wTrimmed(color, weight, targetWidth) {
 }
 
 async function main() {
-  // ── Ícono de app: fondo navy sólido + W blanca nítida ─────────────────────
+  // ── Ícono de app: fondo azul vivo sólido + W blanca nítida ────────────────
   const wIcon = await wTrimmed('#ffffff', 900, 460);
-  await sharp({ create: { width: 1024, height: 1024, channels: 4, background: NAVY } })
+  await sharp({ create: { width: 1024, height: 1024, channels: 4, background: ICON_BLUE } })
     .composite([{ input: wIcon, gravity: 'center' }])
     .png()
     .toFile(path.join(OUT, 'icon-only.png'));
 
   // Adaptativo Android: foreground = W blanca sola (transparente, zona segura),
-  // background = navy sólido — así el launcher la recorta en círculo/squircle
-  // sin que se vea una caja dura. 460/1024 ocupa bien el círculo sin tocar
-  // el borde de la zona segura (~61% de diámetro).
+  // background = azul vivo sólido — así el launcher la recorta en
+  // círculo/squircle sin que se vea una caja dura. 460/1024 ocupa bien el
+  // círculo sin tocar el borde de la zona segura (~61% de diámetro).
   const wForeground = await wTrimmed('#ffffff', 900, 460);
   await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
     .composite([{ input: wForeground, gravity: 'center' }])
     .png()
     .toFile(path.join(OUT, 'icon-foreground.png'));
-  await sharp({ create: { width: 1024, height: 1024, channels: 4, background: NAVY } })
+  await sharp({ create: { width: 1024, height: 1024, channels: 4, background: ICON_BLUE } })
     .png()
     .toFile(path.join(OUT, 'icon-background.png'));
 
@@ -63,7 +71,7 @@ async function main() {
 
   // ── Favicon (pestaña del navegador) — mismo criterio que el ícono de app ──
   const wFavicon = await wTrimmed('#ffffff', 900, 230);
-  await sharp({ create: { width: 512, height: 512, channels: 4, background: NAVY } })
+  await sharp({ create: { width: 512, height: 512, channels: 4, background: ICON_BLUE } })
     .composite([{ input: wFavicon, gravity: 'center' }])
     .png()
     .toFile(path.join(OUT, 'icon', 'favicon.png'));
