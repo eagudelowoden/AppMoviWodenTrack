@@ -72,20 +72,37 @@ ion-alert {
   }
 }
 
-// ── Pull-to-refresh: texto/ícono en blanco ──────────────────────────────────────
+// ── Pull-to-refresh: texto/ícono legible en cualquier modo ──────────────────────
 // El refresher aparece sobre el fondo navy oscuro (.wt-top), pero Ionic le pone
-// el color de texto por defecto (negro) — mismo problema que ion-alert arriba:
-// queda invisible sobre fondo oscuro sin importar el tema forzado de la app.
+// el color de texto por defecto (negro) — mismo problema que ion-alert arriba.
+// Blanco fijo arreglaba el modo oscuro del dispositivo, pero en modo claro el
+// fondo detrás del refresher es claro y el blanco queda invisible ahí — por
+// eso el color depende de prefers-color-scheme, no de un valor fijo.
 ion-refresher-content {
-  --color: #ffffff;
+  --color: #122a52;
 
   .refresher-pulling-text,
   .refresher-refreshing-text {
-    color: #ffffff !important;
+    color: #122a52 !important;
   }
   .refresher-pulling-icon,
   .refresher-refreshing-icon {
-    color: #ffffff !important;
+    color: #122a52 !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  ion-refresher-content {
+    --color: #ffffff;
+
+    .refresher-pulling-text,
+    .refresher-refreshing-text {
+      color: #ffffff !important;
+    }
+    .refresher-pulling-icon,
+    .refresher-refreshing-icon {
+      color: #ffffff !important;
+    }
   }
 }
 
