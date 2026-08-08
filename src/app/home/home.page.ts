@@ -10,8 +10,13 @@ import { FileOpener } from '@capawesome-team/capacitor-file-opener';
 import { addIcons } from 'ionicons';
 // Añadimos eyeOutline y eyeOffOutline a las importaciones
 import {
-  personOutline, lockClosedOutline, eyeOutline, eyeOffOutline,
-  cloudDownloadOutline, megaphoneOutline, closeOutline,
+  personOutline,
+  lockClosedOutline,
+  eyeOutline,
+  eyeOffOutline,
+  cloudDownloadOutline,
+  megaphoneOutline,
+  closeOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -19,13 +24,12 @@ import {
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: false,
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class HomePage implements OnInit {
-
   userForm = { usuario: '', password: '' };
-  showPassword  = false;
-  appVersion    = '...';
+  showPassword = false;
+  appVersion = '...';
 
   // Aviso de actualización — mismo criterio que en Marcación (barra abajo,
   // no el chip suelto que había antes acá).
@@ -60,13 +64,13 @@ export class HomePage implements OnInit {
   ) {
     // 2. Agregamos los iconos del "ojo" al registro de iconos
     addIcons({
-      'person-outline':        personOutline,
-      'lock-closed-outline':   lockClosedOutline,
-      'eye-outline':           eyeOutline,
-      'eye-off-outline':       eyeOffOutline,
+      'person-outline': personOutline,
+      'lock-closed-outline': lockClosedOutline,
+      'eye-outline': eyeOutline,
+      'eye-off-outline': eyeOffOutline,
       'cloud-download-outline': cloudDownloadOutline,
-      'megaphone-outline':     megaphoneOutline,
-      'close-outline':         closeOutline,
+      'megaphone-outline': megaphoneOutline,
+      'close-outline': closeOutline,
     });
   }
 
@@ -142,7 +146,7 @@ export class HomePage implements OnInit {
     if (!this.apkInfo?.exists || !this.apkInfo?.downloadUrl) {
       this.mostrarAlerta(
         'Archivo no disponible',
-        'El equipo todavía no subió el instalador de esta versión al servidor. Intenta más tarde.',
+        'El equipo todavía no subió el instalador de esta versión al servidor. Intenta más tarde.'
       );
       return;
     }
@@ -157,7 +161,7 @@ export class HomePage implements OnInit {
       message:
         'Vamos a descargar e instalar la nueva versión dentro de la app. ' +
         'Android va a pedirte permiso para "instalar apps desconocidas" — ' +
-        'es normal: como WodenTrack no viene de Play Store, el sistema pide ' +
+        'es normal el sistema pide ' +
         'esa confirmación una sola vez para instalaciones directas. No afecta ' +
         'tus datos ni tu sesión.',
       buttons: [
@@ -173,11 +177,16 @@ export class HomePage implements OnInit {
     this.downloading = true;
     this.downloadProgress = 0;
 
-    const progressListener = await Filesystem.addListener('progress', (status) => {
-      if (status.contentLength > 0) {
-        this.downloadProgress = Math.round((status.bytes / status.contentLength) * 100);
+    const progressListener = await Filesystem.addListener(
+      'progress',
+      (status) => {
+        if (status.contentLength > 0) {
+          this.downloadProgress = Math.round(
+            (status.bytes / status.contentLength) * 100
+          );
+        }
       }
-    });
+    );
 
     try {
       const result = await Filesystem.downloadFile({
@@ -196,7 +205,7 @@ export class HomePage implements OnInit {
     } catch (error) {
       this.mostrarAlerta(
         'Error al descargar',
-        'No se pudo descargar la actualización. Verifica tu conexión e intenta de nuevo.',
+        'No se pudo descargar la actualización. Verifica tu conexión e intenta de nuevo.'
       );
     } finally {
       await progressListener.remove();
@@ -205,7 +214,10 @@ export class HomePage implements OnInit {
   }
 
   dismissUpdate() {
-    sessionStorage.setItem('apk_dismissed_version', this.apkInfo?.version ?? '');
+    sessionStorage.setItem(
+      'apk_dismissed_version',
+      this.apkInfo?.version ?? ''
+    );
     this.showUpdateBanner = false;
   }
 
@@ -215,27 +227,32 @@ export class HomePage implements OnInit {
 
   async ingresar() {
     if (!this.userForm.usuario || !this.userForm.password) {
-      this.mostrarAlerta('Campos Vacíos', 'Por favor ingresa tu usuario y contraseña.');
+      this.mostrarAlerta(
+        'Campos Vacíos',
+        'Por favor ingresa tu usuario y contraseña.'
+      );
       return;
     }
 
     const loading = await this.loadingCtrl.create({
       message: 'Autenticando...',
-      spinner: 'crescent'
+      spinner: 'crescent',
     });
     await loading.present();
 
     try {
-      const data = await this.api.login(this.userForm.usuario, this.userForm.password);
+      const data = await this.api.login(
+        this.userForm.usuario,
+        this.userForm.password
+      );
       if (data?.token) {
         await this.auth.saveSession(data);
       }
       await loading.dismiss();
 
       this.router.navigate(['/marcacion'], {
-        state: { user: data }
+        state: { user: data },
       });
-
     } catch (error: any) {
       await loading.dismiss();
       let mensaje = 'No se pudo conectar con el servidor.';
@@ -250,7 +267,7 @@ export class HomePage implements OnInit {
     const alert = await this.alertCtrl.create({
       header,
       message,
-      buttons: ['Aceptar']
+      buttons: ['Aceptar'],
     });
     await alert.present();
   }
