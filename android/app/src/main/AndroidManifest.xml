@@ -34,9 +34,6 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Instalar el APK descargado dentro de la app (banner de actualización) -->
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-
     <!-- Ubicación GPS para marcación con geolocalización -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />

@@ -5,8 +5,7 @@ import { AuthService, LastUser } from '../services/auth.service';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
-import { Filesystem, Directory } from '@capacitor/filesystem';
-import { FileOpener } from '@capawesome-team/capacitor-file-opener';
+import { Browser } from '@capacitor/browser';
 import { addIcons } from 'ionicons';
 // Añadimos eyeOutline y eyeOffOutline a las importaciones
 import {
@@ -31,8 +30,6 @@ export class HomePage implements OnInit {
   // no el chip suelto que había antes acá).
   apkInfo: any = null;
   showUpdateBanner = false;
-  downloading = false;
-  downloadProgress = 0;
 
   // Usuario recordado del último login en este dispositivo — si existe,
   // saludamos por su nombre en vez del logo por defecto.
@@ -109,10 +106,14 @@ export class HomePage implements OnInit {
     } catch {}
   }
 
-  // Descarga el APK dentro de la app (sin abrir navegador, sin mostrar la
-  // URL/IP del servidor) y lanza el instalador nativo de Android.
+  // Abre la página pública de descarga (frontend) en vez del endpoint crudo
+  // del archivo — así nunca se ve la IP/puerto del backend en la barra de
+  // direcciones, y no hace falta agregar el permiso de instalar paquetes
+  // dentro de la APK: la descarga y la instalación las maneja el navegador,
+  // como con cualquier APK descargado normalmente.
   async downloadUpdate() {
-    if (!this.apkInfo?.exists || !this.apkInfo?.downloadUrl) {
+    const pageUrl = this.apkInfo?.downloadPageUrl;
+    if (!pageUrl) {
       this.mostrarAlerta(
         'Archivo no disponible',
         'El equipo todavía no subió el instalador de esta versión al servidor. Intenta más tarde.',
@@ -120,44 +121,10 @@ export class HomePage implements OnInit {
       return;
     }
 
-    if (!Capacitor.isNativePlatform()) {
-      window.open(this.apkInfo.downloadUrl, '_blank');
-      return;
-    }
-
-    if (this.downloading) return;
-    this.downloading = true;
-    this.downloadProgress = 0;
-
-    const fileName = `wodentrack-${this.apkInfo.version}.apk`;
-    const progressListener = await Filesystem.addListener('progress', (status) => {
-      if (status.contentLength > 0) {
-        this.downloadProgress = Math.round((status.bytes / status.contentLength) * 100);
-      }
-    });
-
-    try {
-      const result = await Filesystem.downloadFile({
-        url: this.apkInfo.downloadUrl,
-        path: fileName,
-        directory: Directory.Cache,
-        progress: true,
-      });
-
-      if (!result.path) throw new Error('Descarga sin ruta de archivo');
-
-      await FileOpener.openFile({
-        path: result.path,
-        mimeType: 'application/vnd.android.package-archive',
-      });
-    } catch (error) {
-      this.mostrarAlerta(
-        'Error al descargar',
-        'No se pudo descargar la actualización. Verifica tu conexión e intenta de nuevo.',
-      );
-    } finally {
-      await progressListener.remove();
-      this.downloading = false;
+    if (Capacitor.isNativePlatform()) {
+      await Browser.open({ url: pageUrl });
+    } else {
+      window.open(pageUrl, '_blank');
     }
   }
 
