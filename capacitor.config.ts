@@ -22,7 +22,13 @@ const config: CapacitorConfig = {
       launchAutoHide: false,
       backgroundColor: '#ffffffff',
       androidSplashResourceName: 'splash',
-      androidScaleType: 'CENTER_CROP',
+      // CENTER_CROP recortaba la imagen para "llenar" la pantalla — como el
+      // splash es cuadrado y el teléfono es alto/angosto, el recorte era
+      // agresivo y empujaba la W hacia un borde, cortándola. CENTER_INSIDE
+      // muestra el cuadrado completo siempre (con margen blanco arriba/abajo
+      // si hace falta), sin recortar nada — el diseño ya tiene bastante
+      // padding blanco alrededor de la W, así que se ve bien igual.
+      androidScaleType: 'CENTER_INSIDE',
       showSpinner: false,
       splashFullScreen: true,
       splashImmersive: true,
