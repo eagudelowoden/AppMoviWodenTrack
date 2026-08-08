@@ -78,7 +78,12 @@ export class HomePage implements OnInit {
     // SIEMPRE coincide con lo que realmente tiene instalado.
     if (Capacitor.isNativePlatform()) {
       const info = await App.getInfo();
-      this.appVersion = info.version;
+      // El build (versionCode) va junto al número de versión: si alguna vez
+      // "queda pegada" una versión vieja, el build es la forma más rápida de
+      // confirmar si el APK instalado es realmente el que se acaba de
+      // generar o uno viejo reinstalado por error — versionName se puede
+      // repetir sin querer, versionCode siempre debe ser distinto por build.
+      this.appVersion = `${info.version} (${info.build})`;
     } else {
       this.appVersion = await this.api.getVersion();
     }
