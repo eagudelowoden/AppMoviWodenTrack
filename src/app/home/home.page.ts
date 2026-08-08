@@ -5,7 +5,8 @@ import { AuthService, LastUser } from '../services/auth.service';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
-import { Browser } from '@capacitor/browser';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { FileOpener } from '@capawesome-team/capacitor-file-opener';
 import { addIcons } from 'ionicons';
 // Añadimos eyeOutline y eyeOffOutline a las importaciones
 import {
@@ -30,6 +31,12 @@ export class HomePage implements OnInit {
   // no el chip suelto que había antes acá).
   apkInfo: any = null;
   showUpdateBanner = false;
+  downloading = false;
+  downloadProgress = 0;
+
+  // Ruta FIJA (sin versión en el nombre): cada descarga nueva sobrescribe la
+  // anterior en vez de acumular un .apk distinto por cada actualización.
+  private readonly APK_FILE_NAME = 'wodentrack-update.apk';
 
   // Usuario recordado del último login en este dispositivo — si existe,
   // saludamos por su nombre en vez del logo por defecto.
@@ -116,14 +123,13 @@ export class HomePage implements OnInit {
     } catch {}
   }
 
-  // Abre la página pública de descarga (frontend) en vez del endpoint crudo
-  // del archivo — así nunca se ve la IP/puerto del backend en la barra de
-  // direcciones, y no hace falta agregar el permiso de instalar paquetes
-  // dentro de la APK: la descarga y la instalación las maneja el navegador,
-  // como con cualquier APK descargado normalmente.
+  // Descarga el APK dentro de la app (misma ruta fija siempre, así cada
+  // actualización SOBREESCRIBE la anterior en vez de acumularse) y lanza el
+  // instalador nativo de Android. Antes de arrancar explicamos por qué va a
+  // aparecer la pantalla de "permitir instalar apps desconocidas" — para que
+  // no se sienta como algo sospechoso.
   async downloadUpdate() {
-    const pageUrl = this.apkInfo?.downloadPageUrl;
-    if (!pageUrl) {
+    if (!this.apkInfo?.exists || !this.apkInfo?.downloadUrl) {
       this.mostrarAlerta(
         'Archivo no disponible',
         'El equipo todavía no subió el instalador de esta versión al servidor. Intenta más tarde.',
@@ -131,10 +137,60 @@ export class HomePage implements OnInit {
       return;
     }
 
-    if (Capacitor.isNativePlatform()) {
-      await Browser.open({ url: pageUrl });
-    } else {
-      window.open(pageUrl, '_blank');
+    if (!Capacitor.isNativePlatform()) {
+      window.open(this.apkInfo.downloadUrl, '_blank');
+      return;
+    }
+
+    const alert = await this.alertCtrl.create({
+      header: 'Actualizar WodenTrack',
+      message:
+        'Vamos a descargar e instalar la nueva versión dentro de la app. ' +
+        'Android va a pedirte permiso para "instalar apps desconocidas" — ' +
+        'es normal: como WodenTrack no viene de Play Store, el sistema pide ' +
+        'esa confirmación una sola vez para instalaciones directas. No afecta ' +
+        'tus datos ni tu sesión.',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        { text: 'Continuar', handler: () => this.runDownload() },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async runDownload() {
+    if (this.downloading) return;
+    this.downloading = true;
+    this.downloadProgress = 0;
+
+    const progressListener = await Filesystem.addListener('progress', (status) => {
+      if (status.contentLength > 0) {
+        this.downloadProgress = Math.round((status.bytes / status.contentLength) * 100);
+      }
+    });
+
+    try {
+      const result = await Filesystem.downloadFile({
+        url: this.apkInfo.downloadUrl,
+        path: this.APK_FILE_NAME,
+        directory: Directory.Cache,
+        progress: true,
+      });
+
+      if (!result.path) throw new Error('Descarga sin ruta de archivo');
+
+      await FileOpener.openFile({
+        path: result.path,
+        mimeType: 'application/vnd.android.package-archive',
+      });
+    } catch (error) {
+      this.mostrarAlerta(
+        'Error al descargar',
+        'No se pudo descargar la actualización. Verifica tu conexión e intenta de nuevo.',
+      );
+    } finally {
+      await progressListener.remove();
+      this.downloading = false;
     }
   }
 
