@@ -39,8 +39,9 @@ async function main() {
 
   // Adaptativo Android: foreground = W blanca sola (transparente, zona segura),
   // background = navy sólido — así el launcher la recorta en círculo/squircle
-  // sin que se vea una caja dura.
-  const wForeground = await wTrimmed('#ffffff', 900, 300);
+  // sin que se vea una caja dura. 460/1024 ocupa bien el círculo sin tocar
+  // el borde de la zona segura (~61% de diámetro).
+  const wForeground = await wTrimmed('#ffffff', 900, 460);
   await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
     .composite([{ input: wForeground, gravity: 'center' }])
     .png()
