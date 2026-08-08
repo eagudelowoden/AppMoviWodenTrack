@@ -64,7 +64,17 @@ export class HomePage implements OnInit {
   }
 
   async ngOnInit() {
-    this.appVersion = await this.api.getVersion();
+    // Antes se pedía /version, que devuelve APP_VERSION — la versión del
+    // backend web genérico, sin relación con la APK instalada. Acá mostramos
+    // el versionName nativo real (el mismo que se compara contra
+    // APP_VERSION_APK en checkNewVersion), así el número que ve el usuario
+    // SIEMPRE coincide con lo que realmente tiene instalado.
+    if (Capacitor.isNativePlatform()) {
+      const info = await App.getInfo();
+      this.appVersion = info.version;
+    } else {
+      this.appVersion = await this.api.getVersion();
+    }
   }
 
   /**
