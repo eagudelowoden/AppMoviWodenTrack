@@ -22,6 +22,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    // AGP 8+ ya no genera BuildConfig por defecto — MainActivity lo necesita
+    // para leer BuildConfig.VERSION_CODE (detección de actualización de app).
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 repositories {
