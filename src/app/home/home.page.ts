@@ -115,12 +115,17 @@ export class HomePage implements OnInit {
         const appInfo = await App.getInfo();
         if (compareVersions(appInfo.version, info.version) >= 0) {
           this.showUpdateBanner = false;
-          localStorage.removeItem('apk_dismissed_version');
+          sessionStorage.removeItem('apk_dismissed_version');
           return;
         }
       }
 
-      const dismissed = localStorage.getItem('apk_dismissed_version');
+      // sessionStorage (no localStorage): "descartar" solo dura mientras la
+      // app sigue viva en memoria. Si el usuario cierra la app del todo y la
+      // vuelve a abrir, el WebView arranca una sesión nueva y el banner
+      // vuelve a aparecer si la versión instalada sigue desactualizada — así
+      // un cierre accidental de la X no la esconde para siempre.
+      const dismissed = sessionStorage.getItem('apk_dismissed_version');
       if (dismissed !== String(info.version)) {
         this.apkInfo = info;
         this.showUpdateBanner = true;
@@ -200,7 +205,7 @@ export class HomePage implements OnInit {
   }
 
   dismissUpdate() {
-    localStorage.setItem('apk_dismissed_version', this.apkInfo?.version ?? '');
+    sessionStorage.setItem('apk_dismissed_version', this.apkInfo?.version ?? '');
     this.showUpdateBanner = false;
   }
 
