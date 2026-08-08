@@ -69,6 +69,22 @@ async function main() {
   // mismo diseño en vez de un fondo oscuro que nunca se aplicaría.
   await sharp(splash).toFile(path.join(OUT, 'splash-dark.png'));
 
+  // ── Ícono animado del splash nativo Android 12+ (values-v31/styles.xml) ──
+  // Esto es TOTALMENTE independiente del splash.png de arriba: en Android 12+
+  // el sistema operativo dibuja su propio splash usando
+  // windowSplashScreenAnimatedIcon, y NO respeta androidScaleType del plugin
+  // de Capacitor (eso solo aplica al mecanismo viejo pre-Android-12). Este
+  // drawable además lo enmascara el sistema dentro de una zona segura
+  // circular más chica que el canvas (igual que un ícono adaptativo) — si el
+  // contenido ocupa casi todo el canvas, el sistema lo recorta. Por eso acá
+  // el ancho objetivo es más chico (340/1024 ≈ 33%) que en los otros usos de
+  // wTrimmed, dejando bastante margen transparente alrededor.
+  const wSplashIcon = await wTrimmed(NAVY, 900, 340);
+  await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+    .composite([{ input: wSplashIcon, gravity: 'center' }])
+    .png()
+    .toFile(path.join(OUT, 'splash-icon.png'));
+
   // ── Favicon (pestaña del navegador) — mismo criterio que el ícono de app ──
   const wFavicon = await wTrimmed('#ffffff', 900, 230);
   await sharp({ create: { width: 512, height: 512, channels: 4, background: ICON_BLUE } })

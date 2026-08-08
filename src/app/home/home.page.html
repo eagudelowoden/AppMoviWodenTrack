@@ -65,12 +65,14 @@
 
       <!-- Aviso de actualización — misma barra que en Marcación -->
       <div class="update-banner" *ngIf="apkInfo && showUpdateBanner" (click)="downloadUpdate()">
-        <ion-icon name="megaphone-outline"></ion-icon>
+        <ion-icon [name]="downloading ? 'cloud-download-outline' : 'megaphone-outline'"></ion-icon>
         <div class="ub-text">
-          <span class="ub-title">Nueva actualización disponible</span>
-          <span class="ub-sub">Versión {{ apkInfo.version }} · Toca para descargar</span>
+          <span class="ub-title" *ngIf="!downloading">Nueva actualización disponible</span>
+          <span class="ub-sub" *ngIf="!downloading">Versión {{ apkInfo.version }} · Toca para descargar</span>
+          <span class="ub-title" *ngIf="downloading">Descargando actualización…</span>
+          <span class="ub-sub" *ngIf="downloading">{{ downloadProgress }}%</span>
         </div>
-        <button class="ub-dismiss" (click)="$event.stopPropagation(); dismissUpdate()">
+        <button class="ub-dismiss" *ngIf="!downloading" (click)="$event.stopPropagation(); dismissUpdate()">
           <ion-icon name="close-outline"></ion-icon>
         </button>
       </div>

@@ -4,7 +4,9 @@ import { ApiService } from '../services/api.service';
 import { AuthService, LastUser } from '../services/auth.service';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
-import { Browser } from '@capacitor/browser';
+import { App } from '@capacitor/app';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { FileOpener } from '@capawesome-team/capacitor-file-opener';
 import { addIcons } from 'ionicons';
 // Añadimos eyeOutline y eyeOffOutline a las importaciones
 import {
@@ -29,6 +31,8 @@ export class HomePage implements OnInit {
   // no el chip suelto que había antes acá).
   apkInfo: any = null;
   showUpdateBanner = false;
+  downloading = false;
+  downloadProgress = 0;
 
   // Usuario recordado del último login en este dispositivo — si existe,
   // saludamos por su nombre en vez del logo por defecto.
@@ -83,6 +87,20 @@ export class HomePage implements OnInit {
     try {
       const info = await this.api.getApkInfo();
       if (!info?.version) return;
+
+      // Comparamos contra la versión REALMENTE instalada (versionName nativo,
+      // via @capacitor/app), no solo contra el flag de "descartado" — así el
+      // banner desaparece solo apenas el usuario instala la nueva APK, sin
+      // necesidad de que toque la X manualmente.
+      if (Capacitor.isNativePlatform()) {
+        const appInfo = await App.getInfo();
+        if (compareVersions(appInfo.version, info.version) >= 0) {
+          this.showUpdateBanner = false;
+          localStorage.removeItem('apk_dismissed_version');
+          return;
+        }
+      }
+
       const dismissed = localStorage.getItem('apk_dismissed_version');
       if (dismissed !== String(info.version)) {
         this.apkInfo = info;
@@ -91,7 +109,8 @@ export class HomePage implements OnInit {
     } catch {}
   }
 
-  // Solo descarga si el archivo existe en el servidor (mismo criterio que Marcación)
+  // Descarga el APK dentro de la app (sin abrir navegador, sin mostrar la
+  // URL/IP del servidor) y lanza el instalador nativo de Android.
   async downloadUpdate() {
     if (!this.apkInfo?.exists || !this.apkInfo?.downloadUrl) {
       this.mostrarAlerta(
@@ -101,10 +120,44 @@ export class HomePage implements OnInit {
       return;
     }
 
-    if (Capacitor.isNativePlatform()) {
-      await Browser.open({ url: this.apkInfo.downloadUrl });
-    } else {
+    if (!Capacitor.isNativePlatform()) {
       window.open(this.apkInfo.downloadUrl, '_blank');
+      return;
+    }
+
+    if (this.downloading) return;
+    this.downloading = true;
+    this.downloadProgress = 0;
+
+    const fileName = `wodentrack-${this.apkInfo.version}.apk`;
+    const progressListener = await Filesystem.addListener('progress', (status) => {
+      if (status.contentLength > 0) {
+        this.downloadProgress = Math.round((status.bytes / status.contentLength) * 100);
+      }
+    });
+
+    try {
+      const result = await Filesystem.downloadFile({
+        url: this.apkInfo.downloadUrl,
+        path: fileName,
+        directory: Directory.Cache,
+        progress: true,
+      });
+
+      if (!result.path) throw new Error('Descarga sin ruta de archivo');
+
+      await FileOpener.openFile({
+        path: result.path,
+        mimeType: 'application/vnd.android.package-archive',
+      });
+    } catch (error) {
+      this.mostrarAlerta(
+        'Error al descargar',
+        'No se pudo descargar la actualización. Verifica tu conexión e intenta de nuevo.',
+      );
+    } finally {
+      await progressListener.remove();
+      this.downloading = false;
     }
   }
 
@@ -158,4 +211,16 @@ export class HomePage implements OnInit {
     });
     await alert.present();
   }
+}
+
+/** Compara versiones tipo "3.1.4": negativo si a<b, 0 si iguales, positivo si a>b. */
+function compareVersions(a: string, b: string): number {
+  const pa = a.split('.').map((n) => parseInt(n, 10) || 0);
+  const pb = b.split('.').map((n) => parseInt(n, 10) || 0);
+  const len = Math.max(pa.length, pb.length);
+  for (let i = 0; i < len; i++) {
+    const diff = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
 }
