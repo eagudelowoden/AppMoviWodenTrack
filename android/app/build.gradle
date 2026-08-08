@@ -27,6 +27,15 @@ android {
     buildFeatures {
         buildConfig true
     }
+
+    // Por defecto Gradle nombra el APK "app-debug.apk"/"app-release.apk"
+    // (el nombre del módulo, no el de la app). Lo renombramos acá para que
+    // el archivo que subes desde GestionApk.vue ya se llame WodenTrack.
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            outputFileName = "WodenTrack-${variant.name}.apk"
+        }
+    }
 }
 
 repositories {
