@@ -42,9 +42,15 @@ export class MarcacionPage implements OnInit, OnDestroy {
     return this.auth.hasPermiso('admin.marcacion_seriales');
   }
 
-  /** Mismo permiso que usa la web para mostrar "Novedades" en el nav de Admin. */
+  /**
+   * Mismo permiso que usa la web para mostrar el botón "Registrar Novedad" en
+   * marcación — NO admin.novedades (ese es para el panel de administración de
+   * novedades, no para que un usuario registre/consulte las suyas). /novedades
+   * en la app es autoservicio (nueva + historial propio), igual que el flujo
+   * "Individual" de la web.
+   */
   get canVerNovedades(): boolean {
-    return this.auth.hasPermiso('admin.novedades');
+    return this.auth.hasPermiso('marcacion.novedad');
   }
 
   /** Si hay al menos una opción del panel "Más opciones", vale la pena mostrarlo. */
