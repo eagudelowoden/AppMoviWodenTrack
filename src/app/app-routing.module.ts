@@ -24,7 +24,12 @@ const routes: Routes = [
   },
   {
     path: 'novedades',
-    canActivate: [authGuard, permisoGuard('admin.novedades')],
+    // Mismo slug que canVerNovedades en marcacion.page.ts (marcacion.novedad,
+    // NO admin.novedades) — antes estaban desincronizados: el botón se
+    // mostraba con un permiso, pero el guard de la ruta exigía otro, así que
+    // cualquiera sin admin.novedades caía directo de vuelta a /marcacion en
+    // cuanto tocaba "Novedades" (se sentía como que la pantalla "se cerraba").
+    canActivate: [authGuard, permisoGuard('marcacion.novedad')],
     loadChildren: () => import('./pages/novedades/novedades.module').then( m => m.NovedadesPageModule)
   },
   {
