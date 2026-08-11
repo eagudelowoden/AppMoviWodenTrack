@@ -68,8 +68,12 @@ export class NovedadesPage implements OnInit {
   }
 
   ngOnInit() {
-    // authGuard + permisoGuard('admin.novedades') ya validan esto en la ruta.
-    if (!this.auth.hasPermiso('admin.novedades')) {
+    // authGuard + permisoGuard('marcacion.novedad') ya validan esto en la
+    // ruta — este chequeo es una segunda capa de seguridad, por eso tiene
+    // que usar EXACTAMENTE el mismo slug que el guard. Tenía 'admin.novedades'
+    // (el slug viejo), así que el guard dejaba pasar pero esta verificación
+    // rebotaba al instante — se sentía como que la pantalla "se salía sola".
+    if (!this.auth.hasPermiso('marcacion.novedad')) {
       this.router.navigate(['/marcacion'], { replaceUrl: true });
       return;
     }
