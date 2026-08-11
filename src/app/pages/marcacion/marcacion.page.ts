@@ -203,6 +203,23 @@ export class MarcacionPage implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * ngOnInit solo corre la primera vez que se crea esta página — Ionic la
+   * cachea, así que volver acá desde /novedades, /perfil, etc. NO la vuelve a
+   * disparar. Los permisos sí necesitan refrescarse en cada visita: si un
+   * admin activa un permiso nuevo mientras la persona ya tiene la app
+   * abierta, "Más opciones" debe poder aparecer sin que cierre sesión.
+   */
+  async ionViewWillEnter() {
+    if (!this.userData?.employee_id) return;
+    try {
+      const permisos = await this.api.getPermisosSesion(this.userData.employee_id);
+      await this.auth.patchSession({ permisos });
+    } catch {
+      // Fallo silencioso — la sesión sigue con los permisos que ya tenía cacheados
+    }
+  }
+
   ngOnDestroy() {
     clearInterval(this.clockInterval);
     clearTimeout(this.inactivityTimer);

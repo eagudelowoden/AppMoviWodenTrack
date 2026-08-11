@@ -37,6 +37,16 @@ export class ApiService {
     );
   }
 
+  // Recalcula los permisos vigentes de la sesión — la web y la app cachean
+  // `permisos` desde el login y nunca lo vuelven a pedir solas, así que si un
+  // admin cambia un permiso con la sesión ya abierta, hay que llamar esto
+  // para que se refleje sin pedirle a la persona que cierre sesión.
+  async getPermisosSesion(employeeId: number) {
+    return firstValueFrom(
+      this.http.get<Record<string, boolean>>(`${this.apiUrl}/permisos-sesion/${employeeId}`)
+    );
+  }
+
   async getApkInfo() {
     return firstValueFrom(
       this.http.get<any>(`${this.baseUrl}/apk/info`)
