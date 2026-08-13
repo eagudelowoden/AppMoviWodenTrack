@@ -68,3 +68,11 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Firma de release — la llave y la contraseña NUNCA van al repo. Si se pierde
+# este archivo, ninguna actualización futura podrá instalarse sobre lo que
+# la gente ya tiene instalado (Android exige la MISMA firma) — respáldalo
+# fuera del repo (gestor de contraseñas / almacenamiento seguro del equipo).
+/android/app/keystore/*.keystore
+/android/app/keystore/*.jks
+/android/keystore.properties

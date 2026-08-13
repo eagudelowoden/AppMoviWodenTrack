@@ -1,5 +1,16 @@
 apply plugin: 'com.android.application'
 
+// Firma de release — SIEMPRE la misma llave, o Android rechaza instalar la
+// actualización sobre lo que la gente ya tiene instalado (síntoma real: "no
+// se puede actualizar la aplicación", te saca de la app). Las credenciales
+// viven en android/keystore.properties (fuera del repo, ver .gitignore) para
+// no comitear la contraseña.
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "io.ionic.starter"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,10 +27,27 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                // rootProject.file(), no file(): keystore.properties guarda la
+                // ruta relativa a android/ (donde vive el .properties), no a
+                // android/app/ (donde vive este build.gradle).
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // Sin keystore.properties (ej. otra máquina sin el archivo), cae a
+            // sin firmar en vez de romper el build — pero esa APK NUNCA debe
+            // publicarse como actualización real, solo sirve para probar.
+            signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : null
         }
     }
     // AGP 8+ ya no genera BuildConfig por defecto — MainActivity lo necesita
