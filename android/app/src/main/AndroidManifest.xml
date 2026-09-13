@@ -34,6 +34,11 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Instalar la APK de actualización desde la propia app. Sin este permiso
+         (obligatorio desde API 26) el instalador rechaza el paquete con
+         "hay un problema con el archivo de la app", aunque el archivo esté bien. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <!-- Ubicación GPS para marcación con geolocalización -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />

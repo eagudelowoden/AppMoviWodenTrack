@@ -243,3 +243,60 @@ ion-content.login-content {
   margin: auto 0 0;
   padding-top: 8px;
 }
+
+// ── Progreso de descarga de la actualización ─────────────────────────────────
+.dl-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(13, 17, 23, 0.55);
+  backdrop-filter: blur(3px);
+
+  .dl-card {
+    width: 100%;
+    max-width: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 22px 20px 18px;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 18px 40px rgba(15, 31, 61, 0.28);
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+  }
+
+  ion-icon {
+    font-size: 30px;
+    color: #ff8f00;
+    margin-bottom: 2px;
+
+    &.dl-ok { color: #16a34a; }
+  }
+
+  .dl-title { font-size: 13px; font-weight: 800; color: #15325f; }
+  .dl-sub   { font-size: 10px; font-weight: 600; color: #94a3b8; }
+
+  .dl-bar {
+    width: 100%;
+    height: 6px;
+    margin-top: 10px;
+    border-radius: 99px;
+    background: #e8edf3;
+    overflow: hidden;
+  }
+
+  .dl-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: #ff8f00;
+    transition: width 0.2s ease;
+  }
+
+  .dl-pct { font-size: 10px; font-weight: 700; color: #15325f; }
+}

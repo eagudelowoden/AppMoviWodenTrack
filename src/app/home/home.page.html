@@ -75,6 +75,21 @@
         </button>
       </div>
 
+      <div class="dl-overlay" *ngIf="descargando">
+        <div class="dl-card">
+          <ion-icon [name]="descargaCompletada ? 'checkmark-circle-outline' : 'cloud-download-outline'"
+                    [class.dl-ok]="descargaCompletada"></ion-icon>
+          <span class="dl-title">
+            {{ descargaCompletada ? 'Descarga completada' : 'Descargando actualización' }}
+          </span>
+          <span class="dl-sub">
+            {{ descargaCompletada ? 'Abriendo el instalador...' : 'Versión ' + apkInfo?.version }}
+          </span>
+          <div class="dl-bar"><div class="dl-fill" [style.width.%]="progresoDescarga"></div></div>
+          <span class="dl-pct">{{ progresoDescarga }}%</span>
+        </div>
+      </div>
+
       <p class="version-label">WodenTrack Pro · v{{ appVersion }}</p>
     </div>
   </div>

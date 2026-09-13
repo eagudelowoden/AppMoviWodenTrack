@@ -1,11 +1,13 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, NgZone, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
 import { AuthService, LastUser } from '../services/auth.service';
 import { AlertController, LoadingController } from '@ionic/angular';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, PluginListenerHandle } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
+import { Directory, Filesystem } from '@capacitor/filesystem';
+import { FileOpener } from '@capacitor-community/file-opener';
 import { addIcons } from 'ionicons';
 // Añadimos eyeOutline y eyeOffOutline a las importaciones
 import {
@@ -16,6 +18,7 @@ import {
   cloudDownloadOutline,
   megaphoneOutline,
   closeOutline,
+  checkmarkCircleOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -35,6 +38,11 @@ export class HomePage implements OnInit {
   apkInfo: any = null;
   showUpdateBanner = false;
 
+  // Estado de la descarga nativa (alimenta el modal de progreso).
+  descargando = false;
+  progresoDescarga = 0;
+  descargaCompletada = false;
+
   // Usuario recordado del último login en este dispositivo — si existe,
   // saludamos por su nombre en vez del logo por defecto.
   lastUser: LastUser | null = null;
@@ -53,7 +61,8 @@ export class HomePage implements OnInit {
     private api: ApiService,
     private auth: AuthService,
     private alertCtrl: AlertController,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
+    private ngZone: NgZone
   ) {
     // 2. Agregamos los iconos del "ojo" al registro de iconos
     addIcons({
@@ -64,6 +73,7 @@ export class HomePage implements OnInit {
       'cloud-download-outline': cloudDownloadOutline,
       'megaphone-outline': megaphoneOutline,
       'close-outline': closeOutline,
+      'checkmark-circle-outline': checkmarkCircleOutline,
     });
   }
 
@@ -137,8 +147,10 @@ export class HomePage implements OnInit {
   // "hay un problema con el archivo de la app" de forma persistente y
   // agregaba permisos/complejidad que no valían la pena frente a esto.
   async downloadUpdate() {
-    const pageUrl = this.apkInfo?.downloadPageUrl || this.apkInfo?.downloadUrl;
-    if (!pageUrl) {
+    const fileUrl = this.apkInfo?.downloadUrl;
+    const pageUrl = this.apkInfo?.downloadPageUrl;
+
+    if (!fileUrl && !pageUrl) {
       this.mostrarAlerta(
         'Archivo no disponible',
         'El equipo todavía no subió el instalador de esta versión al servidor. Intenta más tarde.'
@@ -146,11 +158,96 @@ export class HomePage implements OnInit {
       return;
     }
 
-    if (Capacitor.isNativePlatform()) {
-      await Browser.open({ url: pageUrl });
-    } else {
-      window.open(pageUrl, '_blank');
+    // En navegador, o si el backend no expone la URL directa del archivo, no
+    // hay nada nativo que intentar: derecho a la página de descarga.
+    if (!Capacitor.isNativePlatform() || !fileUrl) {
+      await this.abrirPaginaDescarga(pageUrl);
+      return;
     }
+
+    this.descargando = true;
+    this.progresoDescarga = 0;
+    this.descargaCompletada = false;
+
+    let listener: PluginListenerHandle | undefined;
+
+    try {
+      listener = await Filesystem.addListener('progress', (s) => {
+        // El evento llega fuera de la zona de Angular: sin ngZone.run la barra
+        // avanza en memoria pero no se repinta.
+        this.ngZone.run(() => {
+          this.progresoDescarga =
+            s.contentLength > 0
+              ? Math.min(100, Math.round((s.bytes / s.contentLength) * 100))
+              : 0;
+        });
+      });
+
+      const { path } = await Filesystem.downloadFile({
+        url: fileUrl,
+        path: `WodenTrack-${this.apkInfo?.version ?? 'update'}.apk`,
+        directory: Directory.Cache,
+        progress: true,
+      });
+
+      if (!path) throw new Error('La descarga no devolvió una ruta de archivo.');
+
+      this.ngZone.run(() => {
+        this.progresoDescarga = 100;
+        this.descargaCompletada = true;
+      });
+
+      // Lanza el instalador del sistema. El plugin resuelve el content:// con
+      // su propio FileProvider, que es lo que Android exige desde la 7.
+      await FileOpener.open({
+        filePath: path,
+        contentType: 'application/vnd.android.package-archive',
+      });
+    } catch {
+      // Cualquier fallo —permiso de instalación denegado, descarga cortada,
+      // ruta que el FileProvider no puede servir— NO puede dejar al usuario
+      // sin salida ni tumbar la app: caemos al flujo del navegador, que es el
+      // que ya estaba probado y funcionando.
+      await this.abrirPaginaDescarga(pageUrl, true);
+    } finally {
+      await listener?.remove();
+      this.ngZone.run(() => {
+        this.descargando = false;
+      });
+    }
+  }
+
+  /**
+   * Camino de respaldo: la página pública de descarga. `trasFallo` avisa
+   * primero, para que el usuario entienda por qué lo sacamos de la app en vez
+   * de que el navegador le aparezca de la nada.
+   */
+  private async abrirPaginaDescarga(pageUrl?: string, trasFallo = false) {
+    if (!pageUrl) {
+      this.mostrarAlerta(
+        'Archivo no disponible',
+        'No pudimos preparar la descarga. Intenta más tarde.'
+      );
+      return;
+    }
+
+    const abrir = async () => {
+      if (Capacitor.isNativePlatform()) await Browser.open({ url: pageUrl });
+      else window.open(pageUrl, '_blank');
+    };
+
+    if (!trasFallo) {
+      await abrir();
+      return;
+    }
+
+    const alert = await this.alertCtrl.create({
+      header: 'Continuemos en el navegador',
+      message:
+        'No pudimos instalar la actualización desde la app. Te llevamos a la página de descarga para completarla desde ahí.',
+      buttons: [{ text: 'Continuar', handler: () => void abrir() }],
+    });
+    await alert.present();
   }
 
   dismissUpdate() {
