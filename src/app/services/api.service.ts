@@ -94,8 +94,18 @@ export class ApiService {
     );
   }
 
-  async getSerialesRecuperados(fecha: string, documento?: string, agente?: string) {
-    const body: { fecha: string; documento?: string; agente?: string } = { fecha };
+  async getSerialesRecuperados(
+    fecha: string,
+    fechaFin?: string,
+    documento?: string,
+    agente?: string,
+  ) {
+    const body: {
+      fecha: string;
+      fecha_fin: string;
+      documento?: string;
+      agente?: string;
+    } = { fecha, fecha_fin: fechaFin || fecha };
     if (documento) body.documento = documento;
     if (agente) body.agente = agente;
     return firstValueFrom(

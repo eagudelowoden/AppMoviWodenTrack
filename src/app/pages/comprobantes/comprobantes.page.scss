@@ -187,3 +187,46 @@ ion-content.woden-content {
   font-size: 12px; font-weight: 700; cursor: pointer;
   ion-icon { font-size: 15px; }
 }
+
+// ── Pista de uso bajo los filtros ────────────────────────────────────────────
+.pista-consulta {
+  margin: 8px 0 0;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: #94a3b8;
+
+  strong { color: #3d5273; font-weight: 700; }
+}
+
+// ── Chips de diagnóstico: de dónde salieron los datos ────────────────────────
+// Gris = caché del cron nocturno. Verde = API de WFS en vivo. Ámbar = el
+// resultado puede estar incompleto (faltan días de caché o se topó el límite).
+.modo-chip {
+  align-self: center;
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-size: 9.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: #eef2f7;
+  color: #64748b;
+
+  &.is-directo { background: #dcfce7; color: #15803d; }
+  &.is-aviso   { background: #fef3c7; color: #b45309; }
+}
+
+// ── Rango de fechas: contador de días y aviso de tope ────────────────────────
+.hint-rango {
+  margin-top: 3px;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #94a3b8;
+
+  &.is-error { color: #dc2626; }
+}
+
+input.input-error {
+  border-color: #dc2626;
+  background: #fef2f2;
+}

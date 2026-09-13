@@ -19,8 +19,17 @@
       <!-- Filtros -->
       <div class="filtros-card">
         <div class="field">
-          <label>Fecha</label>
+          <label>Desde</label>
           <input type="date" [(ngModel)]="filtros.fecha" />
+        </div>
+        <div class="field">
+          <label>Hasta</label>
+          <input type="date" [(ngModel)]="filtros.fechaFin" [class.input-error]="rangoExcedido" />
+          <span class="hint-rango" [class.is-error]="rangoExcedido">
+            {{ rangoExcedido
+              ? 'Máximo 15 días · estás pidiendo ' + diasRango
+              : diasRango + (diasRango === 1 ? ' día' : ' días') }}
+          </span>
         </div>
         <div class="field">
           <label>Cédula cliente <span class="opt">(opcional)</span></label>
@@ -32,13 +41,19 @@
           <input type="text" [(ngModel)]="filtros.agente" placeholder="Nombre del agente"
             (keyup.enter)="consultar()" />
         </div>
-        <button class="btn-consultar" (click)="consultar()" [disabled]="loading">
+        <button class="btn-consultar" (click)="consultar()"
+          [disabled]="loading || !hayFiltro || rangoExcedido">
           <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
           <ng-container *ngIf="!loading">
             <ion-icon name="search-outline"></ion-icon>
             Consultar
           </ng-container>
         </button>
+
+        <p class="pista-consulta">
+          <strong>Cédula del cliente</strong> consulta la API directamente.
+          <strong>Agente</strong> busca sobre los datos que el proceso nocturno ya guardó (último mes).
+        </p>
       </div>
 
       <!-- Error -->
@@ -54,6 +69,18 @@
           <div class="resumen-total">
             <span class="num">{{ totalFiltrado }}</span>
             <span class="lbl">registro{{ totalFiltrado !== 1 ? 's' : '' }}</span>
+
+            <span class="modo-chip" *ngIf="infoConsulta?.modo"
+              [class.is-directo]="infoConsulta?.modo === 'directo'">
+              {{ infoConsulta?.modo === 'directo' ? 'API directa' : 'Caché' }}
+            </span>
+
+            <span class="modo-chip is-aviso"
+              *ngIf="infoConsulta?.modo === 'bd' && (infoConsulta?.dias_con_cache ?? 0) < (infoConsulta?.dias_rango ?? 0)">
+              {{ (infoConsulta?.dias_rango ?? 0) - (infoConsulta?.dias_con_cache ?? 0) }} de {{ infoConsulta?.dias_rango }} días sin datos
+            </span>
+
+            <span class="modo-chip is-aviso" *ngIf="infoConsulta?.truncado">Tope alcanzado</span>
           </div>
           <div class="busqueda">
             <ion-icon name="search-outline"></ion-icon>

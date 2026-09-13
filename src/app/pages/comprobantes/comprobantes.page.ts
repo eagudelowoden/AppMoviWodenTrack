@@ -12,6 +12,12 @@ import {
 
 const COOLDOWN_MS = 3000;
 
+// Tope de días por consulta. El backend no lo impone (solo trunca a 5.000
+// filas), pero su propio comentario advierte que 15 días sin filtros son
+// ~150.000 filas: cientos de MB en el heap de una sola petición. En un móvil
+// además hay que renderizarlas, así que el tope se corta aquí.
+const MAX_DIAS_RANGO = 15;
+
 const CAMPOS_VISIBLES = [
   { key: 'cedula_cliente', label: 'Cédula cliente' },
   { key: 'agente_campo', label: 'Agente' },
@@ -38,12 +44,45 @@ export class ComprobantesPage implements OnInit {
 
   readonly camposVisibles = CAMPOS_VISIBLES;
 
-  filtros = { fecha: this.hoy(), documento: '', agente: '' };
+  filtros = { fecha: this.hoy(), fechaFin: this.hoy(), documento: '', agente: '' };
   loading = false;
   error = '';
   registros: any[] | null = null;
   busquedaLocal = '';
   limite = 50;
+
+  // Diagnóstico que devuelve el backend: de dónde salieron los datos ('directo'
+  // = API de WFS, 'bd' = caché que llena el cron nocturno) y qué tanto del
+  // rango pedido alcanza a cubrir esa caché.
+  infoConsulta: {
+    modo?: string;
+    dias_rango?: number;
+    dias_con_cache?: number;
+    truncado?: boolean;
+  } | null = null;
+
+  /** La cédula del cliente es lo único que hace que WFS se consulte directo. */
+  get hayFiltro(): boolean {
+    return !!(this.filtros.documento.trim() || this.filtros.agente.trim());
+  }
+
+  /**
+   * Días que abarca el rango, contando ambos extremos (igual que `diasEntre`
+   * del backend). Se usa el valor absoluto porque el backend normaliza los
+   * rangos invertidos, así que 10→1 cuenta lo mismo que 1→10.
+   */
+  get diasRango(): number {
+    const ini = new Date(this.filtros.fecha + 'T00:00:00').getTime();
+    const fin = new Date(
+      (this.filtros.fechaFin || this.filtros.fecha) + 'T00:00:00',
+    ).getTime();
+    if (isNaN(ini) || isNaN(fin)) return 1;
+    return Math.abs(Math.round((fin - ini) / 86400000)) + 1;
+  }
+
+  get rangoExcedido(): boolean {
+    return this.diasRango > MAX_DIAS_RANGO;
+  }
 
   private ultimaConsulta = 0;
 
@@ -79,6 +118,25 @@ export class ComprobantesPage implements OnInit {
 
   async consultar() {
     if (this.loading) return;
+
+    // Sin filtro no se consulta: un rango entero son decenas de miles de filas
+    // que nadie revisa a mano. Va antes del cooldown — no tiene sentido gastar
+    // el rate-limit en una petición que ni siquiera se envía.
+    if (!this.hayFiltro) {
+      this.error =
+        'Aplica un filtro para consultar: cédula del cliente o nombre/cédula del agente.';
+      this.registros = null;
+      this.infoConsulta = null;
+      return;
+    }
+
+    if (this.rangoExcedido) {
+      this.error = `El rango no puede superar ${MAX_DIAS_RANGO} días. Estás pidiendo ${this.diasRango}.`;
+      this.registros = null;
+      this.infoConsulta = null;
+      return;
+    }
+
     const ahora = Date.now();
     if (ahora - this.ultimaConsulta < COOLDOWN_MS) {
       this.error = 'Espera un momento antes de volver a consultar.';
@@ -93,13 +151,21 @@ export class ComprobantesPage implements OnInit {
     try {
       const data = await this.api.getSerialesRecuperados(
         this.filtros.fecha,
+        this.filtros.fechaFin || this.filtros.fecha,
         this.filtros.documento.trim() || undefined,
         this.filtros.agente.trim() || undefined,
       );
       this.registros = data?.registros ?? [];
+      this.infoConsulta = {
+        modo: data?.modo,
+        dias_rango: data?.dias_rango,
+        dias_con_cache: data?.dias_con_cache,
+        truncado: data?.truncado,
+      };
     } catch (err: any) {
       this.error = err?.error?.error || 'Error al consultar la API externa.';
       this.registros = null;
+      this.infoConsulta = null;
     } finally {
       this.loading = false;
     }
