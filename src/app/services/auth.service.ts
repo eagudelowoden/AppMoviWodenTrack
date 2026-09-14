@@ -10,6 +10,10 @@ const LAST_USER_KEY = 'wt_last_user';
 export interface LastUser {
   name: string;
   job?: string;
+  /** Usuario/cédula del login, solo si la persona activó "Recordar mi usuario".
+   * NUNCA se guarda la contraseña: quien tome el teléfono podría entrar sin
+   * saberla, y en Preferences quedaría en texto plano. */
+  usuario?: string;
 }
 
 /**
@@ -101,9 +105,26 @@ export class AuthService {
     await this.rememberLastUser({ name: data.name, job: data.job });
   }
 
-  /** Guarda solo nombre + cargo, para saludar en el login la próxima vez. */
-  async rememberLastUser(user: LastUser): Promise<void> {
-    await Preferences.set({ key: LAST_USER_KEY, value: JSON.stringify(user) });
+  /**
+   * Guarda nombre + cargo para saludar en el login la próxima vez.
+   * FUSIONA con lo ya guardado en vez de reemplazarlo: saveSession() llama acá
+   * con solo {name, job} en cada login, y sobrescribir borraría el `usuario`
+   * recordado en el primer inicio de sesión.
+   */
+  async rememberLastUser(user: Partial<LastUser>): Promise<void> {
+    const actual = (await this.getLastUser()) ?? ({} as LastUser);
+    await Preferences.set({
+      key: LAST_USER_KEY,
+      value: JSON.stringify({ ...actual, ...user }),
+    });
+  }
+
+  /** Recuerda el usuario del login, o lo olvida si llega null. */
+  async setUsuarioRecordado(usuario: string | null): Promise<void> {
+    const next = { ...((await this.getLastUser()) ?? ({} as LastUser)) };
+    if (usuario) next.usuario = usuario;
+    else delete next.usuario;
+    await Preferences.set({ key: LAST_USER_KEY, value: JSON.stringify(next) });
   }
 
   /** Lee el último usuario recordado (o null si nunca inició sesión aquí). */

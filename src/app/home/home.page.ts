@@ -19,6 +19,7 @@ import {
   megaphoneOutline,
   closeOutline,
   checkmarkCircleOutline,
+  checkmarkOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -31,6 +32,7 @@ import {
 export class HomePage implements OnInit {
   userForm = { usuario: '', password: '' };
   showPassword = false;
+  recordarUsuario = false;
   appVersion = '...';
 
   // Aviso de actualización — mismo criterio que en Marcación (barra abajo,
@@ -74,6 +76,7 @@ export class HomePage implements OnInit {
       'megaphone-outline': megaphoneOutline,
       'close-outline': closeOutline,
       'checkmark-circle-outline': checkmarkCircleOutline,
+      'checkmark-outline': checkmarkOutline,
     });
   }
 
@@ -106,6 +109,14 @@ export class HomePage implements OnInit {
    */
   async ionViewWillEnter() {
     this.lastUser = await this.auth.getLastUser();
+
+    // Precarga el usuario si quedó recordado. Solo si el campo está vacío, para
+    // no pisar lo que la persona ya alcanzó a escribir.
+    if (this.lastUser?.usuario && !this.userForm.usuario) {
+      this.userForm.usuario = this.lastUser.usuario;
+      this.recordarUsuario = true;
+    }
+
     await this.checkNewVersion();
   }
 
@@ -285,6 +296,13 @@ export class HomePage implements OnInit {
       if (data?.token) {
         await this.auth.saveSession(data);
       }
+
+      // Después de saveSession, que también escribe en LastUser — si se hiciera
+      // antes, el merge de rememberLastUser correría con el valor viejo.
+      await this.auth.setUsuarioRecordado(
+        this.recordarUsuario ? this.userForm.usuario.trim() : null,
+      );
+
       await loading.dismiss();
 
       this.router.navigate(['/marcacion'], {

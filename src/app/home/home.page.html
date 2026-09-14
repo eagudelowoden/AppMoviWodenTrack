@@ -60,6 +60,14 @@
         </button>
       </div>
 
+      <!-- Recordar usuario -->
+      <button class="recordar-row" (click)="recordarUsuario = !recordarUsuario">
+        <span class="recordar-box" [class.is-on]="recordarUsuario">
+          <ion-icon name="checkmark-outline" *ngIf="recordarUsuario"></ion-icon>
+        </span>
+        <span class="recordar-txt">Recordar mi usuario</span>
+      </button>
+
       <!-- Botón ingresar -->
       <button class="btn-ingresar" (click)="ingresar()">Ingresar</button>
 
