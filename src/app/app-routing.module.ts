@@ -32,10 +32,22 @@ const routes: Routes = [
     canActivate: [authGuard, permisoGuard('marcacion.novedad')],
     loadChildren: () => import('./pages/novedades/novedades.module').then( m => m.NovedadesPageModule)
   },
+  // Preoperacional moto: tres permisos independientes (web y móvil comparten slugs)
+  { path: 'preoperacional', redirectTo: 'preoperacional/diario', pathMatch: 'full' },
   {
-    path: 'preoperacional',
-    canActivate: [authGuard, permisoGuard('preoperacional.registrar')],
+    path: 'preoperacional/diario', // OpeDiario
+    canActivate: [authGuard, permisoGuard('preoperacional.diario')],
     loadChildren: () => import('./pages/preoperacional/preoperacional.module').then( m => m.PreoperacionalPageModule)
+  },
+  {
+    path: 'preoperacional/mensual', // OpeMensual
+    canActivate: [authGuard, permisoGuard('preoperacional.mensual')],
+    loadChildren: () => import('./pages/mantenimiento-mensual/mantenimiento-mensual.module').then( m => m.MantenimientoMensualPageModule)
+  },
+  {
+    path: 'preoperacional/mis-registros', // consulta agente ope
+    canActivate: [authGuard, permisoGuard('preoperacional.consulta_agente')],
+    loadChildren: () => import('./pages/mis-registros/mis-registros.module').then( m => m.MisRegistrosPageModule)
   },
   {
     path: 'perfil',

@@ -86,9 +86,19 @@
             <span>Novedades</span>
             <ion-icon class="mo-arrow" name="arrow-forward-outline"></ion-icon>
           </button>
-          <button class="mo-item" *ngIf="canVerPreoperacional" (click)="irAPreoperacional()">
+          <button class="mo-item" *ngIf="canPreopDiario" (click)="irAPreoperacional('diario')">
             <div class="mo-ico"><ion-icon name="bicycle-outline"></ion-icon></div>
-            <span>Preoperacional moto</span>
+            <span>Preoperacional diario</span>
+            <ion-icon class="mo-arrow" name="arrow-forward-outline"></ion-icon>
+          </button>
+          <button class="mo-item" *ngIf="canPreopMensual" (click)="irAPreoperacional('mensual')">
+            <div class="mo-ico"><ion-icon name="build-outline"></ion-icon></div>
+            <span>Mantenimiento mensual</span>
+            <ion-icon class="mo-arrow" name="arrow-forward-outline"></ion-icon>
+          </button>
+          <button class="mo-item" *ngIf="canPreopAgente" (click)="irAPreoperacional('mis-registros')">
+            <div class="mo-ico"><ion-icon name="folder-open-outline"></ion-icon></div>
+            <span>Mis preoperacionales</span>
             <ion-icon class="mo-arrow" name="arrow-forward-outline"></ion-icon>
           </button>
           <button class="mo-item" *ngIf="canVerComprobantes" (click)="irAComprobantes()">

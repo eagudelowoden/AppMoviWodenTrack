@@ -5,7 +5,7 @@
     <div class="wt-top">
       <div class="wt-header">
         <button class="icon-btn" (click)="volver()"><ion-icon name="arrow-back-outline"></ion-icon></button>
-        <div class="wt-brand"><span class="b-woden">Preoperacional</span> <span class="b-acc">Moto</span></div>
+        <div class="wt-brand"><span class="b-woden">Preoperacional</span> <span class="b-acc">Diario</span></div>
         <div class="icon-btn-spacer"></div>
       </div>
       <div class="steps" *ngIf="cfg && !cargando">
@@ -45,108 +45,17 @@
             <p class="pf-err" *ngIf="errores['placa']">{{ errores['placa'] }}</p>
             <p class="pf-err" *ngIf="errores['km']">{{ errores['km'] }}</p>
             <p class="pf-err" *ngIf="errores['general']">{{ errores['general'] }}</p>
+            <div class="pf-alert bad" *ngIf="mantEstado?.estado === 'bloqueado'">
+              <ion-icon name="lock-closed-outline"></ion-icon>
+              <span>
+                <b>Inspecciones bloqueadas para {{ datos.placa }}</b>
+                Falta el reporte de mantenimiento de {{ mantEstado.mes }} y ya pasó el día {{ cfg.diaLimiteMantenimiento }}. Debe diligenciarlo en el formulario mensual para continuar.
+                <button type="button" class="link-btn" *ngIf="puedeMensual" (click)="irMensual()">Ir al mantenimiento mensual</button>
+              </span>
+            </div>
             <p class="hint">Se recuerda la placa en este equipo para el siguiente turno.</p>
           </div>
           <p class="hint">Responda de acuerdo con la condición real observada. Si identifica una condición que pueda afectar la seguridad, no inicie el desplazamiento y repórtela de inmediato.</p>
-        </ng-container>
-
-        <!-- ═══ MANTENIMIENTO MENSUAL ═══ -->
-        <ng-container *ngIf="actual.tipo === 'mantenimiento'">
-          <div class="pf-alert" [class.bad]="mantEstado?.estado === 'bloqueado'" [class.warn]="mantEstado?.estado !== 'bloqueado'">
-            <ion-icon [name]="mantEstado?.estado === 'bloqueado' ? 'lock-closed-outline' : 'build-outline'"></ion-icon>
-            <span>
-              <b>{{ mantEstado?.estado === 'bloqueado' ? 'Inspecciones bloqueadas' : ('Pendiente: mantenimiento de ' + mantEstado?.mes) }}</b>
-              <ng-container *ngIf="mantEstado?.estado === 'bloqueado'">
-                La placa {{ datos.placa }} no tiene el reporte del mes y ya pasó el día {{ cfg.diaLimiteMantenimiento }}. Diligéncielo para continuar.
-              </ng-container>
-              <ng-container *ngIf="mantEstado?.estado !== 'bloqueado'">
-                Le quedan {{ mantEstado?.diasRestantes }} día(s). Desde el día {{ cfg.diaLimiteMantenimiento + 1 }} no podrá registrar inspecciones de esta placa sin el reporte.
-              </ng-container>
-            </span>
-          </div>
-
-          <div class="form-card">
-            <h3 class="blk-h">1 · Mantenimiento preventivo</h3>
-            <p class="q-text">¿Se realizó el mantenimiento preventivo de la motocicleta en el último período?</p>
-            <div class="opts">
-              <button type="button" class="opt good" [class.on]="mant.realizado === 'Sí'" (click)="setRealizado('Sí')"><ion-icon name="checkmark-outline"></ion-icon>Sí</button>
-              <button type="button" class="opt bad" [class.on]="mant.realizado === 'No'" (click)="setRealizado('No')"><ion-icon name="close-outline"></ion-icon>No</button>
-            </div>
-            <p class="pf-err" *ngIf="errores['realizado']">{{ errores['realizado'] }}</p>
-
-            <ng-container *ngIf="mant.realizado === 'Sí'">
-              <div class="field-row">
-                <div class="field"><label>Fecha</label><input type="date" [(ngModel)]="mant.fecha" [max]="cfg.hoy" /></div>
-                <div class="field"><label>Kilometraje</label>
-                  <input class="mono" inputmode="numeric" placeholder="00000" [ngModel]="mant.km" (ngModelChange)="soloNum('km', $event)" /></div>
-              </div>
-              <p class="pf-err" *ngIf="errores['fechaM']">{{ errores['fechaM'] }}</p>
-              <p class="pf-err" *ngIf="errores['kmM']">{{ errores['kmM'] }}</p>
-              <div class="field"><label>Taller o centro de servicio</label><input [(ngModel)]="mant.taller" placeholder="Nombre del taller" /></div>
-              <p class="pf-err" *ngIf="errores['taller']">{{ errores['taller'] }}</p>
-              <div class="field"><label>N.º de factura u orden <span class="opt-t">(opcional)</span></label><input class="mono" [(ngModel)]="mant.factura" /></div>
-            </ng-container>
-
-            <ng-container *ngIf="mant.realizado === 'No'">
-              <div class="field"><label class="lbl-bad">Motivo por el cual no se realizó</label>
-                <textarea rows="3" [(ngModel)]="mant.motivo"></textarea></div>
-              <p class="pf-err" *ngIf="errores['motivo']">{{ errores['motivo'] }}</p>
-              <div class="field"><label>Fecha en que lo realizará</label><input type="date" [(ngModel)]="mant.programada" [min]="cfg.hoy" /></div>
-              <p class="pf-err" *ngIf="errores['programada']">{{ errores['programada'] }}</p>
-            </ng-container>
-          </div>
-
-          <div class="form-card" *ngIf="mant.realizado === 'Sí'">
-            <h3 class="blk-h">2 · Cambios realizados</h3>
-            <div class="chips">
-              <button type="button" class="chip" *ngFor="let c of cfg.cambios" [class.on]="mant.cambios.includes(c)" (click)="toggleCambio(c)">{{ c }}</button>
-            </div>
-            <div class="field" *ngIf="mant.cambios.includes('Otros')"><label>¿Qué otros cambios?</label>
-              <input [(ngModel)]="mant.cambiosOtros" /></div>
-            <p class="pf-err" *ngIf="errores['cambiosOtros']">{{ errores['cambiosOtros'] }}</p>
-            <p class="pf-err" *ngIf="errores['cambios']">{{ errores['cambios'] }}</p>
-          </div>
-
-          <div class="form-card">
-            <h3 class="blk-h">{{ mant.realizado === 'Sí' ? 3 : 2 }} · Próximo mantenimiento</h3>
-            <div class="field-row">
-              <div class="field"><label>Km programado</label>
-                <input class="mono" inputmode="numeric" placeholder="00000" [ngModel]="mant.proxKm" (ngModelChange)="soloNum('proxKm', $event)" /></div>
-              <div class="field"><label>O fecha</label><input type="date" [(ngModel)]="mant.proxFecha" [min]="cfg.hoy" /></div>
-            </div>
-            <p class="pf-err" *ngIf="errores['proximo']">{{ errores['proximo'] }}</p>
-          </div>
-
-          <div class="form-card">
-            <h3 class="blk-h">{{ mant.realizado === 'Sí' ? 4 : 3 }} · SOAT y tecnomecánica</h3>
-            <div class="field"><label>Vencimiento del SOAT</label><input type="date" [(ngModel)]="mant.soat" />
-              <span class="vig" *ngIf="vigencia(mant.soat) as v" [ngClass]="v.cls">{{ v.txt }}</span></div>
-            <p class="pf-err" *ngIf="errores['soat']">{{ errores['soat'] }}</p>
-            <div class="field"><label>Vencimiento de la técnico-mecánica</label><input type="date" [(ngModel)]="mant.tecno" />
-              <span class="vig" *ngIf="vigencia(mant.tecno) as v" [ngClass]="v.cls">{{ v.txt }}</span></div>
-            <p class="pf-err" *ngIf="errores['tecno']">{{ errores['tecno'] }}</p>
-          </div>
-
-          <div class="form-card ev-card">
-            <div class="ev-top">
-              <span class="ev-lbl"><ion-icon name="camera-outline"></ion-icon> Soporte del mantenimiento</span>
-              <span class="tag" [class.ok]="nFotos('mant')" [class.req]="!nFotos('mant') && mant.realizado === 'Sí'">
-                {{ nFotos('mant') ? (nFotos('mant') + ' adjunta(s)') : (mant.realizado === 'Sí' ? 'Obligatoria' : 'Opcional') }}</span>
-            </div>
-            <button type="button" class="ev-btn" (click)="abrirCamara('mant')"><ion-icon name="camera-outline"></ion-icon> Tomar foto</button>
-            <div class="thumbs" *ngIf="nFotos('mant')">
-              <div class="thumb" *ngFor="let e of evid['mant']">
-                <img [src]="e.preview" alt="Soporte" />
-                <button type="button" class="del" (click)="quitarFoto('mant', e.id)"><ion-icon name="close-outline"></ion-icon></button>
-              </div>
-            </div>
-            <p class="pf-err" *ngIf="errores['mant_ev']">{{ errores['mant_ev'] }}</p>
-          </div>
-
-          <p class="pf-err" *ngIf="errores['general']">{{ errores['general'] }}</p>
-          <button type="button" class="ghost-wide" *ngIf="mantEstado?.estado === 'pendiente'" (click)="omitirMant()">
-            Reportarlo después (hasta el día {{ cfg.diaLimiteMantenimiento }})
-          </button>
         </ng-container>
 
         <!-- ═══ PREGUNTAS ═══ -->

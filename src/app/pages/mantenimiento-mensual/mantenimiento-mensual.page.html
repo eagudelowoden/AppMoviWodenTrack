@@ -1,0 +1,187 @@
+<ion-content [fullscreen]="true" class="woden-content">
+  <div class="wt-screen">
+
+    <!-- ══ Superior — navy ═══════════════════════════════════════════════════ -->
+    <div class="wt-top">
+      <div class="wt-header">
+        <button class="icon-btn" (click)="volver()"><ion-icon name="arrow-back-outline"></ion-icon></button>
+        <div class="wt-brand"><span class="b-woden">Mantenimiento</span> <span class="b-acc">Mensual</span></div>
+        <div class="icon-btn-spacer"></div>
+      </div>
+      <div class="steps" *ngIf="cfg && !cargando">
+        <i *ngFor="let s of flujo; let i = index" [class.done]="i < paso" [class.now]="i === paso"></i>
+      </div>
+    </div>
+
+    <!-- ══ Inferior — hoja blanca ════════════════════════════════════════════ -->
+    <div class="wt-bottom">
+
+      <div class="loading-row" *ngIf="cargando"><ion-spinner name="crescent"></ion-spinner><span>Cargando formulario…</span></div>
+      <div class="pf-alert bad" *ngIf="errorCarga"><ion-icon name="warning-outline"></ion-icon><span>{{ errorCarga }}</span></div>
+
+      <ng-container *ngIf="cfg && actual && !cargando">
+
+        <div>
+          <p class="eyebrow">{{ actual.eyebrow || ('Sección ' + actual.n + ' de 7') }}</p>
+          <h2 class="sec-title">{{ actual.titulo }}</h2>
+          <p class="sec-note" *ngIf="actual.nota">{{ actual.nota }}</p>
+        </div>
+
+        <!-- ═══ 1. PLACA ═══ -->
+        <ng-container *ngIf="actual.tipo === 'datos'">
+          <div class="form-card">
+            <div class="field"><label>Agente de campo</label><div class="ro">{{ nombreAgente }}</div></div>
+            <div class="field">
+              <label>Placa de la motocicleta</label>
+              <input class="mono up" maxlength="7" placeholder="ABC12D" [ngModel]="datos.placa" (ngModelChange)="onPlaca($event)" />
+            </div>
+            <p class="pf-err" *ngIf="errores['placa']">{{ errores['placa'] }}</p>
+            <p class="pf-err" *ngIf="errores['general']">{{ errores['general'] }}</p>
+            <div class="pf-alert ok" *ngIf="mantEstado?.estado === 'ok'">
+              <ion-icon name="checkmark-outline"></ion-icon>
+              <span>
+                <b>La placa {{ mantEstado.placa }} ya tiene el reporte de {{ mantEstado.mes }}</b>
+                Preventivo {{ mantEstado.reporte.realizado === 'Sí' ? 'realizado' : 'no realizado' }} · SOAT {{ mantEstado.reporte.soat }} · Tecnomecánica {{ mantEstado.reporte.tecno }}. No se vuelve a pedir hasta el mes siguiente.
+              </span>
+            </div>
+            <p class="hint">Un solo reporte por placa al mes. Al continuar se verifica si esta placa ya lo reportó.</p>
+          </div>
+        </ng-container>
+
+        <!-- ═══ MANTENIMIENTO MENSUAL ═══ -->
+        <ng-container *ngIf="actual.tipo === 'mantenimiento'">
+          <div class="pf-alert" [class.bad]="mantEstado?.estado === 'bloqueado'" [class.warn]="mantEstado?.estado !== 'bloqueado'">
+            <ion-icon [name]="mantEstado?.estado === 'bloqueado' ? 'lock-closed-outline' : 'build-outline'"></ion-icon>
+            <span>
+              <b>{{ mantEstado?.estado === 'bloqueado' ? 'Inspecciones bloqueadas' : ('Pendiente: mantenimiento de ' + mantEstado?.mes) }}</b>
+              <ng-container *ngIf="mantEstado?.estado === 'bloqueado'">
+                La placa {{ datos.placa }} no tiene el reporte del mes y ya pasó el día {{ cfg.diaLimiteMantenimiento }}. Diligéncielo para continuar.
+              </ng-container>
+              <ng-container *ngIf="mantEstado?.estado !== 'bloqueado'">
+                Le quedan {{ mantEstado?.diasRestantes }} día(s). Desde el día {{ cfg.diaLimiteMantenimiento + 1 }} no podrá registrar inspecciones de esta placa sin el reporte.
+              </ng-container>
+            </span>
+          </div>
+
+          <div class="form-card">
+            <h3 class="blk-h">1 · Mantenimiento preventivo</h3>
+            <p class="q-text">¿Se realizó el mantenimiento preventivo de la motocicleta en el último período?</p>
+            <div class="opts">
+              <button type="button" class="opt good" [class.on]="mant.realizado === 'Sí'" (click)="setRealizado('Sí')"><ion-icon name="checkmark-outline"></ion-icon>Sí</button>
+              <button type="button" class="opt bad" [class.on]="mant.realizado === 'No'" (click)="setRealizado('No')"><ion-icon name="close-outline"></ion-icon>No</button>
+            </div>
+            <p class="pf-err" *ngIf="errores['realizado']">{{ errores['realizado'] }}</p>
+
+            <ng-container *ngIf="mant.realizado === 'Sí'">
+              <div class="field-row">
+                <div class="field"><label>Fecha</label><input type="date" [(ngModel)]="mant.fecha" [max]="cfg.hoy" /></div>
+                <div class="field"><label>Kilometraje</label>
+                  <input class="mono" inputmode="numeric" placeholder="00000" [ngModel]="mant.km" (ngModelChange)="soloNum('km', $event)" /></div>
+              </div>
+              <p class="pf-err" *ngIf="errores['fechaM']">{{ errores['fechaM'] }}</p>
+              <p class="pf-err" *ngIf="errores['kmM']">{{ errores['kmM'] }}</p>
+              <div class="field"><label>Taller o centro de servicio</label><input [(ngModel)]="mant.taller" placeholder="Nombre del taller" /></div>
+              <p class="pf-err" *ngIf="errores['taller']">{{ errores['taller'] }}</p>
+              <div class="field"><label>N.º de factura u orden <span class="opt-t">(opcional)</span></label><input class="mono" [(ngModel)]="mant.factura" /></div>
+            </ng-container>
+
+            <ng-container *ngIf="mant.realizado === 'No'">
+              <div class="field"><label class="lbl-bad">Motivo por el cual no se realizó</label>
+                <textarea rows="3" [(ngModel)]="mant.motivo"></textarea></div>
+              <p class="pf-err" *ngIf="errores['motivo']">{{ errores['motivo'] }}</p>
+              <div class="field"><label>Fecha en que lo realizará</label><input type="date" [(ngModel)]="mant.programada" [min]="cfg.hoy" /></div>
+              <p class="pf-err" *ngIf="errores['programada']">{{ errores['programada'] }}</p>
+            </ng-container>
+          </div>
+
+          <div class="form-card" *ngIf="mant.realizado === 'Sí'">
+            <h3 class="blk-h">2 · Cambios realizados</h3>
+            <div class="chips">
+              <button type="button" class="chip" *ngFor="let c of cfg.cambios" [class.on]="mant.cambios.includes(c)" (click)="toggleCambio(c)">{{ c }}</button>
+            </div>
+            <div class="field" *ngIf="mant.cambios.includes('Otros')"><label>¿Qué otros cambios?</label>
+              <input [(ngModel)]="mant.cambiosOtros" /></div>
+            <p class="pf-err" *ngIf="errores['cambiosOtros']">{{ errores['cambiosOtros'] }}</p>
+            <p class="pf-err" *ngIf="errores['cambios']">{{ errores['cambios'] }}</p>
+          </div>
+
+          <div class="form-card">
+            <h3 class="blk-h">{{ mant.realizado === 'Sí' ? 3 : 2 }} · Próximo mantenimiento</h3>
+            <div class="field-row">
+              <div class="field"><label>Km programado</label>
+                <input class="mono" inputmode="numeric" placeholder="00000" [ngModel]="mant.proxKm" (ngModelChange)="soloNum('proxKm', $event)" /></div>
+              <div class="field"><label>O fecha</label><input type="date" [(ngModel)]="mant.proxFecha" [min]="cfg.hoy" /></div>
+            </div>
+            <p class="pf-err" *ngIf="errores['proximo']">{{ errores['proximo'] }}</p>
+          </div>
+
+          <div class="form-card">
+            <h3 class="blk-h">{{ mant.realizado === 'Sí' ? 4 : 3 }} · SOAT y tecnomecánica</h3>
+            <div class="field"><label>Vencimiento del SOAT</label><input type="date" [(ngModel)]="mant.soat" />
+              <span class="vig" *ngIf="vigencia(mant.soat) as v" [ngClass]="v.cls">{{ v.txt }}</span></div>
+            <p class="pf-err" *ngIf="errores['soat']">{{ errores['soat'] }}</p>
+            <div class="field"><label>Vencimiento de la técnico-mecánica</label><input type="date" [(ngModel)]="mant.tecno" />
+              <span class="vig" *ngIf="vigencia(mant.tecno) as v" [ngClass]="v.cls">{{ v.txt }}</span></div>
+            <p class="pf-err" *ngIf="errores['tecno']">{{ errores['tecno'] }}</p>
+          </div>
+
+          <div class="form-card ev-card">
+            <div class="ev-top">
+              <span class="ev-lbl"><ion-icon name="camera-outline"></ion-icon> Soporte del mantenimiento</span>
+              <span class="tag" [class.ok]="nFotos('mant')" [class.req]="!nFotos('mant') && mant.realizado === 'Sí'">
+                {{ nFotos('mant') ? (nFotos('mant') + ' adjunta(s)') : (mant.realizado === 'Sí' ? 'Obligatoria' : 'Opcional') }}</span>
+            </div>
+            <button type="button" class="ev-btn" (click)="abrirCamara('mant')"><ion-icon name="camera-outline"></ion-icon> Tomar foto</button>
+            <div class="thumbs" *ngIf="nFotos('mant')">
+              <div class="thumb" *ngFor="let e of evid['mant']">
+                <img [src]="e.preview" alt="Soporte" />
+                <button type="button" class="del" (click)="quitarFoto('mant', e.id)"><ion-icon name="close-outline"></ion-icon></button>
+              </div>
+            </div>
+            <p class="pf-err" *ngIf="errores['mant_ev']">{{ errores['mant_ev'] }}</p>
+          </div>
+
+          <p class="pf-err" *ngIf="errores['general']">{{ errores['general'] }}</p>
+          
+        </ng-container>
+
+        <!-- ═══ CONFIRMACIÓN ═══ -->
+        <ng-container *ngIf="actual.tipo === 'resultado' && resultado">
+          <div class="result pass">
+            <div class="band">
+              <div class="k">Reporte mensual guardado</div>
+              <div class="v">Mantenimiento de {{ resultado.estado.mes }} registrado</div>
+            </div>
+            <div class="r-body">
+              <div class="meta">
+                <div><span class="k">Placa</span><span class="v">{{ rep?.placa }}</span></div>
+                <div><span class="k">Mes</span><span class="v">{{ rep?.mes }}</span></div>
+                <div><span class="k">SOAT vence</span><span class="v" [class.bad]="rep?.soatDias < 0">{{ rep?.soat }}</span></div>
+                <div><span class="k">Tecno vence</span><span class="v" [class.bad]="rep?.tecnoDias < 0">{{ rep?.tecno }}</span></div>
+              </div>
+              <div class="alerta flat" *ngIf="vencidos.length">
+                <div class="a-t"><ion-icon name="warning-outline"></ion-icon>Documentación vencida</div>
+                <p>{{ vencidos.join('. ') }}. Las inspecciones diarias de esta placa saldrán como "No apto".</p>
+              </div>
+              <p class="hint"><ion-icon name="cloud-done-outline"></ion-icon> Reporte n.º {{ resultado.id }} guardado con {{ nSoportes }} foto(s) de soporte.</p>
+              <button type="button" class="btn-go dark" *ngIf="puedeDiario" (click)="irDiario()">Ir al preoperacional diario</button>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ═══ Acciones ═══ -->
+        <div class="actions">
+          <button type="button" class="btn-back" *ngIf="paso > 0 && actual.tipo !== 'resultado'" [disabled]="enviando" (click)="retroceder()">
+            <ion-icon name="arrow-back-outline"></ion-icon></button>
+          <button type="button" class="btn-go" *ngIf="actual.tipo !== 'resultado'" [disabled]="enviando" (click)="avanzar()">
+            <ion-spinner *ngIf="enviando" name="crescent"></ion-spinner>
+            <ng-container *ngIf="!enviando">{{ etiquetaBoton }} <ion-icon name="arrow-forward-outline"></ion-icon></ng-container>
+          </button>
+          <button type="button" class="btn-go dark" *ngIf="actual.tipo === 'resultado'" (click)="nueva()">
+            <ion-icon name="refresh-outline"></ion-icon> Nuevo reporte</button>
+        </div>
+
+      </ng-container>
+    </div>
+  </div>
+</ion-content>

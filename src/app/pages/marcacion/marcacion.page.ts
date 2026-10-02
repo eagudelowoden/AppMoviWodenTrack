@@ -6,7 +6,7 @@ import { AlertController, LoadingController, ToastController } from '@ionic/angu
 import { addIcons } from 'ionicons';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import {
-  logOutOutline, logInOutline, calendarOutline, bicycleOutline,
+  logOutOutline, logInOutline, calendarOutline, bicycleOutline, buildOutline, folderOpenOutline,
   cloudDownloadOutline, closeOutline, checkmarkCircleOutline,
   arrowForwardOutline, eyeOutline, bugOutline, documentTextOutline,
   locationOutline, chevronDownOutline, chevronUpOutline, megaphoneOutline,
@@ -53,10 +53,11 @@ export class MarcacionPage implements OnInit, OnDestroy {
     return this.auth.hasPermiso('marcacion.novedad');
   }
 
-  /** Preoperacional de moto — mismo slug que la web (preoperacional.registrar). */
-  get canVerPreoperacional(): boolean {
-    return this.auth.hasPermiso('preoperacional.registrar');
-  }
+  /** Preoperacional de moto — mismos slugs que la web. */
+  get canPreopDiario(): boolean { return this.auth.hasPermiso('preoperacional.diario'); }
+  get canPreopMensual(): boolean { return this.auth.hasPermiso('preoperacional.mensual'); }
+  get canPreopAgente(): boolean { return this.auth.hasPermiso('preoperacional.consulta_agente'); }
+  get canVerPreoperacional(): boolean { return this.canPreopDiario || this.canPreopMensual || this.canPreopAgente; }
 
   /** Si hay al menos una opción del panel "Más opciones", vale la pena mostrarlo. */
   get tieneMasOpciones(): boolean {
@@ -88,9 +89,9 @@ export class MarcacionPage implements OnInit, OnDestroy {
     this.router.navigate(['/novedades']);
   }
 
-  irAPreoperacional() {
+  irAPreoperacional(ruta: 'diario' | 'mensual' | 'mis-registros') {
     this.masOpcionesAbierto = false;
-    this.router.navigate(['/preoperacional']);
+    this.router.navigate(['/preoperacional', ruta]);
   }
 
   irAPerfil() {
@@ -151,6 +152,8 @@ export class MarcacionPage implements OnInit, OnDestroy {
       'log-in-outline':           logInOutline,
       'calendar-outline':         calendarOutline,
       'bicycle-outline':          bicycleOutline,
+      'build-outline':            buildOutline,
+      'folder-open-outline':      folderOpenOutline,
       'cloud-download-outline':   cloudDownloadOutline,
       'close-outline':            closeOutline,
       'checkmark-circle-outline': checkmarkCircleOutline,

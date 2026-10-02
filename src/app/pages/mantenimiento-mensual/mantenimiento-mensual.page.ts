@@ -4,8 +4,7 @@ import { ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline, arrowForwardOutline, cameraOutline, closeOutline,
-  checkmarkOutline, warningOutline, lockClosedOutline, buildOutline,
-  refreshOutline, cloudDoneOutline,
+  checkmarkOutline, warningOutline, lockClosedOutline, buildOutline, cloudDoneOutline, refreshOutline,
 } from 'ionicons/icons';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -15,32 +14,27 @@ const PLACA_KEY = 'woden_preop_placa';
 
 interface Foto { id: string; blob: Blob; preview: string; }
 
+/** OpeMensual: reporte mensual de mantenimiento, SOAT y tecnomecánica (uno por placa y mes). */
 @Component({
-  selector: 'app-preoperacional',
-  templateUrl: './preoperacional.page.html',
-  styleUrls: ['./preoperacional.page.scss'],
+  selector: 'app-mantenimiento-mensual',
+  templateUrl: './mantenimiento-mensual.page.html',
+  styleUrls: ['../preoperacional/preoperacional.page.scss'],
   standalone: false,
   encapsulation: ViewEncapsulation.None,
 })
-export class PreoperacionalPage implements OnInit, OnDestroy {
+export class MantenimientoMensualPage implements OnInit, OnDestroy {
   cfg: any = null;
   cargando = true;
   errorCarga = '';
   enviando = false;
-
   paso = 0;
   errores: Record<string, string> = {};
-
-  datos = { placa: '', km: '' };
-  resp: Record<string, string> = {};
-  textos: Record<string, string> = {};
+  datos = { placa: '' };
   evid: Record<string, Foto[]> = {};
-
   mantEstado: any = null;
-
-  inicio = new Date().toISOString();
-  cerrado = false;
+  mant = this.nuevoMant();
   resultado: any = null;
+  nSoportes = 0;
 
   constructor(
     private router: Router,
@@ -57,16 +51,16 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
       'warning-outline': warningOutline,
       'lock-closed-outline': lockClosedOutline,
       'build-outline': buildOutline,
-      'refresh-outline': refreshOutline,
       'cloud-done-outline': cloudDoneOutline,
+      'refresh-outline': refreshOutline,
     });
   }
 
   get nombreAgente(): string { return this.auth.session?.name ?? ''; }
+  get puedeDiario(): boolean { return this.auth.hasPermiso('preoperacional.diario'); }
 
   async ngOnInit() {
-    // authGuard + permisoGuard ya validan; esto es la segunda capa (mismo slug).
-    if (!this.auth.hasPermiso('preoperacional.diario')) {
+    if (!this.auth.hasPermiso('preoperacional.mensual')) {
       this.router.navigate(['/marcacion'], { replaceUrl: true });
       return;
     }
@@ -83,37 +77,49 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
   ngOnDestroy() { this.liberarFotos(); }
 
   volver() { this.router.navigate(['/marcacion']); }
+  irDiario() { this.router.navigate(['/preoperacional/diario']); }
 
-  get puedeMensual(): boolean { return this.auth.hasPermiso('preoperacional.mensual'); }
-  irMensual() { this.router.navigate(['/preoperacional/mensual']); }
-
-  // ── Flujo ─────────────────────────────────────────────────────────────────
-  get flujo(): any[] { return this.cfg ? [...this.cfg.secciones] : []; }
+  // ── Flujo: placa → formulario → confirmación ──────────────────────────────
+  get flujo(): any[] {
+    if (!this.cfg) return [];
+    return [
+      { n: 1, tipo: 'datos', titulo: 'Placa de la motocicleta', eyebrow: 'Reporte mensual',
+        nota: `Un solo reporte por placa al mes. Sin este reporte no se pueden registrar inspecciones diarias desde el día ${this.cfg.diaLimiteMantenimiento + 1}.` },
+      { n: 'M', tipo: 'mantenimiento', titulo: 'Mantenimiento mensual', eyebrow: 'Requisito mensual',
+        nota: 'Registre el mantenimiento preventivo, el próximo mantenimiento, el SOAT y la revisión técnico-mecánica.' },
+      { n: 'R', tipo: 'resultado', titulo: 'Reporte guardado', eyebrow: 'Confirmación' },
+    ];
+  }
   get actual(): any { return this.flujo[this.paso]; }
-  get esUltimaPregunta(): boolean { return this.paso === this.flujo.length - 2; }
-  get etiquetaBoton(): string {
-    const t = this.actual?.tipo;
-    if (t === 'datos') return 'Continuar';
-    return this.esUltimaPregunta ? 'Finalizar' : 'Continuar';
+  get etiquetaBoton(): string { return this.actual?.tipo === 'mantenimiento' ? 'Guardar reporte' : 'Continuar'; }
+
+  nuevoMant() {
+    return {
+      realizado: '', fecha: '', km: '', taller: '', factura: '', motivo: '', programada: '',
+      cambios: [] as string[], cambiosOtros: '', proxKm: '', proxFecha: '', soat: '', tecno: '',
+    };
   }
 
-  // ── Helpers de pregunta ───────────────────────────────────────────────────
-  q(id: string): any { return this.cfg.preguntas[id]; }
-  esMala(id: string): boolean { return !!this.resp[id] && this.resp[id] === this.q(id).insegura; }
-  exigeEvidencia(id: string): boolean {
-    const q = this.q(id);
-    return q.evidencia === 'obligatoria' || (q.evidencia === 'condicional' && this.esMala(id));
-  }
-  muestraEvidencia(id: string): boolean {
-    const q = this.q(id);
-    return !(q.evidencia === 'ninguna' || (q.evidencia === 'condicional' && !this.esMala(id)));
-  }
-  alerta(id: string) { return this.q(id).alerta || this.cfg.alertaDefecto; }
   nFotos(item: string): number { return (this.evid[item] || []).length; }
+
+  vigencia(f: string): { dias: number; txt: string; cls: string } | null {
+    if (!f) return null;
+    const dias = Math.round((Date.parse(f + 'T00:00:00Z') - Date.parse(this.cfg.hoy + 'T00:00:00Z')) / 86400000);
+    if (dias < 0) return { dias, txt: `Vencido hace ${Math.abs(dias)} días`, cls: 'bad' };
+    if (dias <= 30) return { dias, txt: `Vence en ${dias} día${dias === 1 ? '' : 's'}`, cls: 'warn' };
+    return { dias, txt: `Vigente · ${dias} días`, cls: 'ok' };
+  }
 
   // ── Entradas ──────────────────────────────────────────────────────────────
   onPlaca(v: string) { this.datos.placa = v.toUpperCase().replace(/[^A-Z0-9]/g, ''); delete this.errores['placa']; this.mantEstado = null; }
-  onKm(v: string) { this.datos.km = v.replace(/\D/g, '').slice(0, 7); delete this.errores['km']; }
+  soloNum(campo: 'km' | 'proxKm', v: string) { this.mant[campo] = v.replace(/\D/g, '').slice(0, 7); }
+  toggleCambio(c: string) {
+    const i = this.mant.cambios.indexOf(c);
+    if (i > -1) this.mant.cambios.splice(i, 1); else this.mant.cambios.push(c);
+    delete this.errores['cambios'];
+  }
+  setRealizado(v: string) { this.mant.realizado = v; this.errores = {}; }
+
   // ── Fotos ─────────────────────────────────────────────────────────────────
   private comprimir(file: File): Promise<Blob | null> {
     return new Promise((res) => {
@@ -151,7 +157,6 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
       const blob = await this.comprimir(f);
       if (!blob) { this.toast('No se pudo procesar la foto.'); return; }
       (this.evid[item] ||= []).push({ id: Math.random().toString(36).slice(2, 9), blob, preview: URL.createObjectURL(blob) });
-      delete this.errores[item + '_ev'];
       delete this.errores['mant_ev'];
     };
     inp.click();
@@ -168,41 +173,30 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
     this.evid = {};
   }
 
-  private blobs(items: string[]): Record<string, Blob[]> {
-    const out: Record<string, Blob[]> = {};
-    items.forEach((k) => { if (this.nFotos(k)) out[k] = this.evid[k].map((e) => e.blob); });
-    return out;
-  }
-
-  // ── Preguntas ─────────────────────────────────────────────────────────────
-  responder(id: string, op: string) {
-    this.resp[id] = op;
-    delete this.errores[id];
-    const q = this.q(id);
-    if (id === 'q5' && op === q.insegura && q.detiene) {
-      this.cerrado = true;
-      this.enviarInspeccion(true);
-    }
-  }
-
   // ── Validación ────────────────────────────────────────────────────────────
   private validar(): boolean {
     const e: Record<string, string> = {};
     const t = this.actual.tipo;
     if (t === 'datos') {
       if (!PLACA_RE.test(this.datos.placa)) e['placa'] = 'Placa inválida. Formato esperado: ABC12D o ABC123.';
-      if (!this.datos.km) e['km'] = 'Registre el kilometraje actual.';
-    } else if (t === 'preguntas') {
-      for (const id of this.actual.ids) {
-        const q = this.q(id);
-        if (!this.resp[id]) { e[id] = 'Seleccione una respuesta.'; continue; }
-        if (this.esMala(id) && q.seguimiento && !(this.textos[q.seguimiento.id] || '').trim()) {
-          e[q.seguimiento.id] = 'Describa la condición identificada.';
-        }
-        if (this.exigeEvidencia(id) && !this.nFotos(id)) {
-          e[id + '_ev'] = this.esMala(id) ? 'Adjunte evidencia de la condición identificada.' : 'Adjunte al menos una foto de este ítem.';
-        }
+    } else if (t === 'mantenimiento') {
+      const m = this.mant;
+      if (!m.realizado) e['realizado'] = 'Indique si se realizó el mantenimiento.';
+      if (m.realizado === 'Sí') {
+        if (!m.fecha) e['fechaM'] = 'Registre la fecha.';
+        if (!m.km) e['kmM'] = 'Registre el kilometraje.';
+        if (!m.taller.trim()) e['taller'] = 'Indique el taller.';
+        if (!m.cambios.length) e['cambios'] = 'Marque al menos un cambio realizado.';
+        if (m.cambios.includes('Otros') && !m.cambiosOtros.trim()) e['cambiosOtros'] = 'Describa los otros cambios.';
+        if (!this.nFotos('mant')) e['mant_ev'] = 'Adjunte la factura u orden de servicio.';
       }
+      if (m.realizado === 'No') {
+        if (!m.motivo.trim()) e['motivo'] = 'Explique por qué no se realizó.';
+        if (!m.programada) e['programada'] = 'Indique cuándo lo realizará.';
+      }
+      if (!m.proxKm && !m.proxFecha) e['proximo'] = 'Registre el kilometraje o la fecha del próximo mantenimiento.';
+      if (!m.soat) e['soat'] = 'Registre el vencimiento del SOAT.';
+      if (!m.tecno) e['tecno'] = 'Registre el vencimiento de la tecnomecánica.';
     }
     this.errores = e;
     return !Object.keys(e).length;
@@ -220,24 +214,16 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
       this.scrollAlError();
       return;
     }
-    const t = this.actual.tipo;
+    if (this.actual.tipo === 'mantenimiento') return this.guardarMantenimiento();
 
-    if (t === 'datos') {
-      this.enviando = true;
-      try {
-        this.mantEstado = await this.api.getPreopMantenimientoEstado(this.datos.placa);
-        localStorage.setItem(PLACA_KEY, this.datos.placa);
-        if (this.mantEstado.estado === 'bloqueado') { this.irPaso(0); return; }
-        if (this.mantEstado.estado === 'pendiente') {
-          this.toast(`Recuerde: falta el mantenimiento mensual de ${this.mantEstado.mes}. Le quedan ${this.mantEstado.diasRestantes} día(s).`);
-        }
-        this.irPaso(1);
-      } catch (e) { this.errores = { general: this.msg(e) }; }
-      finally { this.enviando = false; }
-      return;
-    }
-    if (this.esUltimaPregunta) return this.enviarInspeccion(false);
-    this.irPaso(this.paso + 1);
+    this.enviando = true;
+    try {
+      this.mantEstado = await this.api.getPreopMantenimientoEstado(this.datos.placa);
+      localStorage.setItem(PLACA_KEY, this.datos.placa);
+      if (this.mantEstado.estado === 'ok') return; // ya reportado: se muestra el resumen
+      this.irPaso(1);
+    } catch (e) { this.errores = { general: this.msg(e) }; }
+    finally { this.enviando = false; }
   }
 
   retroceder() { this.errores = {}; this.irPaso(Math.max(0, this.paso - 1)); }
@@ -246,43 +232,38 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
     document.querySelector('ion-content')?.scrollToTop(200);
   }
 
-  async enviarInspeccion(porCierre: boolean) {
+  async guardarMantenimiento() {
     this.enviando = true;
     try {
-      const respuestas = porCierre ? { q5: this.resp['q5'] } : { ...this.resp };
-      this.resultado = await this.api.guardarPreopInspeccion(
-        { placa: this.datos.placa, kilometraje: this.datos.km, inicio: this.inicio, respuestas, textos: { ...this.textos } },
-        porCierre ? {} : this.blobs(Object.keys(this.cfg.preguntas)),
-      );
-      this.irPaso(this.flujo.length - 1);
+      const m = this.mant;
+      this.resultado = await this.api.guardarPreopMantenimiento({
+        placa: this.datos.placa, realizado: m.realizado, fecha: m.fecha, kilometraje: m.km, taller: m.taller,
+        factura: m.factura, motivo: m.motivo, programada: m.programada, cambios: m.cambios,
+        cambiosOtros: m.cambiosOtros, proximoKm: m.proxKm, proximoFecha: m.proxFecha, soat: m.soat, tecno: m.tecno,
+      }, (this.evid['mant'] || []).map((e) => e.blob));
+      this.mantEstado = this.resultado.estado;
+      this.nSoportes = this.nFotos('mant');
+      this.errores = {};
+      this.irPaso(2);
     } catch (e) {
-      this.cerrado = false;
-      if (porCierre) delete this.resp['q5'];
       this.errores = { general: this.msg(e) };
       this.toast(this.msg(e));
     } finally { this.enviando = false; }
   }
 
-  // ── Resultado ─────────────────────────────────────────────────────────────
-  get recap(): any[] {
-    return Object.keys(this.cfg.preguntas)
-      .filter((id) => this.resp[id] && (!this.cerrado || id === 'q5'))
-      .map((id) => {
-        const q = this.q(id);
-        return {
-          num: q.num, titulo: q.titulo || (q.texto.slice(0, 52) + '…'), resp: this.resp[id],
-          mala: this.resp[id] === q.insegura, fotos: this.nFotos(id),
-          detalle: q.seguimiento ? this.textos[q.seguimiento.id] : '',
-        };
-      });
+  // ── Confirmación ──────────────────────────────────────────────────────────
+  get rep(): any { return this.resultado?.estado?.reporte; }
+  get vencidos(): string[] {
+    const l: string[] = [];
+    if (this.rep?.soatDias < 0) l.push(`SOAT vencido desde el ${this.rep.soat}`);
+    if (this.rep?.tecnoDias < 0) l.push(`Revisión técnico-mecánica vencida desde el ${this.rep.tecno}`);
+    return l;
   }
 
   nueva() {
     this.liberarFotos();
-    this.resp = {}; this.textos = {}; this.errores = {};
-    this.datos.km = ''; this.resultado = null; this.cerrado = false;
-    this.mantEstado = null;
-    this.inicio = new Date().toISOString();
+    this.mant = this.nuevoMant();
+    this.resultado = null; this.mantEstado = null; this.errores = {};
     this.irPaso(0);
   }
 

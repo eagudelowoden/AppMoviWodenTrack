@@ -183,6 +183,14 @@ export class ApiService {
     return firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/preoperacional-moto/inspecciones/mias`));
   }
 
+  async getMisPreopMant() {
+    return firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/preoperacional-moto/mantenimientos/mios`));
+  }
+
+  async getPreopDetalle(id: number) {
+    return firstValueFrom(this.http.get<any>(`${this.apiUrl}/preoperacional-moto/inspecciones/${id}`));
+  }
+
 
   async getVersion(): Promise<string> {
     try {

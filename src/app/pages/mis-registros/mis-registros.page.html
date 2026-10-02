@@ -1,0 +1,99 @@
+<ion-content [fullscreen]="true" class="woden-content">
+  <ion-refresher slot="fixed" (ionRefresh)="refrescar($event)">
+    <ion-refresher-content pullingIcon="chevron-down-outline" pullingText="Desliza para actualizar"
+      refreshingSpinner="crescent" refreshingText="Actualizando..."></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="wt-screen">
+    <div class="wt-top">
+      <div class="wt-header">
+        <button class="icon-btn" (click)="volver()"><ion-icon name="arrow-back-outline"></ion-icon></button>
+        <div class="wt-brand"><span class="b-woden">Mis</span> <span class="b-acc">preoperacionales</span></div>
+        <div class="icon-btn-spacer"></div>
+      </div>
+      <p class="wt-sub">Tus inspecciones diarias y reportes mensuales, con sus fotos</p>
+      <div class="tabs-row">
+        <button class="tab-btn" [class.active]="tab === 'diarios'" (click)="cambiarTab('diarios')">Diarios ({{ diarios.length }})</button>
+        <button class="tab-btn" [class.active]="tab === 'mensuales'" (click)="cambiarTab('mensuales')">Mensuales ({{ mensuales.length }})</button>
+      </div>
+    </div>
+
+    <div class="wt-bottom">
+      <div class="loading-row" *ngIf="cargando"><ion-spinner name="crescent"></ion-spinner><span>Cargando…</span></div>
+      <div class="pf-alert bad" *ngIf="error"><span>{{ error }}</span></div>
+
+      <!-- ═══ DIARIOS ═══ -->
+      <ng-container *ngIf="tab === 'diarios' && !cargando">
+        <div class="empty-card" *ngIf="!diarios.length"><ion-icon name="time-outline"></ion-icon><p>Aún no has registrado inspecciones diarias.</p></div>
+
+        <div class="reg-card" *ngFor="let r of diarios" [class.open]="abiertoId === r.id">
+          <button class="reg-head" (click)="abrir(r)">
+            <div class="reg-main">
+              <span class="reg-title">{{ r.placa }} · {{ r.fecha }}</span>
+              <span class="reg-sub">{{ r.kilometraje }} km · {{ r.totalHallazgos }} hallazgo(s) · <ion-icon name="camera-outline"></ion-icon> {{ r.nEvidencias ?? 0 }}</span>
+            </div>
+            <span class="badge" [class.is-ok]="r.resultado === 'APTO'" [class.is-err]="r.resultado !== 'APTO'">{{ r.resultado }}</span>
+            <ion-icon [name]="abiertoId === r.id ? 'chevron-up-outline' : 'chevron-down-outline'" class="reg-chev"></ion-icon>
+          </button>
+
+          <div class="reg-body" *ngIf="abiertoId === r.id">
+            <div class="loading-row" *ngIf="cargandoDetalle"><ion-spinner name="crescent"></ion-spinner></div>
+            <ng-container *ngIf="detalle">
+              <div class="alerta flat" *ngIf="detalle.hallazgosDocumentos">
+                <div class="a-t"><ion-icon name="close-circle-outline"></ion-icon>Documentos vencidos</div>
+                <p>{{ detalle.hallazgosDocumentos }}</p>
+              </div>
+              <p class="hint">Enviada {{ fechaHora(detalle.createdAt) }}</p>
+
+              <div class="resp" *ngFor="let q of detalle.respuestas" [class.mala]="q.hallazgo">
+                <div class="resp-top">
+                  <span class="resp-q"><b>{{ q.numero }}<ng-container *ngIf="q.titulo"> · {{ q.titulo }}</ng-container></b> {{ q.pregunta }}</span>
+                  <span class="badge" [class.is-ok]="!q.hallazgo" [class.is-err]="q.hallazgo">{{ q.respuesta }}</span>
+                </div>
+                <p class="resp-det" *ngIf="q.detalle">{{ q.detalle }}</p>
+                <div class="thumbs" *ngIf="q.evidencias.length">
+                  <div class="thumb" *ngFor="let e of q.evidencias" (click)="verFoto(e.url, (q.titulo || 'Pregunta ' + q.numero))">
+                    <img [src]="e.url" loading="lazy" alt="Evidencia" />
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ═══ MENSUALES ═══ -->
+      <ng-container *ngIf="tab === 'mensuales' && !cargando">
+        <div class="empty-card" *ngIf="!mensuales.length"><ion-icon name="time-outline"></ion-icon><p>Aún no has reportado mantenimientos mensuales.</p></div>
+
+        <div class="reg-card open" *ngFor="let m of mensuales">
+          <div class="reg-head static">
+            <div class="reg-main">
+              <span class="reg-title">{{ m.placa }} · {{ m.mes }}</span>
+              <span class="reg-sub">Preventivo {{ m.realizado === 'Sí' ? 'realizado' : 'no realizado' }}</span>
+            </div>
+            <span class="badge" [class.is-ok]="m.realizado === 'Sí'" [class.is-err]="m.realizado !== 'Sí'">{{ m.realizado === 'Sí' ? 'Realizado' : 'No realizado' }}</span>
+          </div>
+          <div class="reg-body">
+            <p class="resp-det" *ngIf="m.realizado === 'Sí'">{{ m.fecha }} · {{ m.kilometraje }} km · {{ m.taller }}<ng-container *ngIf="m.factura"> · Factura {{ m.factura }}</ng-container></p>
+            <p class="resp-det" *ngIf="m.cambios?.length">Cambios: {{ m.cambios.join(', ') }}<ng-container *ngIf="m.cambiosOtros"> ({{ m.cambiosOtros }})</ng-container></p>
+            <p class="resp-det" *ngIf="m.motivo">{{ m.motivo }} · programado {{ m.programada }}</p>
+            <p class="resp-det">SOAT: <b [class.bad]="m.soatDias < 0">{{ m.soat }}</b> · Tecno: <b [class.bad]="m.tecnoDias < 0">{{ m.tecno }}</b></p>
+            <div class="thumbs" *ngIf="m.evidencias?.length">
+              <div class="thumb" *ngFor="let e of m.evidencias" (click)="verFoto(e.url, 'Soporte del mantenimiento')">
+                <img [src]="e.url" loading="lazy" alt="Soporte" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Visor de foto -->
+  <div class="visor" *ngIf="visor" (click)="cerrarVisor()">
+    <button class="visor-x" (click)="cerrarVisor()"><ion-icon name="close-outline"></ion-icon></button>
+    <img [src]="visor.url" [alt]="visor.titulo" />
+    <p>{{ visor.titulo }}</p>
+  </div>
+</ion-content>
