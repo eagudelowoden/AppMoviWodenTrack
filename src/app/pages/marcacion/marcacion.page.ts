@@ -6,7 +6,7 @@ import { AlertController, LoadingController, ToastController } from '@ionic/angu
 import { addIcons } from 'ionicons';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import {
-  logOutOutline, logInOutline, calendarOutline,
+  logOutOutline, logInOutline, calendarOutline, bicycleOutline,
   cloudDownloadOutline, closeOutline, checkmarkCircleOutline,
   arrowForwardOutline, eyeOutline, bugOutline, documentTextOutline,
   locationOutline, chevronDownOutline, chevronUpOutline, megaphoneOutline,
@@ -53,9 +53,14 @@ export class MarcacionPage implements OnInit, OnDestroy {
     return this.auth.hasPermiso('marcacion.novedad');
   }
 
+  /** Preoperacional de moto — mismo slug que la web (preoperacional.registrar). */
+  get canVerPreoperacional(): boolean {
+    return this.auth.hasPermiso('preoperacional.registrar');
+  }
+
   /** Si hay al menos una opción del panel "Más opciones", vale la pena mostrarlo. */
   get tieneMasOpciones(): boolean {
-    return this.canVerNovedades || this.canVerComprobantes;
+    return this.canVerNovedades || this.canVerComprobantes || this.canVerPreoperacional;
   }
 
   /**
@@ -81,6 +86,11 @@ export class MarcacionPage implements OnInit, OnDestroy {
   irANovedades() {
     this.masOpcionesAbierto = false;
     this.router.navigate(['/novedades']);
+  }
+
+  irAPreoperacional() {
+    this.masOpcionesAbierto = false;
+    this.router.navigate(['/preoperacional']);
   }
 
   irAPerfil() {
@@ -140,6 +150,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
       'log-out-outline':          logOutOutline,
       'log-in-outline':           logInOutline,
       'calendar-outline':         calendarOutline,
+      'bicycle-outline':          bicycleOutline,
       'cloud-download-outline':   cloudDownloadOutline,
       'close-outline':            closeOutline,
       'checkmark-circle-outline': checkmarkCircleOutline,

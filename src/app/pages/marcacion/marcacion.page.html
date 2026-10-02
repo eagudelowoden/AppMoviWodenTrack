@@ -86,6 +86,11 @@
             <span>Novedades</span>
             <ion-icon class="mo-arrow" name="arrow-forward-outline"></ion-icon>
           </button>
+          <button class="mo-item" *ngIf="canVerPreoperacional" (click)="irAPreoperacional()">
+            <div class="mo-ico"><ion-icon name="bicycle-outline"></ion-icon></div>
+            <span>Preoperacional moto</span>
+            <ion-icon class="mo-arrow" name="arrow-forward-outline"></ion-icon>
+          </button>
           <button class="mo-item" *ngIf="canVerComprobantes" (click)="irAComprobantes()">
             <div class="mo-ico"><ion-icon name="document-text-outline"></ion-icon></div>
             <span>Comprobantes</span>

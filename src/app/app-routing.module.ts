@@ -33,6 +33,11 @@ const routes: Routes = [
     loadChildren: () => import('./pages/novedades/novedades.module').then( m => m.NovedadesPageModule)
   },
   {
+    path: 'preoperacional',
+    canActivate: [authGuard, permisoGuard('preoperacional.registrar')],
+    loadChildren: () => import('./pages/preoperacional/preoperacional.module').then( m => m.PreoperacionalPageModule)
+  },
+  {
     path: 'perfil',
     canActivate: [authGuard],
     loadChildren: () => import('./pages/perfil/perfil.module').then( m => m.PerfilPageModule)

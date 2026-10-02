@@ -152,6 +152,38 @@ export class ApiService {
     );
   }
 
+  // ── Preoperacional moto (mismo backend que la web; fotos van a S3 desde el servidor) ──
+  async getPreopConfig() {
+    return firstValueFrom(this.http.get<any>(`${this.apiUrl}/preoperacional-moto/config`));
+  }
+
+  async getPreopMantenimientoEstado(placa: string) {
+    return firstValueFrom(
+      this.http.get<any>(`${this.apiUrl}/preoperacional-moto/mantenimiento/estado`, { params: { placa } })
+    );
+  }
+
+  async guardarPreopMantenimiento(payload: any, fotos: Blob[]) {
+    const fd = new FormData();
+    fd.append('payload', JSON.stringify(payload));
+    fotos.forEach((b, i) => fd.append('mant', b, `mant-${i + 1}.jpg`));
+    return firstValueFrom(this.http.post<any>(`${this.apiUrl}/preoperacional-moto/mantenimiento`, fd));
+  }
+
+  async guardarPreopInspeccion(payload: any, fotos: Record<string, Blob[]>) {
+    const fd = new FormData();
+    fd.append('payload', JSON.stringify(payload));
+    for (const [item, lista] of Object.entries(fotos)) {
+      lista.forEach((b, i) => fd.append(item, b, `${item}-${i + 1}.jpg`));
+    }
+    return firstValueFrom(this.http.post<any>(`${this.apiUrl}/preoperacional-moto/inspecciones`, fd));
+  }
+
+  async getMisPreop() {
+    return firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/preoperacional-moto/inspecciones/mias`));
+  }
+
+
   async getVersion(): Promise<string> {
     try {
       const res = await firstValueFrom(

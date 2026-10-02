@@ -1,0 +1,253 @@
+<ion-content [fullscreen]="true" class="woden-content">
+  <div class="wt-screen">
+
+    <!-- ══ Superior — navy ═══════════════════════════════════════════════════ -->
+    <div class="wt-top">
+      <div class="wt-header">
+        <button class="icon-btn" (click)="volver()"><ion-icon name="arrow-back-outline"></ion-icon></button>
+        <div class="wt-brand"><span class="b-woden">Preoperacional</span> <span class="b-acc">Moto</span></div>
+        <div class="icon-btn-spacer"></div>
+      </div>
+      <div class="steps" *ngIf="cfg && !cargando">
+        <i *ngFor="let s of flujo; let i = index" [class.done]="i < paso" [class.now]="i === paso"></i>
+      </div>
+    </div>
+
+    <!-- ══ Inferior — hoja blanca ════════════════════════════════════════════ -->
+    <div class="wt-bottom">
+
+      <div class="loading-row" *ngIf="cargando"><ion-spinner name="crescent"></ion-spinner><span>Cargando formulario…</span></div>
+      <div class="pf-alert bad" *ngIf="errorCarga"><ion-icon name="warning-outline"></ion-icon><span>{{ errorCarga }}</span></div>
+
+      <ng-container *ngIf="cfg && actual && !cargando">
+
+        <div>
+          <p class="eyebrow">{{ actual.eyebrow || ('Sección ' + actual.n + ' de 7') }}</p>
+          <h2 class="sec-title">{{ actual.titulo }}</h2>
+          <p class="sec-note" *ngIf="actual.nota">{{ actual.nota }}</p>
+        </div>
+
+        <!-- ═══ 1. DATOS ═══ -->
+        <ng-container *ngIf="actual.tipo === 'datos'">
+          <div class="form-card">
+            <div class="field"><label>Agente de campo</label><div class="ro">{{ nombreAgente }}</div></div>
+            <div class="field"><label>Fecha</label><div class="ro mono">{{ cfg.hoy }}</div></div>
+            <div class="field-row">
+              <div class="field">
+                <label>Placa</label>
+                <input class="mono up" maxlength="7" placeholder="ABC12D" [ngModel]="datos.placa" (ngModelChange)="onPlaca($event)" />
+              </div>
+              <div class="field">
+                <label>Kilometraje</label>
+                <input class="mono" inputmode="numeric" placeholder="00000" [ngModel]="datos.km" (ngModelChange)="onKm($event)" />
+              </div>
+            </div>
+            <p class="pf-err" *ngIf="errores['placa']">{{ errores['placa'] }}</p>
+            <p class="pf-err" *ngIf="errores['km']">{{ errores['km'] }}</p>
+            <p class="pf-err" *ngIf="errores['general']">{{ errores['general'] }}</p>
+            <p class="hint">Se recuerda la placa en este equipo para el siguiente turno.</p>
+          </div>
+          <p class="hint">Responda de acuerdo con la condición real observada. Si identifica una condición que pueda afectar la seguridad, no inicie el desplazamiento y repórtela de inmediato.</p>
+        </ng-container>
+
+        <!-- ═══ MANTENIMIENTO MENSUAL ═══ -->
+        <ng-container *ngIf="actual.tipo === 'mantenimiento'">
+          <div class="pf-alert" [class.bad]="mantEstado?.estado === 'bloqueado'" [class.warn]="mantEstado?.estado !== 'bloqueado'">
+            <ion-icon [name]="mantEstado?.estado === 'bloqueado' ? 'lock-closed-outline' : 'build-outline'"></ion-icon>
+            <span>
+              <b>{{ mantEstado?.estado === 'bloqueado' ? 'Inspecciones bloqueadas' : ('Pendiente: mantenimiento de ' + mantEstado?.mes) }}</b>
+              <ng-container *ngIf="mantEstado?.estado === 'bloqueado'">
+                La placa {{ datos.placa }} no tiene el reporte del mes y ya pasó el día {{ cfg.diaLimiteMantenimiento }}. Diligéncielo para continuar.
+              </ng-container>
+              <ng-container *ngIf="mantEstado?.estado !== 'bloqueado'">
+                Le quedan {{ mantEstado?.diasRestantes }} día(s). Desde el día {{ cfg.diaLimiteMantenimiento + 1 }} no podrá registrar inspecciones de esta placa sin el reporte.
+              </ng-container>
+            </span>
+          </div>
+
+          <div class="form-card">
+            <h3 class="blk-h">1 · Mantenimiento preventivo</h3>
+            <p class="q-text">¿Se realizó el mantenimiento preventivo de la motocicleta en el último período?</p>
+            <div class="opts">
+              <button type="button" class="opt good" [class.on]="mant.realizado === 'Sí'" (click)="setRealizado('Sí')"><ion-icon name="checkmark-outline"></ion-icon>Sí</button>
+              <button type="button" class="opt bad" [class.on]="mant.realizado === 'No'" (click)="setRealizado('No')"><ion-icon name="close-outline"></ion-icon>No</button>
+            </div>
+            <p class="pf-err" *ngIf="errores['realizado']">{{ errores['realizado'] }}</p>
+
+            <ng-container *ngIf="mant.realizado === 'Sí'">
+              <div class="field-row">
+                <div class="field"><label>Fecha</label><input type="date" [(ngModel)]="mant.fecha" [max]="cfg.hoy" /></div>
+                <div class="field"><label>Kilometraje</label>
+                  <input class="mono" inputmode="numeric" placeholder="00000" [ngModel]="mant.km" (ngModelChange)="soloNum('km', $event)" /></div>
+              </div>
+              <p class="pf-err" *ngIf="errores['fechaM']">{{ errores['fechaM'] }}</p>
+              <p class="pf-err" *ngIf="errores['kmM']">{{ errores['kmM'] }}</p>
+              <div class="field"><label>Taller o centro de servicio</label><input [(ngModel)]="mant.taller" placeholder="Nombre del taller" /></div>
+              <p class="pf-err" *ngIf="errores['taller']">{{ errores['taller'] }}</p>
+              <div class="field"><label>N.º de factura u orden <span class="opt-t">(opcional)</span></label><input class="mono" [(ngModel)]="mant.factura" /></div>
+            </ng-container>
+
+            <ng-container *ngIf="mant.realizado === 'No'">
+              <div class="field"><label class="lbl-bad">Motivo por el cual no se realizó</label>
+                <textarea rows="3" [(ngModel)]="mant.motivo"></textarea></div>
+              <p class="pf-err" *ngIf="errores['motivo']">{{ errores['motivo'] }}</p>
+              <div class="field"><label>Fecha en que lo realizará</label><input type="date" [(ngModel)]="mant.programada" [min]="cfg.hoy" /></div>
+              <p class="pf-err" *ngIf="errores['programada']">{{ errores['programada'] }}</p>
+            </ng-container>
+          </div>
+
+          <div class="form-card" *ngIf="mant.realizado === 'Sí'">
+            <h3 class="blk-h">2 · Cambios realizados</h3>
+            <div class="chips">
+              <button type="button" class="chip" *ngFor="let c of cfg.cambios" [class.on]="mant.cambios.includes(c)" (click)="toggleCambio(c)">{{ c }}</button>
+            </div>
+            <div class="field" *ngIf="mant.cambios.includes('Otros')"><label>¿Qué otros cambios?</label>
+              <input [(ngModel)]="mant.cambiosOtros" /></div>
+            <p class="pf-err" *ngIf="errores['cambiosOtros']">{{ errores['cambiosOtros'] }}</p>
+            <p class="pf-err" *ngIf="errores['cambios']">{{ errores['cambios'] }}</p>
+          </div>
+
+          <div class="form-card">
+            <h3 class="blk-h">{{ mant.realizado === 'Sí' ? 3 : 2 }} · Próximo mantenimiento</h3>
+            <div class="field-row">
+              <div class="field"><label>Km programado</label>
+                <input class="mono" inputmode="numeric" placeholder="00000" [ngModel]="mant.proxKm" (ngModelChange)="soloNum('proxKm', $event)" /></div>
+              <div class="field"><label>O fecha</label><input type="date" [(ngModel)]="mant.proxFecha" [min]="cfg.hoy" /></div>
+            </div>
+            <p class="pf-err" *ngIf="errores['proximo']">{{ errores['proximo'] }}</p>
+          </div>
+
+          <div class="form-card">
+            <h3 class="blk-h">{{ mant.realizado === 'Sí' ? 4 : 3 }} · SOAT y tecnomecánica</h3>
+            <div class="field"><label>Vencimiento del SOAT</label><input type="date" [(ngModel)]="mant.soat" />
+              <span class="vig" *ngIf="vigencia(mant.soat) as v" [ngClass]="v.cls">{{ v.txt }}</span></div>
+            <p class="pf-err" *ngIf="errores['soat']">{{ errores['soat'] }}</p>
+            <div class="field"><label>Vencimiento de la técnico-mecánica</label><input type="date" [(ngModel)]="mant.tecno" />
+              <span class="vig" *ngIf="vigencia(mant.tecno) as v" [ngClass]="v.cls">{{ v.txt }}</span></div>
+            <p class="pf-err" *ngIf="errores['tecno']">{{ errores['tecno'] }}</p>
+          </div>
+
+          <div class="form-card ev-card">
+            <div class="ev-top">
+              <span class="ev-lbl"><ion-icon name="camera-outline"></ion-icon> Soporte del mantenimiento</span>
+              <span class="tag" [class.ok]="nFotos('mant')" [class.req]="!nFotos('mant') && mant.realizado === 'Sí'">
+                {{ nFotos('mant') ? (nFotos('mant') + ' adjunta(s)') : (mant.realizado === 'Sí' ? 'Obligatoria' : 'Opcional') }}</span>
+            </div>
+            <button type="button" class="ev-btn" (click)="abrirCamara('mant')"><ion-icon name="camera-outline"></ion-icon> Tomar foto</button>
+            <div class="thumbs" *ngIf="nFotos('mant')">
+              <div class="thumb" *ngFor="let e of evid['mant']">
+                <img [src]="e.preview" alt="Soporte" />
+                <button type="button" class="del" (click)="quitarFoto('mant', e.id)"><ion-icon name="close-outline"></ion-icon></button>
+              </div>
+            </div>
+            <p class="pf-err" *ngIf="errores['mant_ev']">{{ errores['mant_ev'] }}</p>
+          </div>
+
+          <p class="pf-err" *ngIf="errores['general']">{{ errores['general'] }}</p>
+          <button type="button" class="ghost-wide" *ngIf="mantEstado?.estado === 'pendiente'" (click)="omitirMant()">
+            Reportarlo después (hasta el día {{ cfg.diaLimiteMantenimiento }})
+          </button>
+        </ng-container>
+
+        <!-- ═══ PREGUNTAS ═══ -->
+        <ng-container *ngIf="actual.tipo === 'preguntas'">
+          <section class="q" *ngFor="let id of actual.ids" [class.flag]="esMala(id)">
+            <div class="q-head">
+              <span class="q-num">{{ q(id).num }}</span>
+              <div>
+                <p class="q-title" *ngIf="q(id).titulo">{{ q(id).titulo }}</p>
+                <p class="q-text">{{ q(id).texto }}</p>
+              </div>
+            </div>
+            <div class="help" *ngIf="q(id).ayuda"><p>{{ q(id).ayuda }}</p></div>
+            <div class="opts pad">
+              <button type="button" class="opt" *ngFor="let op of q(id).orden" [disabled]="enviando"
+                [ngClass]="op === q(id).segura ? 'good' : 'bad'" [class.on]="resp[id] === op" (click)="responder(id, op)">
+                <ion-icon [name]="op === q(id).segura ? 'checkmark-outline' : 'close-outline'"></ion-icon>{{ op }}
+              </button>
+            </div>
+            <p class="pf-err pad" *ngIf="errores[id]">{{ errores[id] }}</p>
+
+            <div class="alerta" *ngIf="esMala(id)">
+              <div class="a-t"><ion-icon name="warning-outline"></ion-icon>{{ alerta(id).titulo }}</div>
+              <p>{{ alerta(id).texto }}</p>
+            </div>
+
+            <div class="sub-q pad" *ngIf="esMala(id) && q(id).seguimiento as seg">
+              <label>{{ seg.etiqueta }}</label>
+              <textarea *ngIf="seg.tipo === 'larga'" rows="3" [(ngModel)]="textos[seg.id]" [placeholder]="seg.placeholder"></textarea>
+              <input *ngIf="seg.tipo !== 'larga'" [(ngModel)]="textos[seg.id]" [placeholder]="seg.placeholder" />
+              <p class="pf-err" *ngIf="errores[seg.id]">{{ errores[seg.id] }}</p>
+            </div>
+
+            <div class="ev" *ngIf="muestraEvidencia(id)">
+              <div class="ev-top">
+                <span class="ev-lbl"><ion-icon name="camera-outline"></ion-icon> Evidencia</span>
+                <span class="tag" [class.ok]="nFotos(id)" [class.req]="!nFotos(id) && exigeEvidencia(id)">
+                  {{ nFotos(id) ? (nFotos(id) + ' adjunta(s)') : (exigeEvidencia(id) ? 'Obligatoria' : 'Opcional') }}</span>
+              </div>
+              <button type="button" class="ev-btn" (click)="abrirCamara(id)"><ion-icon name="camera-outline"></ion-icon> Tomar foto</button>
+              <div class="thumbs" *ngIf="nFotos(id)">
+                <div class="thumb" *ngFor="let e of evid[id]">
+                  <img [src]="e.preview" alt="Evidencia" />
+                  <button type="button" class="del" (click)="quitarFoto(id, e.id)"><ion-icon name="close-outline"></ion-icon></button>
+                </div>
+              </div>
+              <p class="pf-err" *ngIf="errores[id + '_ev']">{{ errores[id + '_ev'] }}</p>
+            </div>
+          </section>
+          <p class="pf-err" *ngIf="errores['general']">{{ errores['general'] }}</p>
+        </ng-container>
+
+        <!-- ═══ RESULTADO ═══ -->
+        <ng-container *ngIf="actual.tipo === 'resultado' && resultado">
+          <div class="result" [class.pass]="resultado.resultado === 'APTO'" [class.fail]="resultado.resultado !== 'APTO'">
+            <div class="band">
+              <div class="k">{{ resultado.resultado === 'APTO' ? 'Inspección preoperacional finalizada' : 'Condición insegura identificada' }}</div>
+              <div class="v">{{ resultado.resultado === 'APTO' ? 'Puede iniciar el desplazamiento' : 'No inicie el desplazamiento' }}</div>
+            </div>
+            <div class="r-body">
+              <p *ngIf="resultado.resultado === 'APTO'">No se identificaron condiciones inseguras. Puede iniciar su desplazamiento manteniendo las medidas de seguridad vial establecidas por WODEN.</p>
+              <p *ngIf="resultado.resultado !== 'APTO' && resultado.cerradoEn">La inspección se cerró en la pregunta {{ resultado.cerradoEn }}: no se encuentra en condiciones para conducir de manera segura. Informe de inmediato a su jefe inmediato.</p>
+              <p *ngIf="resultado.resultado !== 'APTO' && !resultado.cerradoEn">Reporte la novedad al jefe inmediato y siga el procedimiento de WODEN. La motocicleta deberá ser evaluada antes de iniciar el desplazamiento.</p>
+
+              <div class="alerta flat" *ngIf="resultado.hallazgosDocumentos?.length">
+                <div class="a-t"><ion-icon name="warning-outline"></ion-icon>Documentación vencida</div>
+                <p>{{ resultado.hallazgosDocumentos.join('. ') }}. El vehículo no puede circular en esta condición.</p>
+              </div>
+
+              <div class="meta">
+                <div><span class="k">Fecha</span><span class="v">{{ resultado.fecha }}</span></div>
+                <div><span class="k">Placa</span><span class="v">{{ resultado.placa }}</span></div>
+                <div><span class="k">Hallazgos</span><span class="v" [class.bad]="resultado.totalHallazgos">{{ resultado.totalHallazgos }}</span></div>
+                <div><span class="k">Evidencias</span><span class="v">{{ resultado.evidencias }}</span></div>
+              </div>
+
+              <ul class="recap">
+                <li *ngFor="let r of recap">
+                  <span class="dot" [class.r]="r.mala"></span>
+                  <span class="lbl"><b>{{ r.num }}. {{ r.titulo }}</b><small>{{ r.fotos }} evidencia(s)<ng-container *ngIf="r.detalle"> · {{ r.detalle }}</ng-container></small></span>
+                  <span class="val" [class.r]="r.mala">{{ r.resp }}</span>
+                </li>
+              </ul>
+              <p class="hint"><ion-icon name="cloud-done-outline"></ion-icon> Registro n.º {{ resultado.id }} guardado en el servidor.</p>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ═══ Acciones ═══ -->
+        <div class="actions">
+          <button type="button" class="btn-back" *ngIf="paso > 0 && actual.tipo !== 'resultado'" [disabled]="enviando" (click)="retroceder()">
+            <ion-icon name="arrow-back-outline"></ion-icon></button>
+          <button type="button" class="btn-go" *ngIf="actual.tipo !== 'resultado'" [disabled]="enviando" (click)="avanzar()">
+            <ion-spinner *ngIf="enviando" name="crescent"></ion-spinner>
+            <ng-container *ngIf="!enviando">{{ etiquetaBoton }} <ion-icon name="arrow-forward-outline"></ion-icon></ng-container>
+          </button>
+          <button type="button" class="btn-go dark" *ngIf="actual.tipo === 'resultado'" (click)="nueva()">
+            <ion-icon name="refresh-outline"></ion-icon> Nueva inspección</button>
+        </div>
+
+      </ng-container>
+    </div>
+  </div>
+</ion-content>

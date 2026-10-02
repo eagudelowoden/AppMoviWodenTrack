@@ -39,6 +39,11 @@
          "hay un problema con el archivo de la app", aunque el archivo esté bien. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <!-- Cámara para las fotos de evidencia del preoperacional de moto.
+         required=false: la app sigue instalándose en equipos sin cámara. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <!-- Ubicación GPS para marcación con geolocalización -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
