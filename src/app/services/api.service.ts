@@ -179,16 +179,39 @@ export class ApiService {
     return firstValueFrom(this.http.post<any>(`${this.apiUrl}/preoperacional-moto/inspecciones`, fd));
   }
 
+  /**
+   * Las fotos guardadas en el servidor (modo "local") llegan con una ruta relativa
+   * (/usuarios/preoperacional-moto/evidencia-local?...). En la web se resuelve contra el mismo dominio, pero en la app
+   * el origen es capacitor://localhost, así que hay que anteponer el origen del backend.
+   */
+  private absolutizarUrls<T>(dato: T): T {
+    const origen = this.apiUrl.replace(/\/usuarios\/?$/, '');
+    const recorrer = (v: any): void => {
+      if (Array.isArray(v)) { v.forEach(recorrer); return; }
+      if (!v || typeof v !== 'object') return;
+      for (const k of Object.keys(v)) {
+        if (k === 'url' && typeof v[k] === 'string' && v[k].startsWith('/')) v[k] = origen + v[k];
+        else recorrer(v[k]);
+      }
+    };
+    recorrer(dato);
+    return dato;
+  }
+
   async getMisPreop() {
     return firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/preoperacional-moto/inspecciones/mias`));
   }
 
   async getMisPreopMant() {
-    return firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/preoperacional-moto/mantenimientos/mios`));
+    return this.absolutizarUrls(
+      await firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/preoperacional-moto/mantenimientos/mios`)),
+    );
   }
 
   async getPreopDetalle(id: number) {
-    return firstValueFrom(this.http.get<any>(`${this.apiUrl}/preoperacional-moto/inspecciones/${id}`));
+    return this.absolutizarUrls(
+      await firstValueFrom(this.http.get<any>(`${this.apiUrl}/preoperacional-moto/inspecciones/${id}`)),
+    );
   }
 
 

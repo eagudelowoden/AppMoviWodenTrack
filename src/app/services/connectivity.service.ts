@@ -4,6 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { App } from '@capacitor/app';
 import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 // Margen tras volver del background antes de confiar en una señal de caída
 // (el socket y la red tardan un instante en restablecerse al reanudar la app).
@@ -29,7 +30,7 @@ export class ConnectivityService {
   private resumeGraceUntil = 0;
   private confirmando = false;
 
-  constructor(private http: HttpClient, private ngZone: NgZone) {
+  constructor(private http: HttpClient, private ngZone: NgZone, private auth: AuthService) {
     this.baseUrl = environment.apiUrl.replace(/\/usuarios\/?$/, '');
     this.healthUrl = this.baseUrl + '/version';
   }
@@ -76,6 +77,8 @@ export class ConnectivityService {
   private connectSocket() {
     if (this.socket) return;
     this.socket = io(`${this.baseUrl}/interno`, {
+      // El backend exige el JWT en el handshake del socket.
+      auth: (cb) => cb({ token: this.auth.token }),
       transports: ['websocket'],
       reconnection: true,
       reconnectionDelay: 1000,
@@ -86,7 +89,11 @@ export class ConnectivityService {
 
     // Ya no se marca offline al instante: puede ser solo que la app pasó a
     // segundo plano (el SO corta el socket) y no una caída real del backend.
-    this.socket.on('disconnect', () => this.handlePosibleCaida());
+    this.socket.on('disconnect', (reason) => {
+      // 'io server disconnect': el servidor lo cerró (p. ej. sin sesión todavía); socket.io no reintenta solo.
+      if (reason === 'io server disconnect') setTimeout(() => this.socket?.connect(), 10000);
+      this.handlePosibleCaida();
+    });
     this.socket.on('connect_error', () => this.handlePosibleCaida());
   }
 
