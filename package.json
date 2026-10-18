@@ -4,6 +4,7 @@
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
   "scripts": {
+    "bump": "node scripts/bump-version.js",
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",

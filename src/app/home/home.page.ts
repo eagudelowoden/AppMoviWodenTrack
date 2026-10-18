@@ -131,7 +131,13 @@ export class HomePage implements OnInit {
       // necesidad de que toque la X manualmente.
       if (Capacitor.isNativePlatform()) {
         const appInfo = await App.getInfo();
-        if (compareVersions(appInfo.version, info.version) >= 0) {
+        const cmp = compareVersions(appInfo.version, info.version);
+        // Mismo número de versión pero build más nuevo en el servidor (se compiló sin cambiar el «3.4.6»): también es
+        // una actualización. Android decide por versionCode, así que es el desempate correcto.
+        const instaladoCode = Number(appInfo.build);
+        const disponibleCode = Number(info.versionCode);
+        const hayBuildNuevo = cmp === 0 && Number.isFinite(instaladoCode) && Number.isFinite(disponibleCode) && disponibleCode > instaladoCode;
+        if (cmp >= 0 && !hayBuildNuevo) {
           this.showUpdateBanner = false;
           sessionStorage.removeItem('apk_dismissed_version');
           return;
@@ -144,7 +150,7 @@ export class HomePage implements OnInit {
       // vuelve a aparecer si la versión instalada sigue desactualizada — así
       // un cierre accidental de la X no la esconde para siempre.
       const dismissed = sessionStorage.getItem('apk_dismissed_version');
-      if (dismissed !== String(info.version)) {
+      if (dismissed !== `${info.version}:${info.versionCode ?? ''}`) {
         this.apkInfo = info;
         this.showUpdateBanner = true;
       }
@@ -264,7 +270,7 @@ export class HomePage implements OnInit {
   dismissUpdate() {
     sessionStorage.setItem(
       'apk_dismissed_version',
-      this.apkInfo?.version ?? ''
+      `${this.apkInfo?.version ?? ''}:${this.apkInfo?.versionCode ?? ''}`
     );
     this.showUpdateBanner = false;
   }
