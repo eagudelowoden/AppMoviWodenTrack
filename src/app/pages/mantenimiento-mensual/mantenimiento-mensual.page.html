@@ -44,6 +44,15 @@
                 Preventivo {{ mantEstado.reporte.realizado === 'Sí' ? 'realizado' : 'no realizado' }} · SOAT {{ mantEstado.reporte.soat }} · Tecnomecánica {{ mantEstado.reporte.tecno }}. No se vuelve a pedir hasta el mes siguiente.
               </span>
             </div>
+            <div class="pf-alert bad" *ngIf="mantEstado?.estado === 'bloqueado' && !mantEstado.habilitado">
+              <ion-icon name="lock-closed-outline"></ion-icon>
+              <span>
+                <b>Mensual bloqueado para {{ mantEstado.placa }}</b>
+                El plazo del reporte de {{ mantEstado.mes }} venció (día {{ cfg.diaLimiteMantenimiento }}). Mientras no se diligencie no puedes marcar entrada ni hacer inspecciones. Tu coordinador debe habilitarte.
+                <button type="button" class="link-btn" *ngIf="mantEstado.solicitud?.estado !== 'pendiente'" (click)="solicitarHabilitacion()">Solicitar habilitación al coordinador</button>
+                <em *ngIf="mantEstado.solicitud?.estado === 'pendiente'">Solicitud enviada: espera la habilitación de tu coordinador.</em>
+              </span>
+            </div>
             <p class="hint">Un solo reporte por placa al mes. Al continuar se verifica si esta placa ya lo reportó.</p>
           </div>
         </ng-container>

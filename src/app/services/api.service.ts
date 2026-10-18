@@ -198,6 +198,32 @@ export class ApiService {
     return dato;
   }
 
+  /** Al abrir Diario/Mensual: marca la entrada si corresponde (el servidor es idempotente). */
+  async iniciarPreop(): Promise<{ marcada: boolean; bloqueo?: string; mensaje?: string }> {
+    return firstValueFrom(this.http.post<any>(`${this.apiUrl}/preoperacional-moto/iniciar`, {}));
+  }
+
+  /** PDF de lo diligenciado, con el enlace cifrado (/cif/<token>) a las fotos. Devuelve el archivo en base64. */
+  async descargarPreopPdf(tipo: 'inspecciones' | 'mantenimientos', id: number): Promise<{ base64: string; nombre: string }> {
+    const res = await firstValueFrom(
+      this.http.get(`${this.apiUrl}/preoperacional-moto/${tipo}/${id}/pdf`, { responseType: 'blob', observe: 'response' }),
+    );
+    const nombre = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') || '')?.[1] || `preoperacional-${id}.pdf`;
+    const blob = res.body as Blob;
+    const base64 = await new Promise<string>((ok, fail) => {
+      const r = new FileReader();
+      r.onload = () => ok(String(r.result).split(',')[1] || '');
+      r.onerror = () => fail(r.error);
+      r.readAsDataURL(blob);
+    });
+    return { base64, nombre };
+  }
+
+  /** El agente pide al coordinador que lo habilite a diligenciar el mensual fuera de plazo. */
+  async crearSolicitudPreop(placa: string, motivo: string) {
+    return firstValueFrom(this.http.post<any>(`${this.apiUrl}/preoperacional-moto/solicitudes`, { placa, motivo }));
+  }
+
   async getMisPreop() {
     return firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/preoperacional-moto/inspecciones/mias`));
   }

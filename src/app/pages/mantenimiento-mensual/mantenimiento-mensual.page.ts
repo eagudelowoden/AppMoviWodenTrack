@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastController } from '@ionic/angular';
+import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline, arrowForwardOutline, cameraOutline, closeOutline,
@@ -41,6 +41,8 @@ export class MantenimientoMensualPage implements OnInit, OnDestroy {
     private api: ApiService,
     private auth: AuthService,
     private toastCtrl: ToastController,
+    private alertCtrl: AlertController,
+    private loadingCtrl: LoadingController,
   ) {
     addIcons({
       'arrow-back-outline': arrowBackOutline,
@@ -221,12 +223,48 @@ export class MantenimientoMensualPage implements OnInit, OnDestroy {
       this.mantEstado = await this.api.getPreopMantenimientoEstado(this.datos.placa);
       localStorage.setItem(PLACA_KEY, this.datos.placa);
       if (this.mantEstado.estado === 'ok') return; // ya reportado: se muestra el resumen
+      // Plazo vencido sin habilitación: se queda aquí con el aviso y el botón para solicitarla al coordinador.
+      if (this.mantEstado.estado === 'bloqueado' && !this.mantEstado.habilitado) return;
       this.irPaso(1);
     } catch (e) { this.errores = { general: this.msg(e) }; }
     finally { this.enviando = false; }
   }
 
   retroceder() { this.errores = {}; this.irPaso(Math.max(0, this.paso - 1)); }
+
+  /** Pide al coordinador la habilitación del mensual (plazo vencido). */
+  async solicitarHabilitacion() {
+    const alerta = await this.alertCtrl.create({
+      header: 'Solicitar habilitación',
+      message: `El plazo del mensual de la placa ${this.datos.placa} venció. Cuéntale a tu coordinador por qué no lo hiciste a tiempo.`,
+      inputs: [{ name: 'motivo', type: 'textarea', placeholder: 'Motivo', attributes: { maxlength: 1000 } }],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Enviar',
+          handler: (v: any) => {
+            const motivo = String(v?.motivo ?? '').trim();
+            if (motivo.length < 5) { this.toast('Escribe el motivo (mínimo 5 caracteres).'); return false; }
+            this.enviarSolicitud(motivo);
+            return true;
+          },
+        },
+      ],
+    });
+    await alerta.present();
+  }
+
+  private async enviarSolicitud(motivo: string) {
+    const espera = await this.loadingCtrl.create({ message: 'Enviando solicitud…' });
+    await espera.present();
+    try {
+      const r = await this.api.crearSolicitudPreop(this.datos.placa, motivo);
+      this.toast(r?.coordinador ? `Solicitud enviada a ${r.coordinador}` : 'Solicitud enviada');
+      this.mantEstado = await this.api.getPreopMantenimientoEstado(this.datos.placa);
+    } catch (e) { this.toast(this.msg(e)); }
+    finally { await espera.dismiss(); }
+  }
+
   private irPaso(n: number) {
     this.paso = n;
     document.querySelector('ion-content')?.scrollToTop(200);

@@ -346,7 +346,11 @@ export class MarcacionPage implements OnInit, OnDestroy {
         this.mostrarToast(action === 'in' ? '✓ Entrada registrada' : '✓ Salida registrada', 'success');
       } else {
         if (res.is_inside !== undefined) { this.isInside = res.is_inside; this.saveSession(); }
-        this.mostrarToast(res.message || 'Error en la marcación', 'danger');
+        if (typeof res.type === 'string' && res.type.startsWith('preop_')) {
+          await this.avisarPreoperacionalPendiente(res.type, res.message);
+        } else {
+          this.mostrarToast(res.message || 'Error en la marcación', 'danger');
+        }
       }
     } catch {
       await loading.dismiss();
@@ -354,6 +358,20 @@ export class MarcacionPage implements OnInit, OnDestroy {
     } finally {
       this.isMarking = false;
     }
+  }
+
+  /** La entrada se marca al enviar el preoperacional diario; si falta el mensual, hay que pedir la habilitación. */
+  private async avisarPreoperacionalPendiente(tipo: string, mensaje?: string) {
+    const mensual = tipo === 'preop_mensual_pendiente';
+    const alert = await this.alertCtrl.create({
+      header: mensual ? 'Preoperacional mensual pendiente' : 'Aún no inicias el preoperacional',
+      message: mensaje || 'Debes diligenciar el preoperacional antes de marcar tu entrada.',
+      buttons: [
+        { text: 'Cerrar', role: 'cancel' },
+        { text: mensual ? 'Ir al mensual' : 'Iniciar preoperacional', handler: () => { this.irAPreoperacional(mensual ? 'mensual' : 'diario'); } },
+      ],
+    });
+    await alert.present();
   }
 
   // ── Marcación con GPS (Ecuador) ────────────────────────────────────────────

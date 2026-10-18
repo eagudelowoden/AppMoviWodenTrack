@@ -62,3 +62,7 @@ ion-content.woden-content { --background: #122a52; }
   img { max-width: 100%; max-height: 78vh; object-fit: contain; border-radius: 8px; }
   p { color: #fff; font-size: 13px; font-weight: 600; margin: 0; text-align: center; }
   .visor-x { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); right: 14px; width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255,255,255,.15); color: #fff; ion-icon { font-size: 22px; } } }
+
+// Botón de descarga del PDF (con el enlace cifrado a las fotos).
+.link-btn { display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 4px; padding: 9px 14px; border: none; border-radius: 10px; background: #102e4a; color: #fff; font-size: 12px; font-weight: 700;
+  &[disabled] { opacity: .6; } }

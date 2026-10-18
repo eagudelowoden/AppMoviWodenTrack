@@ -44,6 +44,10 @@
                 <p>{{ detalle.hallazgosDocumentos }}</p>
               </div>
               <p class="hint">Enviada {{ fechaHora(detalle.createdAt) }}</p>
+              <button type="button" class="link-btn" [disabled]="!!descargando" (click)="descargarPdf('inspecciones', detalle.id)">
+                <ion-icon name="document-text-outline"></ion-icon>
+                {{ descargando === 'i' + detalle.id ? 'Generando PDF…' : 'Descargar PDF con enlace a las fotos' }}
+              </button>
 
               <div class="resp" *ngFor="let q of detalle.respuestas" [class.mala]="q.hallazgo">
                 <div class="resp-top">
@@ -79,6 +83,10 @@
             <p class="resp-det" *ngIf="m.cambios?.length">Cambios: {{ m.cambios.join(', ') }}<ng-container *ngIf="m.cambiosOtros"> ({{ m.cambiosOtros }})</ng-container></p>
             <p class="resp-det" *ngIf="m.motivo">{{ m.motivo }} · programado {{ m.programada }}</p>
             <p class="resp-det">SOAT: <b [class.bad]="m.soatDias < 0">{{ m.soat }}</b> · Tecno: <b [class.bad]="m.tecnoDias < 0">{{ m.tecno }}</b></p>
+            <button type="button" class="link-btn" [disabled]="!!descargando" (click)="descargarPdf('mantenimientos', m.id)">
+              <ion-icon name="document-text-outline"></ion-icon>
+              {{ descargando === 'm' + m.id ? 'Generando PDF…' : 'Descargar PDF con enlace a las fotos' }}
+            </button>
             <div class="thumbs" *ngIf="m.evidencias?.length">
               <div class="thumb" *ngFor="let e of m.evidencias" (click)="verFoto(e.url, 'Soporte del mantenimiento')">
                 <img [src]="e.url" loading="lazy" alt="Soporte" />

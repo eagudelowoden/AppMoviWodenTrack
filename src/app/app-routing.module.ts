@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { authGuard, permisoGuard } from './services/auth.guard';
+import { preopInicioGuard } from './services/preop-inicio.guard';
 
 const routes: Routes = [
   {
@@ -36,12 +37,12 @@ const routes: Routes = [
   { path: 'preoperacional', redirectTo: 'preoperacional/diario', pathMatch: 'full' },
   {
     path: 'preoperacional/diario', // OpeDiario
-    canActivate: [authGuard, permisoGuard('preoperacional.diario')],
+    canActivate: [authGuard, permisoGuard('preoperacional.diario'), preopInicioGuard],
     loadChildren: () => import('./pages/preoperacional/preoperacional.module').then( m => m.PreoperacionalPageModule)
   },
   {
     path: 'preoperacional/mensual', // OpeMensual
-    canActivate: [authGuard, permisoGuard('preoperacional.mensual')],
+    canActivate: [authGuard, permisoGuard('preoperacional.mensual'), preopInicioGuard],
     loadChildren: () => import('./pages/mantenimiento-mensual/mantenimiento-mensual.module').then( m => m.MantenimientoMensualPageModule)
   },
   {

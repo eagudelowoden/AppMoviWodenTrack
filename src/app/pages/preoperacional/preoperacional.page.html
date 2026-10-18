@@ -50,7 +50,9 @@
               <span>
                 <b>Inspecciones bloqueadas para {{ datos.placa }}</b>
                 Falta el reporte de mantenimiento de {{ mantEstado.mes }} y ya pasó el día {{ cfg.diaLimiteMantenimiento }}. Debe diligenciarlo en el formulario mensual para continuar.
-                <button type="button" class="link-btn" *ngIf="puedeMensual" (click)="irMensual()">Ir al mantenimiento mensual</button>
+                <button type="button" class="link-btn" *ngIf="puedeMensual && mantEstado.habilitado" (click)="irMensual()">Ir al mantenimiento mensual</button>
+                <button type="button" class="link-btn" *ngIf="!mantEstado.habilitado && mantEstado.solicitud?.estado !== 'pendiente'" (click)="solicitarHabilitacion()">Solicitar habilitación al coordinador</button>
+                <em *ngIf="mantEstado.solicitud?.estado === 'pendiente'">Solicitud enviada: espera la habilitación de tu coordinador.</em>
               </span>
             </div>
             <p class="hint">Se recuerda la placa en este equipo para el siguiente turno.</p>
