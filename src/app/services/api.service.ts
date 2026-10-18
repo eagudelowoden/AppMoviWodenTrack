@@ -63,8 +63,22 @@ export class ApiService {
     descripcion: string;
   }) {
     return firstValueFrom(
-      this.http.post<any>(`${this.apiUrl}/reportar-falla`, data)
+      this.http.post<any>(`${this.apiUrl}/reportar-falla`, { ...data, origen: 'android' })
     );
+  }
+
+  /** Informa al servidor qué versión de la app tiene esta persona (para saber cuántos actualizaron). */
+  async reportarInstalacion(version: string, versionCode: number) {
+    return firstValueFrom(this.http.post<any>(`${this.apiUrl}/apk/instalacion`, { version, versionCode, plataforma: 'android' }));
+  }
+
+  /** Mis reportes de falla con la respuesta del administrador. */
+  async misReportesFalla() {
+    return firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/mis-reportes-falla`));
+  }
+
+  async marcarRespuestasFallaLeidas() {
+    return firstValueFrom(this.http.post<any>(`${this.apiUrl}/mis-reportes-falla/leidas`, {}));
   }
 
   async getAttendanceStatus(employeeId: number) {

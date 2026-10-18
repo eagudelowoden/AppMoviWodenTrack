@@ -67,6 +67,10 @@
           <ion-icon name="bug-outline"></ion-icon>
           <span>Reportar falla</span>
         </button>
+        <button class="sec-btn" (click)="verMisReportes()">
+          <ion-icon name="chatbubbles-outline"></ion-icon>
+          <span>Mis reportes<ng-container *ngIf="respuestasSinLeer"> ({{ respuestasSinLeer }})</ng-container></span>
+        </button>
       </div>
 
       <!-- Panel "Más opciones" desplegable — agrupa accesos secundarios que

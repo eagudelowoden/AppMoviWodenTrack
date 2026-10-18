@@ -5,6 +5,8 @@ import { AuthService } from '../../services/auth.service';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { Geolocation, Position } from '@capacitor/geolocation';
+import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import {
   logOutOutline, logInOutline, calendarOutline, bicycleOutline, buildOutline, folderOpenOutline,
   cloudDownloadOutline, closeOutline, checkmarkCircleOutline,
@@ -195,6 +197,8 @@ export class MarcacionPage implements OnInit, OnDestroy {
       return;
     }
 
+    void this.informarVersionInstalada();
+
     window.addEventListener('online',  () => this.isOnline = true);
     window.addEventListener('offline', () => this.isOnline = false);
 
@@ -232,6 +236,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
    */
   async ionViewWillEnter() {
     if (!this.userData?.employee_id) return;
+    void this.contarRespuestas();
     try {
       const permisos = await this.api.getPermisosSesion(this.userData.employee_id);
       await this.auth.patchSession({ permisos });
@@ -563,6 +568,52 @@ export class MarcacionPage implements OnInit, OnDestroy {
       buttons:   [{ text: 'Cerrar', role: 'cancel' }],
     });
     await alert.present();
+  }
+
+  /** Le dice al servidor qué versión de la app está instalada (no crítico: si falla, no pasa nada). */
+  private async informarVersionInstalada() {
+    try {
+      if (!Capacitor.isNativePlatform()) return;
+      const info = await App.getInfo();
+      await this.api.reportarInstalacion(info.version, Number(info.build));
+    } catch { /* sin conexión o servidor sin la ruta: se intenta la próxima vez */ }
+  }
+
+  // ── Respuestas del administrador a mis reportes ────────────────────────────
+  respuestasSinLeer = 0;
+
+  private async contarRespuestas() {
+    try {
+      const lista = await this.api.misReportesFalla();
+      this.respuestasSinLeer = (lista || []).filter((r: any) => r.sin_leer).length;
+    } catch { /* sin conexión: se deja el contador como estaba */ }
+  }
+
+  async verMisReportes() {
+    let lista: any[] = [];
+    try {
+      lista = await this.api.misReportesFalla();
+    } catch {
+      this.mostrarToast('No se pudieron cargar tus reportes', 'danger');
+      return;
+    }
+    const esc = (v: any) => String(v ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' } as any)[c]);
+    const fecha = (iso: string) => new Date(iso).toLocaleDateString('es-CO', { timeZone: 'America/Bogota', day: '2-digit', month: '2-digit' });
+    const cuerpo = lista.length
+      ? lista.slice(0, 10).map((r) =>
+          `<p><b>${fecha(r.fecha)} · ${r.resuelto ? 'Resuelto' : 'Pendiente'}</b><br>${esc(r.descripcion)}` +
+          (r.respuesta ? `<br><i>${esc(r.respondido_por || 'Soporte')}: ${esc(r.respuesta)}</i>` : '') + '</p>').join('')
+      : 'Aún no has reportado fallas.';
+    const alert = await this.alertCtrl.create({
+      header: 'Mis reportes',
+      message: cuerpo,
+      buttons: [{ text: 'Cerrar', role: 'cancel' }],
+    });
+    await alert.present();
+    if (this.respuestasSinLeer) {
+      this.respuestasSinLeer = 0;
+      try { await this.api.marcarRespuestasFallaLeidas(); } catch { /* no crítico */ }
+    }
   }
 
   // ── Reportar falla ─────────────────────────────────────────────────────────
