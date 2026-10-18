@@ -11,6 +11,28 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+// Versión automática: en CADA build (assemble / bundle / install, también «Run» de Android Studio o `npx cap run android`)
+// versionCode y el último número de versionName suben solos. Así cada APK compilada es distinta para Android (la acepta como
+// actualización) y para la app (muestra el banner de «nueva versión»). El contador vive en version.properties; para cambiar
+// la versión mayor/menor (p. ej. 3.5) edita versionBase ahí.
+def versionPropsFile = file('version.properties')
+def versionProps = new Properties()
+if (versionPropsFile.exists()) {
+    versionPropsFile.withInputStream { versionProps.load(it) }
+}
+int vCode = (versionProps.getProperty('versionCode') ?: '14') as int
+int vPatch = (versionProps.getProperty('versionPatch') ?: '7') as int
+String vBase = versionProps.getProperty('versionBase') ?: '3.4'
+def esBuild = gradle.startParameter.taskNames.any { it ==~ /(?i).*(assemble|bundle|install|package).*/ }
+if (esBuild) {
+    vCode++
+    vPatch++
+    versionProps.setProperty('versionCode', vCode.toString())
+    versionProps.setProperty('versionPatch', vPatch.toString())
+    versionProps.setProperty('versionBase', vBase)
+    versionPropsFile.withOutputStream { versionProps.store(it, 'Se incrementa solo en cada build - no editar versionCode/versionPatch a mano') }
+}
+
 android {
     namespace = "io.ionic.starter"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -18,8 +40,8 @@ android {
         applicationId "io.ionic.starter"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 14
-        versionName "3.4.7"
+        versionCode vCode
+        versionName vBase + '.' + vPatch
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
