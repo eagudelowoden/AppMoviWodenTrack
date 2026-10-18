@@ -69,7 +69,7 @@ export class ApiService {
 
   /** Informa al servidor qué versión de la app tiene esta persona (para saber cuántos actualizaron). */
   async reportarInstalacion(version: string, versionCode: number) {
-    return firstValueFrom(this.http.post<any>(`${this.apiUrl}/apk/instalacion`, { version, versionCode, plataforma: 'android' }));
+    return firstValueFrom(this.http.post<any>(`${this.baseUrl}/apk/instalacion`, { version, versionCode, plataforma: 'android' }));
   }
 
   /** Mis reportes de falla con la respuesta del administrador. */

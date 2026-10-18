@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy, NgZone, ViewEncapsulation } from '@angula
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { ConnectivityService } from '../../services/connectivity.service';
+import { Subscription } from 'rxjs';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { Geolocation, Position } from '@capacitor/geolocation';
@@ -148,6 +150,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
     private loadingCtrl:  LoadingController,
     private toastCtrl:    ToastController,
     private ngZone:       NgZone,
+    private connectivity: ConnectivityService,
   ) {
     addIcons({
       'log-out-outline':          logOutOutline,
@@ -199,20 +202,30 @@ export class MarcacionPage implements OnInit, OnDestroy {
 
     void this.informarVersionInstalada();
 
-    window.addEventListener('online',  () => this.isOnline = true);
-    window.addEventListener('offline', () => this.isOnline = false);
+    // Respuesta del administrador a una falla reportada: llega por socket, sin recargar.
+    this.connectivity.asegurarSocket();
+    this.subRespuesta = this.connectivity.respuestaFalla$.subscribe((d) => {
+      if (this.panelReportes.abierto) { void this.refrescarReportes(); return; } // ya está viéndolas: se actualiza en vivo
+      this.respuestasSinLeer++;
+      this.mostrarToast(`Respuesta a tu reporte${d?.respondido_por ? ' de ' + d.respondido_por : ''}`, 'success');
+    });
+
+    window.addEventListener('online',  this.onOnline);
+    window.addEventListener('offline', this.onOffline);
 
     // Timer de inactividad — cierra sesión a los 10 min sin tocar la pantalla
     this.resetInactivityTimer();
     document.addEventListener('touchstart', this.onActivity);
     document.addEventListener('click',      this.onActivity);
 
-    await this.sincronizarRelojOficial();
+    // El reloj arranca ya (con la hora del equipo) y se corrige cuando llega la hora oficial: no se espera a la red.
+    this.actualizarReloj();
     this.clockInterval = setInterval(() => this.actualizarReloj(), 1000);
 
     // Sincronizar estado real + malla en paralelo (el aviso de actualización
     // ahora vive solo en /home — ver home.page.ts)
     await Promise.allSettled([
+      this.sincronizarRelojOficial(),
       this.sincronizarEstado(),
       this.cargarMalla(),
       this.canMarcacionGps ? this.cargarEstadoGps() : Promise.resolve(),
@@ -248,11 +261,16 @@ export class MarcacionPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     clearInterval(this.clockInterval);
     clearTimeout(this.inactivityTimer);
+    this.subRespuesta?.unsubscribe();
+    window.removeEventListener('online',  this.onOnline);
+    window.removeEventListener('offline', this.onOffline);
     document.removeEventListener('touchstart', this.onActivity);
     document.removeEventListener('click',      this.onActivity);
   }
 
   // ── Inactividad ────────────────────────────────────────────────────────────
+  private onOnline  = () => { this.isOnline = true; };
+  private onOffline = () => { this.isOnline = false; };
   private onActivity = () => this.ngZone.run(() => this.resetInactivityTimer());
 
   private resetInactivityTimer() {
@@ -581,6 +599,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
 
   // ── Respuestas del administrador a mis reportes ────────────────────────────
   respuestasSinLeer = 0;
+  private subRespuesta?: Subscription;
 
   private async contarRespuestas() {
     try {
@@ -589,32 +608,28 @@ export class MarcacionPage implements OnInit, OnDestroy {
     } catch { /* sin conexión: se deja el contador como estaba */ }
   }
 
+  panelReportes: { abierto: boolean; cargando: boolean; lista: any[] } = { abierto: false, cargando: false, lista: [] };
+
   async verMisReportes() {
-    let lista: any[] = [];
+    this.panelReportes = { abierto: true, cargando: true, lista: [] };
+    await this.refrescarReportes();
+  }
+
+  /** Carga la lista y marca como leídas las respuestas (la tarjeta «NUEVA» se ve en esta apertura). */
+  private async refrescarReportes() {
     try {
-      lista = await this.api.misReportesFalla();
+      this.panelReportes.lista = (await this.api.misReportesFalla()) || [];
     } catch {
       this.mostrarToast('No se pudieron cargar tus reportes', 'danger');
-      return;
     }
-    const esc = (v: any) => String(v ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' } as any)[c]);
-    const fecha = (iso: string) => new Date(iso).toLocaleDateString('es-CO', { timeZone: 'America/Bogota', day: '2-digit', month: '2-digit' });
-    const cuerpo = lista.length
-      ? lista.slice(0, 10).map((r) =>
-          `<p><b>${fecha(r.fecha)} · ${r.resuelto ? 'Resuelto' : 'Pendiente'}</b><br>${esc(r.descripcion)}` +
-          (r.respuesta ? `<br><i>${esc(r.respondido_por || 'Soporte')}: ${esc(r.respuesta)}</i>` : '') + '</p>').join('')
-      : 'Aún no has reportado fallas.';
-    const alert = await this.alertCtrl.create({
-      header: 'Mis reportes',
-      message: cuerpo,
-      buttons: [{ text: 'Cerrar', role: 'cancel' }],
-    });
-    await alert.present();
+    this.panelReportes.cargando = false;
     if (this.respuestasSinLeer) {
       this.respuestasSinLeer = 0;
       try { await this.api.marcarRespuestasFallaLeidas(); } catch { /* no crítico */ }
     }
   }
+
+  cerrarReportes() { this.panelReportes.abierto = false; }
 
   // ── Reportar falla ─────────────────────────────────────────────────────────
   async reportarFalla() {

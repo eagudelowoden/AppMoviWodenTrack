@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { App } from '@capacitor/app';
 import { environment } from '../../environments/environment';
@@ -18,6 +18,10 @@ const RECONNECT_WAIT_MS = 3000;
 export class ConnectivityService {
   private onlineSubject = new BehaviorSubject<boolean>(true);
   online$ = this.onlineSubject.asObservable();
+
+  /** Respuestas del administrador a mis reportes de falla (llegan por socket, sin recargar). */
+  private respuestaFallaSubject = new Subject<any>();
+  respuestaFalla$ = this.respuestaFallaSubject.asObservable();
 
   private readonly baseUrl: string;
   private readonly healthUrl: string;
@@ -50,6 +54,12 @@ export class ConnectivityService {
     }
     this.socket?.disconnect();
     this.socket = null;
+  }
+
+  /** Tras iniciar sesión: si el socket quedó sin conectar (no había token al arrancar), se reconecta ya. */
+  asegurarSocket() {
+    if (!this.socket) { this.connectSocket(); return; }
+    if (!this.socket.connected && this.auth.token) this.socket.connect();
   }
 
   // Llamado por el interceptor cuando una petición real falla por conexión (status 0)
@@ -85,7 +95,11 @@ export class ConnectivityService {
     });
 
     // Conexión/reconexión confirmada → el backend está vivo
-    this.socket.on('connect', () => this.onlineSubject.next(true));
+    this.socket.on('connect', () => {
+      this.onlineSubject.next(true);
+      this.socket?.emit('suscribir');
+    });
+    this.socket.on('respuesta-falla', (d) => this.ngZone.run(() => this.respuestaFallaSubject.next(d)));
 
     // Ya no se marca offline al instante: puede ser solo que la app pasó a
     // segundo plano (el SO corta el socket) y no una caída real del backend.
@@ -127,6 +141,8 @@ export class ConnectivityService {
 
   private checkNow() {
     if (this.isPaused) return; // no gastar batería/datos chequeando en background
+    // Con el socket conectado el backend está vivo: no hace falta otra petición cada 10 s (ahorra datos y batería).
+    if (this.socket?.connected) { this.onlineSubject.next(true); return; }
     this.http.get(this.healthUrl).subscribe({
       next: () => this.onlineSubject.next(true),
       error: () => this.handlePosibleCaida(),

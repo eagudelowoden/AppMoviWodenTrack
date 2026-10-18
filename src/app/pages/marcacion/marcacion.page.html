@@ -67,9 +67,10 @@
           <ion-icon name="bug-outline"></ion-icon>
           <span>Reportar falla</span>
         </button>
-        <button class="sec-btn" (click)="verMisReportes()">
+        <button class="sec-btn" [class.sec-respuesta]="respuestasSinLeer > 0" (click)="verMisReportes()">
           <ion-icon name="chatbubbles-outline"></ion-icon>
-          <span>Mis reportes<ng-container *ngIf="respuestasSinLeer"> ({{ respuestasSinLeer }})</ng-container></span>
+          <span>Respuestas de Fallas</span>
+          <span class="punto-verde" *ngIf="respuestasSinLeer > 0">{{ respuestasSinLeer }}</span>
         </button>
       </div>
 
@@ -181,6 +182,38 @@
 
       <p class="wt-footer">WodenTrack Pro · {{ currentYear }}</p>
 
+    </div>
+  </div>
+
+  <!-- Respuestas a mis reportes de falla -->
+  <div slot="fixed" class="rf-overlay" *ngIf="panelReportes.abierto" (click)="cerrarReportes()">
+    <div class="rf-sheet" (click)="$event.stopPropagation()">
+      <div class="rf-handle"></div>
+      <div class="rf-head">
+        <div>
+          <h3>Respuestas de Fallas</h3>
+          <p>Tus reportes y lo que te respondió soporte</p>
+        </div>
+        <button class="rf-close" (click)="cerrarReportes()" aria-label="Cerrar"><ion-icon name="close-outline"></ion-icon></button>
+      </div>
+
+      <div class="rf-body">
+        <p class="rf-vacio" *ngIf="panelReportes.cargando">Cargando…</p>
+        <p class="rf-vacio" *ngIf="!panelReportes.cargando && !panelReportes.lista.length">Aún no has reportado fallas.</p>
+
+        <div class="rf-card" *ngFor="let r of panelReportes.lista" [class.rf-nuevo]="r.sin_leer">
+          <div class="rf-card-top">
+            <span class="rf-fecha">{{ r.fecha | date:'dd/MM · h:mm a' }}</span>
+            <span class="rf-estado" [class.rf-ok]="r.resuelto">{{ r.resuelto ? 'Resuelto' : 'Pendiente' }}</span>
+          </div>
+          <p class="rf-texto">{{ r.descripcion }}</p>
+          <div class="rf-resp" *ngIf="r.respuesta">
+            <span class="rf-resp-quien">{{ r.respondido_por || 'Soporte' }} <em *ngIf="r.sin_leer">· NUEVA</em></span>
+            <p>{{ r.respuesta }}</p>
+          </div>
+          <p class="rf-espera" *ngIf="!r.respuesta">Aún sin respuesta.</p>
+        </div>
+      </div>
     </div>
   </div>
 
