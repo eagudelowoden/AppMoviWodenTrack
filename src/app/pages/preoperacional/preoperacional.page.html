@@ -6,7 +6,7 @@
       <div class="wt-header">
         <button class="icon-btn" (click)="volver()"><ion-icon name="arrow-back-outline"></ion-icon></button>
         <div class="wt-brand"><span class="b-woden">Preoperacional</span> <span class="b-acc">Diario</span></div>
-        <div class="icon-btn-spacer"></div>
+        <button class="icon-btn" aria-label="Cerrar sesión" (click)="cerrarSesion()"><ion-icon name="log-out-outline"></ion-icon></button>
       </div>
       <div class="steps" *ngIf="cfg && !cargando">
         <i *ngFor="let s of flujo; let i = index" [class.done]="i < paso" [class.now]="i === paso"></i>

@@ -4,7 +4,7 @@ import { AlertController, LoadingController, ToastController } from '@ionic/angu
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline, arrowForwardOutline, cameraOutline, closeOutline,
-  checkmarkOutline, warningOutline, lockClosedOutline, buildOutline, cloudDoneOutline, refreshOutline,
+  checkmarkOutline, warningOutline, lockClosedOutline, buildOutline, cloudDoneOutline, refreshOutline, logOutOutline,
 } from 'ionicons/icons';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -46,6 +46,7 @@ export class MantenimientoMensualPage implements OnInit, OnDestroy {
   ) {
     addIcons({
       'arrow-back-outline': arrowBackOutline,
+      'log-out-outline': logOutOutline,
       'arrow-forward-outline': arrowForwardOutline,
       'camera-outline': cameraOutline,
       'close-outline': closeOutline,
@@ -79,6 +80,14 @@ export class MantenimientoMensualPage implements OnInit, OnDestroy {
   ngOnDestroy() { this.liberarFotos(); }
 
   volver() { this.router.navigate(['/marcacion']); }
+  /** Resultado de la marcación que el servidor hace al recibir el formulario (respaldo si no se marcó al ingresar). */
+  private avisoAsistencia() {
+    const a = this.resultado?.asistencia;
+    if (a?.marcada) this.toast(`Entrada registrada${a.hora ? " a las " + a.hora : ""}.`);
+    else if (a?.mensaje) this.toast(a.mensaje);
+  }
+  /** Única salida sin enviar el formulario: la entrada ya quedó marcada y el formulario sigue pendiente. */
+  async cerrarSesion() { await this.auth.clearSession(); this.router.navigate(['/home'], { replaceUrl: true }); }
   irDiario() { this.router.navigate(['/preoperacional/diario']); }
 
   // ── Flujo: placa → formulario → confirmación ──────────────────────────────
@@ -279,6 +288,7 @@ export class MantenimientoMensualPage implements OnInit, OnDestroy {
         factura: m.factura, motivo: m.motivo, programada: m.programada, cambios: m.cambios,
         cambiosOtros: m.cambiosOtros, proximoKm: m.proxKm, proximoFecha: m.proxFecha, soat: m.soat, tecno: m.tecno,
       }, (this.evid['mant'] || []).map((e) => e.blob));
+      this.avisoAsistencia();
       this.mantEstado = this.resultado.estado;
       this.nSoportes = this.nFotos('mant');
       this.errores = {};

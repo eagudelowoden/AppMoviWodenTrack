@@ -5,7 +5,7 @@ import { addIcons } from 'ionicons';
 import {
   arrowBackOutline, arrowForwardOutline, cameraOutline, closeOutline,
   checkmarkOutline, warningOutline, lockClosedOutline, buildOutline,
-  refreshOutline, cloudDoneOutline,
+  refreshOutline, cloudDoneOutline, logOutOutline,
 } from 'ionicons/icons';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -52,6 +52,7 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
   ) {
     addIcons({
       'arrow-back-outline': arrowBackOutline,
+      'log-out-outline': logOutOutline,
       'arrow-forward-outline': arrowForwardOutline,
       'camera-outline': cameraOutline,
       'close-outline': closeOutline,
@@ -85,6 +86,14 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
   ngOnDestroy() { this.liberarFotos(); }
 
   volver() { this.router.navigate(['/marcacion']); }
+  /** Resultado de la marcación que el servidor hace al recibir el formulario (respaldo si no se marcó al ingresar). */
+  private avisoAsistencia() {
+    const a = this.resultado?.asistencia;
+    if (a?.marcada) this.toast(`Entrada registrada${a.hora ? " a las " + a.hora : ""}.`);
+    else if (a?.mensaje) this.toast(a.mensaje);
+  }
+  /** Única salida sin enviar el formulario: la entrada ya quedó marcada y el formulario sigue pendiente. */
+  async cerrarSesion() { await this.auth.clearSession(); this.router.navigate(['/home'], { replaceUrl: true }); }
 
   get puedeMensual(): boolean { return this.auth.hasPermiso('preoperacional.mensual'); }
   irMensual() { this.router.navigate(['/preoperacional/mensual']); }
@@ -256,6 +265,7 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
         { placa: this.datos.placa, kilometraje: this.datos.km, inicio: this.inicio, respuestas, textos: { ...this.textos } },
         porCierre ? {} : this.blobs(Object.keys(this.cfg.preguntas)),
       );
+      this.avisoAsistencia();
       this.irPaso(this.flujo.length - 1);
     } catch (e) {
       this.cerrado = false;

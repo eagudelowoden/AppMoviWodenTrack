@@ -212,9 +212,12 @@ export class ApiService {
     return dato;
   }
 
-  /** Al abrir Diario/Mensual: marca la entrada si corresponde (el servidor es idempotente). */
-  async iniciarPreop(): Promise<{ marcada: boolean; bloqueo?: string; mensaje?: string }> {
-    return firstValueFrom(this.http.post<any>(`${this.apiUrl}/preoperacional-moto/iniciar`, {}));
+  /**
+   * Qué preoperacional le falta hoy al agente (primero el mensual, luego el diario). Si falta alguno, el servidor marca la
+   * entrada en esta misma llamada (idempotente). Responde 403 a quien no tiene permiso de preoperacional.
+   */
+  async getPreopPendientes(): Promise<{ siguiente: 'mensual' | 'diario' | null; placa: string | null; mes: string; asistencia: { marcada: boolean; hora?: string | null; mensaje?: string } | null }> {
+    return firstValueFrom(this.http.get<any>(`${this.apiUrl}/preoperacional-moto/pendientes`));
   }
 
   /** PDF de lo diligenciado, con el enlace cifrado (/cif/<token>) a las fotos. Devuelve el archivo en base64. */
