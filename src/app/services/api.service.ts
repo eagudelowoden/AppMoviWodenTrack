@@ -236,9 +236,14 @@ export class ApiService {
     return { base64, nombre };
   }
 
-  /** El agente pide al coordinador que lo habilite a diligenciar el mensual fuera de plazo. */
-  async crearSolicitudPreop(placa: string, motivo: string) {
-    return firstValueFrom(this.http.post<any>(`${this.apiUrl}/preoperacional-moto/solicitudes`, { placa, motivo }));
+  /** Estado de la revisión diaria de hoy: una sola por agente y día; otra solo con autorización de la coordinación. */
+  async getPreopDiarioEstado(): Promise<{ registrada: boolean; placa: string | null; autorizada: boolean; solicitud: { estado: string; coordinador?: string; respuesta?: string } | null }> {
+    return firstValueFrom(this.http.get<any>(`${this.apiUrl}/preoperacional-moto/diario/estado`));
+  }
+
+  /** El agente pide al coordinador que lo habilite a diligenciar el mensual fuera de plazo (o autorice una 2.ª revisión diaria). */
+  async crearSolicitudPreop(placa: string, motivo: string, tipo: 'mensual' | 'diario' = 'mensual') {
+    return firstValueFrom(this.http.post<any>(`${this.apiUrl}/preoperacional-moto/solicitudes`, { placa, motivo, tipo }));
   }
 
   async getMisPreop() {

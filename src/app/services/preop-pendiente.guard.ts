@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { LoadingController, ToastController } from '@ionic/angular';
 import { ApiService } from './api.service';
+import { AuthService } from './auth.service';
 
 /**
  * Cada vez que se abre Asistencia (al iniciar sesión o al darle «volver» desde un formulario sin enviarlo): loading
@@ -12,9 +13,13 @@ import { ApiService } from './api.service';
  */
 export const preopPendienteGuard: CanActivateFn = async () => {
   const api = inject(ApiService);
+  const auth = inject(AuthService);
   const router = inject(Router);
   const loadingCtrl = inject(LoadingController);
   const toastCtrl = inject(ToastController);
+
+  // Solo si ESTA sesión puede abrir los formularios: si no, redirigir la devuelve a Asistencia y se forma un bucle.
+  if (!auth.hasPermiso('preoperacional.diario') && !auth.hasPermiso('preoperacional.mensual')) return true;
 
   const espera = await loadingCtrl.create({ message: 'Validando', spinner: 'crescent', backdropDismiss: false });
   await espera.present();
@@ -24,6 +29,7 @@ export const preopPendienteGuard: CanActivateFn = async () => {
   try {
     const p = await api.getPreopPendientes();
     if (p?.siguiente) {
+      if (!auth.hasPermiso(`preoperacional.${p.siguiente}`)) return true;
       destino = p.siguiente === 'mensual' ? '/preoperacional/mensual' : '/preoperacional/diario';
       const a = p.asistencia;
       if (a?.marcada) avisos.push({ message: `Entrada registrada${a.hora ? ` a las ${a.hora}` : ''}.`, color: 'success', duration: 3500 });

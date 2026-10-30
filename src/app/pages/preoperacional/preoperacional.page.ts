@@ -26,6 +26,7 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
   cfg: any = null;
   cargando = true;
   errorCarga = '';
+  yaHoy: { registrada: boolean; placa: string | null; autorizada: boolean; solicitud: { estado: string; coordinador?: string; respuesta?: string } | null } | null = null;
   enviando = false;
 
   paso = 0;
@@ -74,6 +75,7 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
       return;
     }
     try {
+      await this.cargarEstadoDiario();
       this.cfg = await this.api.getPreopConfig();
       this.datos.placa = localStorage.getItem(PLACA_KEY) ?? '';
     } catch (e) {
@@ -81,6 +83,43 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
     } finally {
       this.cargando = false;
     }
+  }
+
+  /** Una sola revisión por día: si ya hizo la de hoy y no tiene autorización, el formulario se reemplaza por la solicitud. */
+  async cargarEstadoDiario() {
+    try { this.yaHoy = await this.api.getPreopDiarioEstado(); } catch { /* el servidor igual rechaza una segunda revisión */ }
+  }
+
+  async solicitarOtraRevision() {
+    const alerta = await this.alertCtrl.create({
+      header: 'Otra revisión hoy',
+      message: 'Solo se permite una revisión de moto por día. Cuéntale a tu coordinación por qué necesitas otra.',
+      inputs: [{ name: 'motivo', type: 'textarea', placeholder: 'Motivo…' }],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Enviar',
+          handler: (v: any) => {
+            const motivo = String(v?.motivo ?? '').trim();
+            if (motivo.length < 5) { this.toast('Escribe el motivo (mínimo 5 caracteres).'); return false; }
+            this.enviarSolicitudDiaria(motivo);
+            return true;
+          },
+        },
+      ],
+    });
+    await alerta.present();
+  }
+
+  private async enviarSolicitudDiaria(motivo: string) {
+    const espera = await this.loadingCtrl.create({ message: 'Enviando solicitud…' });
+    await espera.present();
+    try {
+      const r = await this.api.crearSolicitudPreop(this.yaHoy?.placa || this.datos.placa || '', motivo, 'diario');
+      this.toast(r?.coordinador ? `Solicitud enviada a ${r.coordinador}` : 'Solicitud enviada');
+      await this.cargarEstadoDiario();
+    } catch (e) { this.toast(this.msg(e)); }
+    finally { await espera.dismiss(); }
   }
 
   ngOnDestroy() { this.liberarFotos(); }

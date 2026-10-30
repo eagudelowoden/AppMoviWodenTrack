@@ -19,7 +19,20 @@
       <div class="loading-row" *ngIf="cargando"><ion-spinner name="crescent"></ion-spinner><span>Cargando formulario…</span></div>
       <div class="pf-alert bad" *ngIf="errorCarga"><ion-icon name="warning-outline"></ion-icon><span>{{ errorCarga }}</span></div>
 
-      <ng-container *ngIf="cfg && actual && !cargando">
+      <!-- Una sola revisión de moto por día: otra solo con autorización de la coordinación -->
+      <div class="pf-alert bad" *ngIf="!cargando && yaHoy?.registrada && !yaHoy?.autorizada && !resultado">
+        <ion-icon name="warning-outline"></ion-icon>
+        <span>
+          Tu revisión de hoy ya está registrada{{ yaHoy?.placa ? ' (placa ' + yaHoy?.placa + ')' : '' }}. No tienes nada pendiente: sigue en Asistencia para marcar tu salida. Solo se permite una revisión por día; para hacer otra, tu coordinación debe autorizarla.
+          <br />
+          <button type="button" class="link-btn" (click)="volver()">Ir a Asistencia</button>
+          <br />
+          <button type="button" class="link-btn" *ngIf="yaHoy?.solicitud?.estado !== 'pendiente'" (click)="solicitarOtraRevision()">Solicitar autorización a coordinación</button>
+          <em *ngIf="yaHoy?.solicitud?.estado === 'pendiente'">Solicitud enviada{{ yaHoy?.solicitud?.coordinador ? ' a ' + yaHoy?.solicitud?.coordinador : '' }}: espera la autorización.</em>
+        </span>
+      </div>
+
+      <ng-container *ngIf="cfg && actual && !cargando && !(yaHoy?.registrada && !yaHoy?.autorizada && !resultado)">
 
         <div>
           <p class="eyebrow">{{ actual.eyebrow || ('Sección ' + actual.n + ' de 7') }}</p>
