@@ -186,8 +186,8 @@
             <ion-spinner *ngIf="enviando" name="crescent"></ion-spinner>
             <ng-container *ngIf="!enviando">{{ etiquetaBoton }} <ion-icon name="arrow-forward-outline"></ion-icon></ng-container>
           </button>
-          <button type="button" class="btn-go dark" *ngIf="actual.tipo === 'resultado'" (click)="nueva()">
-            <ion-icon name="refresh-outline"></ion-icon> Nuevo reporte</button>
+          <button type="button" class="btn-go dark" *ngIf="actual.tipo === 'resultado'" (click)="volver()">
+            <ion-icon name="arrow-forward-outline"></ion-icon> Ir a Asistencia</button>
         </div>
 
       </ng-container>
