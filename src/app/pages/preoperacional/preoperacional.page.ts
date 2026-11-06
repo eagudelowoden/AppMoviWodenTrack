@@ -1,6 +1,8 @@
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline, arrowForwardOutline, cameraOutline, closeOutline,
@@ -183,9 +185,35 @@ export class PreoperacionalPage implements OnInit, OnDestroy {
     });
   }
 
-  abrirCamara(item: string) {
+  async abrirCamara(item: string) {
     if (this.nFotos(item) >= this.cfg.maxFotosPorItem) {
       this.toast(`Máximo ${this.cfg.maxFotosPorItem} fotos por ítem.`);
+      return;
+    }
+    // En la app la foto sale SOLO de la cámara (CameraSource.Camera): no existe la opción de elegir de la galería, así no se
+    // puede subir una foto de otro día. Solo en el navegador (desarrollo) se usa la entrada de archivo.
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const foto = await Camera.getPhoto({
+          source: CameraSource.Camera,
+          resultType: CameraResultType.DataUrl,
+          quality: 85,
+          width: 1920,
+          allowEditing: false,
+          correctOrientation: true,
+          saveToGallery: false,
+        });
+        if (!foto.dataUrl) return;
+        const archivo = await (await fetch(foto.dataUrl)).blob();
+        const blob = await this.comprimir(new File([archivo], 'foto.jpg', { type: archivo.type || 'image/jpeg' }));
+        if (!blob) { this.toast('No se pudo procesar la foto.'); return; }
+        (this.evid[item] ||= []).push({ id: Math.random().toString(36).slice(2, 9), blob, preview: URL.createObjectURL(blob) });
+        delete this.errores[item + '_ev'];
+        delete this.errores['mant_ev'];
+      } catch (e: any) {
+        // Cancelar la cámara no es un error; lo demás (permiso denegado, sin cámara) sí se avisa.
+        if (!/cancel/i.test(String(e?.message ?? e))) this.toast('No se pudo abrir la cámara. Revisa que la app tenga permiso de cámara.');
+      }
       return;
     }
     const inp = document.createElement('input');
