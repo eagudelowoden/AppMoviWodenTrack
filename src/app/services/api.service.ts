@@ -236,6 +236,11 @@ export class ApiService {
     return { base64, nombre };
   }
 
+  /** ¿Ya tiene el agente su mantenimiento mensual de este mes (de cualquier placa)?, ¿tiene autorización para otro? */
+  async getPreopMensualMio(): Promise<{ registrado: boolean; placa: string | null; mes: string; autorizada: boolean; solicitud: { estado: string; coordinador?: string; respuesta?: string } | null }> {
+    return firstValueFrom(this.http.get<any>(`${this.apiUrl}/preoperacional-moto/mantenimiento/mio`));
+  }
+
   /** Estado de la revisión diaria de hoy: una sola por agente y día; otra solo con autorización de la coordinación. */
   async getPreopDiarioEstado(): Promise<{ registrada: boolean; placa: string | null; autorizada: boolean; solicitud: { estado: string; coordinador?: string; respuesta?: string } | null }> {
     return firstValueFrom(this.http.get<any>(`${this.apiUrl}/preoperacional-moto/diario/estado`));

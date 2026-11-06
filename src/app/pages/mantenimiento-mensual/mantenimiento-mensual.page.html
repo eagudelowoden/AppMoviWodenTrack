@@ -19,7 +19,20 @@
       <div class="loading-row" *ngIf="cargando"><ion-spinner name="crescent"></ion-spinner><span>Cargando formulario…</span></div>
       <div class="pf-alert bad" *ngIf="errorCarga"><ion-icon name="warning-outline"></ion-icon><span>{{ errorCarga }}</span></div>
 
-      <ng-container *ngIf="cfg && actual && !cargando">
+      <!-- Un solo mensual por persona y mes (de cualquier placa): otro solo con autorización de la coordinación -->
+      <div class="pf-alert bad" *ngIf="!cargando && yaMes?.registrado && !yaMes?.autorizada && !resultado">
+        <ion-icon name="warning-outline"></ion-icon>
+        <span>
+          Tu mantenimiento mensual de {{ yaMes?.mes }} ya está registrado{{ yaMes?.placa ? ' (placa ' + yaMes?.placa + ')' : '' }}. No tienes nada pendiente este mes: sigue en Asistencia. Solo se permite uno por persona y mes.
+          <br />
+          <button type="button" class="link-btn" (click)="volver()">Ir a Asistencia</button>
+          <br />
+          <button type="button" class="link-btn" *ngIf="yaMes?.solicitud?.estado !== 'pendiente'" (click)="solicitarOtroMensual()">Solicitar otro mensual a coordinación</button>
+          <em *ngIf="yaMes?.solicitud?.estado === 'pendiente'">Solicitud enviada{{ yaMes?.solicitud?.coordinador ? ' a ' + yaMes?.solicitud?.coordinador : '' }}: espera la autorización.</em>
+        </span>
+      </div>
+
+      <ng-container *ngIf="cfg && actual && !cargando && !(yaMes?.registrado && !yaMes?.autorizada && !resultado)">
 
         <div>
           <p class="eyebrow">{{ actual.eyebrow || ('Sección ' + actual.n + ' de 7') }}</p>

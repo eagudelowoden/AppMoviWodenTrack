@@ -26,6 +26,7 @@ export class MantenimientoMensualPage implements OnInit, OnDestroy {
   cfg: any = null;
   cargando = true;
   errorCarga = '';
+  yaMes: { registrado: boolean; placa: string | null; mes: string; autorizada: boolean; solicitud: { estado: string; coordinador?: string; respuesta?: string } | null } | null = null;
   enviando = false;
   paso = 0;
   errores: Record<string, string> = {};
@@ -68,6 +69,7 @@ export class MantenimientoMensualPage implements OnInit, OnDestroy {
       return;
     }
     try {
+      await this.cargarEstadoMes();
       this.cfg = await this.api.getPreopConfig();
       this.datos.placa = localStorage.getItem(PLACA_KEY) ?? '';
     } catch (e) {
@@ -242,6 +244,48 @@ export class MantenimientoMensualPage implements OnInit, OnDestroy {
   retroceder() { this.errores = {}; this.irPaso(Math.max(0, this.paso - 1)); }
 
   /** Pide al coordinador la habilitación del mensual (plazo vencido). */
+  /** Un solo mensual por persona y mes: si ya lo hizo y no tiene autorización, el formulario se reemplaza por la solicitud. */
+  async cargarEstadoMes() {
+    try { this.yaMes = await this.api.getPreopMensualMio(); } catch { /* el servidor igual rechaza un segundo mensual */ }
+  }
+
+  async solicitarOtroMensual() {
+    const alerta = await this.alertCtrl.create({
+      header: 'Otro mantenimiento mensual',
+      message: 'Solo se permite uno por persona y mes. Indica la placa de la otra moto y por qué necesitas registrarlo; tu coordinación debe autorizarlo.',
+      inputs: [
+        { name: 'placa', type: 'text', placeholder: 'Placa (ABC12D)', attributes: { maxlength: 7, style: 'text-transform: uppercase' } },
+        { name: 'motivo', type: 'textarea', placeholder: 'Motivo', attributes: { maxlength: 1000 } },
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Enviar',
+          handler: (v: any) => {
+            const placa = String(v?.placa ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+            const motivo = String(v?.motivo ?? '').trim();
+            if (placa.length < 6) { this.toast('Escribe la placa de la otra moto.'); return false; }
+            if (motivo.length < 5) { this.toast('Escribe el motivo (mínimo 5 caracteres).'); return false; }
+            this.enviarSolicitudOtroMensual(placa, motivo);
+            return true;
+          },
+        },
+      ],
+    });
+    await alerta.present();
+  }
+
+  private async enviarSolicitudOtroMensual(placa: string, motivo: string) {
+    const espera = await this.loadingCtrl.create({ message: 'Enviando solicitud…' });
+    await espera.present();
+    try {
+      const r = await this.api.crearSolicitudPreop(placa, motivo, 'mensual');
+      this.toast(r?.coordinador ? `Solicitud enviada a ${r.coordinador}` : 'Solicitud enviada');
+      await this.cargarEstadoMes();
+    } catch (e) { this.toast(this.msg(e)); }
+    finally { await espera.dismiss(); }
+  }
+
   async solicitarHabilitacion() {
     const alerta = await this.alertCtrl.create({
       header: 'Solicitar habilitación',
