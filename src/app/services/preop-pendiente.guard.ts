@@ -18,12 +18,16 @@ export const preopPendienteGuard: CanActivateFn = async () => {
   const loadingCtrl = inject(LoadingController);
   const toastCtrl = inject(ToastController);
 
-  // Solo si ESTA sesión puede abrir los formularios: si no, redirigir la devuelve a Asistencia y se forma un bucle.
-  if (!auth.hasPermiso('preoperacional.diario') && !auth.hasPermiso('preoperacional.mensual')) return true;
-
   const espera = await loadingCtrl.create({ message: 'Validando', spinner: 'crescent', backdropDismiss: false });
   await espera.present();
   const inicio = Date.now();
+  // Una sesión con PIN (cédula = contraseña) sale del login con los permisos vacíos: se traen los vigentes antes de decidir.
+  try {
+    const id = auth.session?.employee_id;
+    if (id) await auth.patchSession({ permisos: await api.getPermisosSesion(id) });
+  } catch { /* sin red: se sigue con los permisos guardados */ }
+  // Solo si ESTA sesión puede abrir los formularios: si no, redirigir la devuelve a Asistencia y se forma un bucle.
+  if (!auth.hasPermiso('preoperacional.diario') && !auth.hasPermiso('preoperacional.mensual')) { await espera.dismiss(); return true; }
   let destino: string | null = null;
   const avisos: { message: string; color: string; duration: number }[] = [];
   try {
