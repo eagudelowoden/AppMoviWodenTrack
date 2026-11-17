@@ -35,7 +35,7 @@
       <ng-container *ngIf="cfg && actual && !cargando && !(yaHoy?.registrada && !yaHoy?.autorizada && !resultado)">
 
         <div>
-          <p class="eyebrow">{{ actual.eyebrow || ('Sección ' + actual.n + ' de 7') }}</p>
+          <p class="eyebrow">{{ actual.eyebrow || ('Sección ' + actual.n + ' de ' + flujo.length) }}</p>
           <h2 class="sec-title">{{ actual.titulo }}</h2>
           <p class="sec-note" *ngIf="actual.nota">{{ actual.nota }}</p>
         </div>
