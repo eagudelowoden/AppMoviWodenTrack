@@ -108,6 +108,19 @@ export class ApiService {
     );
   }
 
+  // ── Documentos de agente (licencia, vehículo, SOAT, tecnomecánica) — mismo backend que la web ──
+  async getDocsAgente() {
+    return firstValueFrom(this.http.get<any>(`${this.apiUrl}/agentes-documentos/mio`));
+  }
+
+  /** `archivos`: por tipo (licencia | tarjeta_propiedad | soat | tecnomecanica), cada uno con sus Blob y nombre. */
+  async guardarDocsAgente(payload: any, archivos: Record<string, { blob: Blob; nombre: string }[]>) {
+    const fd = new FormData();
+    fd.append('payload', JSON.stringify(payload));
+    for (const [tipo, lista] of Object.entries(archivos)) lista.forEach((a) => fd.append(tipo, a.blob, a.nombre));
+    return firstValueFrom(this.http.post<any>(`${this.apiUrl}/agentes-documentos/mio`, fd));
+  }
+
   async getSerialesRecuperados(
     fecha: string,
     fechaFin?: string,

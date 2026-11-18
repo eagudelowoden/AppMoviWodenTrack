@@ -51,6 +51,11 @@ const routes: Routes = [
     loadChildren: () => import('./pages/mis-registros/mis-registros.module').then( m => m.MisRegistrosPageModule)
   },
   {
+    path: 'agentes-documentos', // documentos de agente: licencia, vehículo, SOAT, tecnomecánica (sin validación de marcación)
+    canActivate: [authGuard, permisoGuard('agentes_docs.registrar')],
+    loadChildren: () => import('./pages/agentes-documentos/agentes-documentos.module').then( m => m.AgentesDocumentosPageModule)
+  },
+  {
     path: 'perfil',
     canActivate: [authGuard],
     loadChildren: () => import('./pages/perfil/perfil.module').then( m => m.PerfilPageModule)

@@ -1,0 +1,42 @@
+// Documentos de agente: misma base visual del preoperacional (se importa en la página), pero más compacta.
+// Todo va bajo .wt-compact para no cambiar el tamaño de las demás pantallas que comparten esos estilos.
+.wt-compact {
+  .wt-top { padding: 38px 18px 30px; }
+  .wt-header .wt-brand { font-size: 15px; font-weight: 800; }
+  .wt-header .icon-btn { width: 32px; height: 32px; }
+  .wt-bottom { padding: 22px 12px 32px; gap: 10px; }
+
+  .eyebrow { font-size: 9px; }
+  .sec-title { font-size: 17px; font-weight: 800; }
+  .sec-note { font-size: 11.5px; margin-top: 4px; }
+
+  .form-card { gap: 8px; padding: 11px; border-radius: 12px; }
+  .blk-h { font-size: 10px; font-weight: 800; }
+
+  .field { gap: 3px;
+    label { font-size: 10.5px; font-weight: 700; }
+    input, select { height: 38px; font-size: 13px; border-radius: 9px; padding: 0 10px; }
+    textarea { font-size: 13px; padding: 8px 10px; border-radius: 9px; }
+    .ro { height: 38px; font-size: 12.5px; font-weight: 700; border-radius: 9px; padding: 0 10px; }
+    .mono { letter-spacing: .05em; }
+  }
+  .field-row { gap: 8px; }
+  .pf-err { font-size: 10.5px; }
+  .vig { font-size: 9px; padding: 2px 8px; }
+
+  .chip { padding: 6px 12px; font-size: 11.5px; }
+  .pf-alert { padding: 9px 11px; font-size: 11px; gap: 8px;
+    ion-icon { font-size: 16px; }
+    b { font-size: 10.5px; }
+  }
+
+  .ev-card { padding: 10px; gap: 8px; }
+  .ev-top .ev-lbl { font-size: 11px; }
+  .tag { font-size: 9px; }
+  .ev-btn { padding: 8px 11px; font-size: 12px; border-radius: 9px; ion-icon { font-size: 15px; } }
+  .thumb { width: 60px; height: 60px; }
+  .hint { font-size: 10.5px; }
+
+  .actions .btn-go { height: 46px; font-size: 13.5px; }
+  .link-btn { font-size: 11px; }
+}

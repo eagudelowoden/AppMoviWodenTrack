@@ -1,0 +1,169 @@
+<ion-content [fullscreen]="true" class="woden-content">
+  <div class="wt-screen wt-compact">
+
+    <!-- ══ Superior — navy ═══════════════════════════════════════════════════ -->
+    <div class="wt-top">
+      <div class="wt-header">
+        <button class="icon-btn" aria-label="Volver" (click)="volver()"><ion-icon name="arrow-back-outline"></ion-icon></button>
+        <div class="wt-brand"><span class="b-woden">Documentos de</span> <span class="b-acc">Agente</span></div>
+        <button class="icon-btn" aria-label="Cerrar sesión" (click)="cerrarSesion()"><ion-icon name="log-out-outline"></ion-icon></button>
+      </div>
+    </div>
+
+    <!-- ══ Inferior — hoja blanca ════════════════════════════════════════════ -->
+    <div class="wt-bottom">
+
+      <div class="loading-row" *ngIf="cargando"><ion-spinner name="crescent"></ion-spinner><span>Cargando…</span></div>
+      <div class="pf-alert bad" *ngIf="errorCarga"><ion-icon name="warning-outline"></ion-icon><span>{{ errorCarga }}</span></div>
+
+      <ng-container *ngIf="!cargando && !errorCarga">
+
+        <div>
+          <p class="eyebrow">Repositorio documental</p>
+          <h2 class="sec-title">Mis documentos</h2>
+          <p class="sec-note">Licencia, vehículo, SOAT y revisión técnico-mecánica. Puede actualizarlos cuando se renueven.</p>
+        </div>
+
+        <!-- Estado -->
+        <div class="pf-alert bad" *ngIf="vencimientos.length">
+          <ion-icon name="warning-outline"></ion-icon>
+          <span>
+            <b>Hay documentos que requieren atención</b>
+            <ng-container *ngFor="let v of vencimientos">
+              {{ v.nombre }}: {{ v.dias < 0 ? 'vencido desde el ' + fechaCorta(v.fecha) : 'vence el ' + fechaCorta(v.fecha) + ' (en ' + v.dias + ' día' + (v.dias === 1 ? '' : 's') + ')' }}.
+            </ng-container>
+          </span>
+        </div>
+        <div class="pf-alert ok" *ngIf="guardado && !vencimientos.length">
+          <ion-icon name="checkmark-outline"></ion-icon><span><b>Información guardada</b>Sus documentos están al día.</span>
+        </div>
+
+        <!-- 1 · General -->
+        <div class="form-card">
+          <h3 class="blk-h">Información general</h3>
+          <div class="field"><label>Nombres y apellidos completos</label><div class="ro">{{ identidad.nombre }}</div></div>
+          <div class="field"><label>Número de identificación</label><div class="ro">{{ identidad.cedula }}</div></div>
+          <div class="field"><label>Ciudad donde realiza sus labores</label>
+            <input [(ngModel)]="f.ciudad" maxlength="100" (ngModelChange)="limpiar('ciudad')" /></div>
+          <p class="pf-err" *ngIf="errores['ciudad']">{{ errores['ciudad'] }}</p>
+          <div class="field"><label>Número de contacto</label>
+            <input inputmode="tel" maxlength="30" [(ngModel)]="f.telefono" (ngModelChange)="limpiar('telefono')" /></div>
+          <p class="pf-err" *ngIf="errores['telefono']">{{ errores['telefono'] }}</p>
+        </div>
+
+        <!-- 2 · Licencia -->
+        <div class="form-card">
+          <h3 class="blk-h">Licencia de conducción</h3>
+          <div class="field"><label>Número de licencia</label>
+            <input class="mono" maxlength="40" [(ngModel)]="f.licNumero" (ngModelChange)="limpiar('licNumero')" /></div>
+          <p class="pf-err" *ngIf="errores['licNumero']">{{ errores['licNumero'] }}</p>
+          <div class="field-row">
+            <div class="field"><label>Categoría</label>
+              <select [(ngModel)]="f.licCategoria" (ngModelChange)="limpiar('licCategoria')">
+                <option value="">Seleccione…</option>
+                <option *ngFor="let c of categorias" [value]="c">{{ c }}</option>
+              </select></div>
+            <div class="field"><label>Vence</label>
+              <input type="date" [(ngModel)]="f.licVence" (ngModelChange)="limpiar('licVence')" /></div>
+          </div>
+          <span class="vig" *ngIf="vigencia(f.licVence) as v" [ngClass]="v.cls">{{ v.txt }}</span>
+          <p class="pf-err" *ngIf="errores['licCategoria']">{{ errores['licCategoria'] }}</p>
+          <p class="pf-err" *ngIf="errores['licVence']">{{ errores['licVence'] }}</p>
+          <div class="field"><label>¿Tiene alguna restricción registrada en su licencia?</label>
+            <div class="chips">
+              <button type="button" class="chip" [class.on]="!f.licTieneRestriccion" (click)="f.licTieneRestriccion = false">No</button>
+              <button type="button" class="chip" [class.on]="f.licTieneRestriccion" (click)="f.licTieneRestriccion = true">Sí</button>
+            </div>
+          </div>
+          <div class="field" *ngIf="f.licTieneRestriccion"><label>Indique la restricción aplicable</label>
+            <textarea rows="2" maxlength="300" [(ngModel)]="f.licRestriccion" (ngModelChange)="limpiar('licRestriccion')"></textarea></div>
+          <p class="pf-err" *ngIf="errores['licRestriccion']">{{ errores['licRestriccion'] }}</p>
+          <ng-container *ngTemplateOutlet="adjuntos; context: { d: docs[0] }"></ng-container>
+        </div>
+
+        <!-- 3 · Vehículo -->
+        <div class="form-card">
+          <h3 class="blk-h">Información del vehículo</h3>
+          <div class="field">
+            <label>Placa del vehículo</label>
+            <input class="mono up" maxlength="7" placeholder="ABC12D" [ngModel]="f.placa" (ngModelChange)="onPlaca($event)" />
+            <span class="vig ok" *ngIf="placaPreop && f.placa === placaPreop">Tomada de su preoperacional</span>
+            <button type="button" class="link-btn" *ngIf="placaPreop && f.placa !== placaPreop" (click)="usarPlacaPreop()">
+              En su preoperacional reportó {{ placaPreop }} · Usarla</button>
+          </div>
+          <p class="pf-err" *ngIf="errores['placa']">{{ errores['placa'] }}</p>
+          <div class="field-row">
+            <div class="field"><label>Marca</label><input maxlength="60" [(ngModel)]="f.marca" (ngModelChange)="limpiar('marca')" /></div>
+            <div class="field"><label>Modelo (año)</label>
+              <input class="mono" inputmode="numeric" placeholder="2024" [ngModel]="f.modelo" (ngModelChange)="soloNum('modelo', $event); limpiar('modelo')" /></div>
+          </div>
+          <p class="pf-err" *ngIf="errores['marca']">{{ errores['marca'] }}</p>
+          <p class="pf-err" *ngIf="errores['modelo']">{{ errores['modelo'] }}</p>
+          <div class="field-row">
+            <div class="field"><label>Color</label><input maxlength="40" [(ngModel)]="f.color" (ngModelChange)="limpiar('color')" /></div>
+            <div class="field"><label>Cilindraje</label><input class="mono" maxlength="20" placeholder="Ej. 150" [(ngModel)]="f.cilindraje" (ngModelChange)="limpiar('cilindraje')" /></div>
+          </div>
+          <p class="pf-err" *ngIf="errores['color']">{{ errores['color'] }}</p>
+          <p class="pf-err" *ngIf="errores['cilindraje']">{{ errores['cilindraje'] }}</p>
+          <div class="field"><label>N.º de licencia de tránsito (tarjeta de propiedad)</label>
+            <input class="mono" maxlength="40" [(ngModel)]="f.licTransito" (ngModelChange)="limpiar('licTransito')" /></div>
+          <p class="pf-err" *ngIf="errores['licTransito']">{{ errores['licTransito'] }}</p>
+          <div class="field"><label>Nombre del propietario del vehículo</label>
+            <input maxlength="180" [(ngModel)]="f.propietario" (ngModelChange)="limpiar('propietario')" /></div>
+          <p class="pf-err" *ngIf="errores['propietario']">{{ errores['propietario'] }}</p>
+          <ng-container *ngTemplateOutlet="adjuntos; context: { d: docs[1] }"></ng-container>
+        </div>
+
+        <!-- 4 · Documentación -->
+        <div class="form-card">
+          <h3 class="blk-h">Documentación del vehículo</h3>
+          <div class="field"><label>Vencimiento del SOAT</label>
+            <input type="date" [(ngModel)]="f.soatVence" (ngModelChange)="limpiar('soatVence')" />
+            <span class="vig" *ngIf="vigencia(f.soatVence) as v" [ngClass]="v.cls">{{ v.txt }}</span></div>
+          <p class="pf-err" *ngIf="errores['soatVence']">{{ errores['soatVence'] }}</p>
+          <ng-container *ngTemplateOutlet="adjuntos; context: { d: docs[2] }"></ng-container>
+          <div class="field"><label>Vencimiento de la revisión técnico-mecánica</label>
+            <input type="date" [(ngModel)]="f.tecnoVence" (ngModelChange)="limpiar('tecnoVence')" />
+            <span class="vig" *ngIf="vigencia(f.tecnoVence) as v" [ngClass]="v.cls">{{ v.txt }}</span></div>
+          <p class="pf-err" *ngIf="errores['tecnoVence']">{{ errores['tecnoVence'] }}</p>
+          <ng-container *ngTemplateOutlet="adjuntos; context: { d: docs[3] }"></ng-container>
+        </div>
+
+        <p class="pf-err" *ngIf="errores['general']">{{ errores['general'] }}</p>
+
+        <div class="actions">
+          <button type="button" class="btn-go" [disabled]="enviando" (click)="guardar()">
+            <ion-spinner *ngIf="enviando" name="crescent"></ion-spinner>
+            <ng-container *ngIf="!enviando">{{ perfil ? 'Actualizar información' : 'Guardar información' }} <ion-icon name="checkmark-outline"></ion-icon></ng-container>
+          </button>
+        </div>
+
+        <!-- Bloque reutilizable: adjuntos de un documento (cámara o archivo) -->
+        <ng-template #adjuntos let-d="d">
+          <div class="ev-card" style="margin-top: 10px">
+            <div class="ev-top">
+              <span class="ev-lbl"><ion-icon name="document-outline"></ion-icon> {{ d.n }} · {{ d.titulo }}</span>
+              <span class="tag" [class.ok]="nuevos[d.tipo].length || vigentes(d.tipo).length" [class.req]="!nuevos[d.tipo].length && !vigentes(d.tipo).length">
+                {{ nuevos[d.tipo].length ? (nuevos[d.tipo].length + ' nuevo(s)') : (vigentes(d.tipo).length ? 'Cargado' : 'Obligatorio') }}</span>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <button type="button" class="ev-btn" (click)="elegir(d.tipo, true)"><ion-icon name="camera-outline"></ion-icon> Tomar foto</button>
+              <button type="button" class="ev-btn" (click)="elegir(d.tipo, false)"><ion-icon name="cloud-upload-outline"></ion-icon> {{ vigentes(d.tipo).length && !nuevos[d.tipo].length ? 'Reemplazar' : 'Subir archivo' }}</button>
+            </div>
+            <div class="thumbs" *ngIf="nuevos[d.tipo].length">
+              <div class="thumb" *ngFor="let a of nuevos[d.tipo]">
+                <img *ngIf="a.preview" [src]="a.preview" [alt]="a.nombre" />
+                <span *ngIf="!a.preview" style="font-size: 10px; padding: 4px; word-break: break-all">{{ a.nombre }}</span>
+                <button type="button" class="del" (click)="quitar(d.tipo, a.id)"><ion-icon name="close-outline"></ion-icon></button>
+              </div>
+            </div>
+            <p class="hint" *ngIf="!nuevos[d.tipo].length && vigentes(d.tipo).length">
+              <ion-icon name="checkmark-outline"></ion-icon> Ya tiene {{ vigentes(d.tipo).length }} archivo(s) guardado(s). Suba uno nuevo solo si lo está renovando.</p>
+            <p class="pf-err" *ngIf="errores['arch_' + d.tipo]">{{ errores['arch_' + d.tipo] }}</p>
+          </div>
+        </ng-template>
+
+      </ng-container>
+    </div>
+  </div>
+</ion-content>

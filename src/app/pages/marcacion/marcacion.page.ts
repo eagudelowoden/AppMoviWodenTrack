@@ -14,7 +14,7 @@ import {
   cloudDownloadOutline, closeOutline, checkmarkCircleOutline,
   arrowForwardOutline, eyeOutline, bugOutline, documentTextOutline,
   locationOutline, chevronDownOutline, chevronUpOutline, megaphoneOutline,
-  appsOutline, personOutline,
+  appsOutline, personOutline, idCardOutline,
 } from 'ionicons/icons';
 
 const INACTIVITY_MS = 10 * 60 * 1000; // 10 minutos sin actividad
@@ -63,9 +63,17 @@ export class MarcacionPage implements OnInit, OnDestroy {
   get canPreopAgente(): boolean { return this.auth.hasPermiso('preoperacional.consulta_agente'); }
   get canVerPreoperacional(): boolean { return this.canPreopDiario || this.canPreopMensual || this.canPreopAgente; }
 
+  /** Documentos de agente (licencia, vehículo, SOAT, tecnomecánica) — mismo slug que la web. */
+  get canDocsAgente(): boolean { return this.auth.hasPermiso('agentes_docs.registrar'); }
+
   /** Si hay al menos una opción del panel "Más opciones", vale la pena mostrarlo. */
   get tieneMasOpciones(): boolean {
-    return this.canVerNovedades || this.canVerComprobantes || this.canVerPreoperacional;
+    return this.canVerNovedades || this.canVerComprobantes || this.canVerPreoperacional || this.canDocsAgente;
+  }
+
+  irADocumentosAgente() {
+    this.masOpcionesAbierto = false;
+    this.router.navigate(['/agentes-documentos']);
   }
 
   /**
@@ -159,6 +167,7 @@ export class MarcacionPage implements OnInit, OnDestroy {
       'bicycle-outline':          bicycleOutline,
       'build-outline':            buildOutline,
       'folder-open-outline':      folderOpenOutline,
+      'id-card-outline':          idCardOutline,
       'cloud-download-outline':   cloudDownloadOutline,
       'close-outline':            closeOutline,
       'checkmark-circle-outline': checkmarkCircleOutline,
@@ -571,22 +580,18 @@ export class MarcacionPage implements OnInit, OnDestroy {
     });
   }
 
-  // ── Ver marcación ──────────────────────────────────────────────────────────
-  async verMarcacion() {
-    const estado = this.dayCompleted
-      ? '✅ Jornada completada'
-      : this.isInside
-        ? '🟢 Entrada registrada'
-        : '⚪ Sin entrada registrada hoy';
+  // ── Ver marcación (hoja inferior, mismo estilo que «Respuestas de Fallas») ───────
+  panelMarcacion = { abierto: false };
 
-    const alert = await this.alertCtrl.create({
-      header:    'Mi marcación de hoy',
-      cssClass:  'alert-marcacion',
-      message:   `${estado}\n\nEntrada:  ${this.horaEntrada ?? '—'}\nSalida:     ${this.horaSalida ?? '—'}`,
-      buttons:   [{ text: 'Cerrar', role: 'cancel' }],
-    });
-    await alert.present();
+  /** Estado de la jornada de hoy para el panel: texto, clase de color y mensaje. */
+  get estadoMarcacion(): { texto: string; cls: 'ok' | 'in' | 'none'; detalle: string } {
+    if (this.dayCompleted) return { texto: 'Jornada completada', cls: 'ok', detalle: 'Ya registraste tu entrada y tu salida de hoy.' };
+    if (this.isInside) return { texto: 'En jornada', cls: 'in', detalle: 'Tu entrada está registrada. Recuerda marcar la salida al terminar.' };
+    return { texto: 'Sin entrada registrada hoy', cls: 'none', detalle: 'Aún no has marcado tu entrada de hoy.' };
   }
+
+  verMarcacion() { this.panelMarcacion.abierto = true; }
+  cerrarMarcacion() { this.panelMarcacion.abierto = false; }
 
   /** Le dice al servidor qué versión de la app está instalada (no crítico: si falla, no pasa nada). */
   private async informarVersionInstalada() {

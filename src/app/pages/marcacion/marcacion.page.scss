@@ -420,3 +420,21 @@ ion-content.woden-content {
   p { margin: 3px 0 0; font-size: 13px; color: #0f172a; white-space: pre-wrap; word-break: break-word; }
 }
 .rf-espera { margin: 8px 0 0; font-size: 11px; color: #94a3b8; font-style: italic; }
+
+// ── Mi marcación de hoy (hoja inferior; reutiliza .rf-overlay / .rf-sheet) ─────
+// Solo texto (nada con forma de botón): estado en una línea y entrada/salida como renglones.
+.mh-estado {
+  display: flex; align-items: flex-start; gap: 10px; padding: 2px 2px 4px;
+  b { display: block; font-size: 14px; font-weight: 800; color: #122a52; }
+  small { display: block; margin-top: 2px; font-size: 12px; color: #64748b; line-height: 1.35; }
+  .mh-punto { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; background: #94a3b8; }
+  &.mh-in .mh-punto { background: #2563eb; }
+  &.mh-ok .mh-punto { background: #16a34a; }
+}
+.mh-lista { margin: 0; padding: 0; border-top: 1px solid #e8edf5; }
+.mh-fila {
+  display: flex; align-items: baseline; justify-content: space-between; padding: 12px 2px; border-bottom: 1px solid #e8edf5;
+  dt { font-size: 13px; font-weight: 700; color: #64748b; }
+  dd { margin: 0; font-size: 18px; font-weight: 800; color: #122a52; font-variant-numeric: tabular-nums;
+    &.mh-vacio { color: #cbd5e1; } }
+}

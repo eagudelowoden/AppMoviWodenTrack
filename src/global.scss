@@ -25,6 +25,9 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
+/* Tipografía de toda la app: Nunito (Google Fonts), suave y redondeada. Va empaquetada (no depende de internet). */
+@import "@fontsource-variable/nunito/index.css";
+
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
@@ -127,4 +130,13 @@ ion-refresher-content {
   }
 
   .btn-danger { color: #ff8f00 !important; font-weight: 800 !important; }
+}
+
+
+// ── Tipografía global: Nunito (suave y redondeada) ────────────────────────────
+:root {
+  --ion-font-family: 'Nunito Variable', 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+body, ion-app, ion-content, button, input, select, textarea, ion-alert, ion-toast {
+  font-family: var(--ion-font-family);
 }
